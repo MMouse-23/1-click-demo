@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Nutanix 1 Click Demo</title>
+
+  <!-- Meta -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="Nutanix Installer">
+
+  <!-- Prevent cache -->
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+
+  <!-- Compatibility Mode -->
+  <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE" />
+  <script src="app-extension/scripts/jquery.min.js"></script>
+    <script type="text/javascript">
+   var auto_refresh = setInterval(
+   function ()
+   {
+   $('#n-content-wrapper').load('#n-content-wrapper');
+   }, 500000); // refresh every 50000 milliseconds
+  </script>
+
+
+<script type="text/javascript">
+// Popup window code
+function newPopup(url) {
+  popupWindow = window.open(
+    url,'popUpWindow','height=900,width=400,left=10,top=10,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes')
+}
+</script>
+
+  <meta name="theme-color" content="#e3e3e3">
+
+  <link href="app/styles/bootstrapb439.css" rel="stylesheet" />
+
+  <link href="app/styles/antiscrollb439.css" rel="stylesheet" />
+
+  <link href="app/styles/nutanix.minb439.css" rel="stylesheet" />
+
+  <link href="app/styles/dist/hamburgers.css" rel="stylesheet">
+<style>
+#n-header { 
+  position: sticky; top: 0; 
+  background:#343537; 
+  z-index: 1000;
+}
+
+
+#divmies {
+  top: 68px;
+}
+img.sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 68px;
+  left: 5px;
+  width: 150px;
+}
+.sidenav {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 999;
+  top: 50PX;
+  left: 0;
+  background-color: #343537;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidenav a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 18px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidenav a:hover {
+  color:  #C6C5CC;
+}
+
+
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+
+
+
+
+
+
+<body class="n-body-active"><div id="n-content-wrapper"><!-- Content
+
+================================================== -->
+
+<!-- Main navigation bar and page wrapper
+================================================== -->
+
+<div id="mySidenav" class="sidenav">
+  <a href="Landing.ps1x">Welcome</a>
+  <a href="EditQueue.ps1x">New Entry</a>
+  <a href="Queued.ps1x">Queue</a>
+  <a href="Running.ps1x">Live Status</a>
+  <a href="Backups.ps1x">BluePrint Backups</a>
+  <a href="History.ps1x">History</a>
+  <a href="Stats.ps1x?filters=1Week">Statistics</a>
+  <a href="Downloads.ps1x">Downloads</a>
+  <a href="Help.ps1x">Help</a>
+</div>
+<div class="container-fluid">
+
+  <!-- Notification Message
+  ================================================== -->
+  <div id="n-ctr-notification">
+    <!-- @view: Notification view goes here... -->
+  </div>
+
+  <!-- Header
+  ================================================== -->
+  <div id="n-header" class="header" data-test="header" style="opacity:10.10";>
+
+   
+
+    <div class="n-navigation"  align="left">
+
+      <div class="left-menu">
+
+        <!-- Foundation Navigation steps
+        ============================================= -->
+        <div class="config-nav-container">
+          <ul class="foundation-config-nav">
+
+
+
+
+
+            <li navsubview="start" class="start-cfg" data-test="start-cfg" ;" style="display: inline-block;">
+  <div class="hamburger hamburger--spin-r">
+    <div class="hamburger-box " onclick="openNav()">
+      <div class="hamburger-inner"></div>
+    </div>
+  </div>
+
+            </li> 
+
+
+            
+           </ul>
+
+        </div>
+
+      </div>
+                         <div style="text-align:right;font-size:12px">
+                          <Br>
+---Username--- 
+
+</div>
+    </div>
+  </div>
+ <Br>
+
+ <script>
+
+    var forEach=function(t,o,r){if("[object Object]"===Object.prototype.toString.call(t))for(var c in t)Object.prototype.hasOwnProperty.call(t,c)&&o.call(r,t[c],c,t);else for(var e=0,l=t.length;l>e;e++)o.call(r,t[e],e,t)};
+      var timesClicked = 0;
+    var hamburgers = document.querySelectorAll(".hamburger");
+    if (hamburgers.length > 0) {
+      forEach(hamburgers, function(hamburger) {
+        hamburger.addEventListener("click", function() {
+
+          this.classList.toggle("is-active");
+timesClicked++;
+
+if (timesClicked%2==0) {
+  document.getElementById("mySidenav").style.width = "0";
+  document.getElementById("main").style.marginLeft = "0";
+  document.body.style.backgroundColor = "white";
+} else {
+  document.getElementById("mySidenav").style.width = "250px";
+  document.getElementById("main").style.marginLeft = "250px";
+  document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
+}
+       
+          
+    
+      
+
+        
+        }, false);
+
+      });
+    }
+  </script>
+  <!-- Body Content
+  ================================================== -->
+  <img src="images/ntnxLogo.png" align="right" height="100" width="100" class="sticky" onclick="openNav()"> <br>
+

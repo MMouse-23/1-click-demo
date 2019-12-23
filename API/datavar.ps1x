@@ -1,0 +1,46 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\Logging"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLOptionsTableName   = "QueueInfo"
+$global:debug=1
+$ModuleDir                    = "C:\1-click-demo\Modules\"
+Import-Module "$($ModuleDir)\Queue\Get-IncommingQueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Validate-QueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-Spawn-Base.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-PortableMode.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-Send-Confirmation.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Config-DetailedDataSet.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Write-Log.psm1" -DisableNameChecking;
+$time = (get-date).addhours(-72)
+if ($request.RequestType -eq "GET"){
+  $response.StatusCode = 405
+  $response.StatusDescription = "Only Post Methods are allowed here."
+} elseif ($request.RequestType -eq "POST"){
+  $json = (new-Object System.IO.StreamReader @($Request.InputStream, [System.Text.Encoding]::UTF8)).ReadToEnd()
+  $QueueUUIDobj = $json | convertfrom-json
+  $QueueUUID = $QueueUUIDobj.QueueUUID
+  $Statobjects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataVarTableName) WHERE QueueUUID = '$QueueUUID'";
+  $Statobjects | select QueueUUID,DateCreated,DateStopped,PEClusterIP,SenderName,SenderEMail,PEAdmin,PEPass,debug,AOSVersion,PCVersion,Hypervisor,InfraSubnetmask,InfraGateway,DNSServer,POCname,PCmode,SystemModel,CVMIPs,Nw1Vlan,Nw2DHCPStart,Nw2Vlan,Nw2subnet,Nw2gw,Location,VersionMethod,VPNUser,VPNPass,VPNURL,SetupSSP,DemoLab,EnableFlow,DemoXenDeskT,EnableBlueprintBackup,InstallEra,InstallFrame,InstallMove,InstallXRay,InstallObjects,UpdateAOS,InstallBPPack,DemoExchange,InstallKarbon,DemoIISXPlay,InstallFiles,InstallSplunk,InstallHashiVault,Install3TierWin,Install3TierLAMP,Slackbot,Portable,Destroy,EnableEmail,RootPID,PreDestroyPass,VCenterIP,VCenterUser,VCenterPass | convertto-json
+} else {
+  $response.StatusCode = 405
+  $response.StatusDescription = "Only Post Methods are allowed here."
+}
+%>  

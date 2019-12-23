@@ -1,0 +1,678 @@
+<% 
+
+$Autoqueue               = "Incoming"                                                      
+$manualqueue             = "Manual"                                                     
+$readyqueue              = "Ready"                                                      
+    
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation"
+$global:debug=1
+
+$ModuleDir                    = "C:\1-click-demo\Modules"
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+                  
+Import-Module "$($ModuleDir)\Queue\Validate-QueueItem.psm1" -DisableNameChecking
+Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking; 
+
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+%>
+  <div id="bodyContent" class="n-body-content" style="display: block;;width: 25%;margin: 0 auto;">
+
+    <!-- Render the content based on the state of the app. -->
+    <div id="stateContainer" class="n-state-container">
+    <div class="n-state-content-form"><!-- Configuration Form -->
+<div id="configurationFormContainer" class="n-configuration-form-container">
+
+  <!-- Configuration Holder -->
+  <div class="configViewHolder">
+    <div class="startViewHolder view-holder" data-test="startViewHolder" style="display: block;"><div><div id="startContainer" class="n-start-container">
+  <div class="content-container">
+    <div class="startPageGuideContainer">
+      
+
+<% 
+
+
+   
+
+if ($request['Agree'] -eq "on") {
+  $date = get-date
+  if($request['Guid'] -eq $null){
+
+  } else {
+    $guid = $($request['guid'])
+  }
+  if ($request['Lab'] -eq "on"){
+    $DemoLab = 1
+  } else {
+    $DemoLab = 0
+  }
+  $dbg = $($request['dbg'])
+  if ($request['Flow'] -eq "on"){
+    $EnableFlow = 1
+  } else {
+    $EnableFlow = 0
+  }
+  if ($request['Kar'] -eq "on"){
+    $InstallKarbon = 1
+    $PCMODE = 1
+  } else {
+    $InstallKarbon = 0
+    $PCMODE = 3
+  }
+
+  if ($request['ERA'] -eq "on"){
+    $InstallEra = 1
+  } else {
+    $InstallEra = 0
+  }
+  if ($request['destroy'] -eq "on"){
+    $destroy = 1
+  } else {
+    $destroy = 0
+  }
+  if ($request['XCH'] -eq "on"){
+    $DemoExchange = 1
+  } else {
+    $DemoExchange = 0
+  }  
+  if ($request['FS'] -eq "on"){
+    $InstallFiles = 1
+  } else {
+    $InstallFiles = 0
+  }
+  if ($request['XD'] -eq "on"){
+    $DemoXenDeskT = 1
+  } else {
+    $DemoXenDeskT = 0
+  }
+  if ($request['slk'] -eq "on"){
+    $slackbot = 1
+    if ($Portable -eq 1){
+      $slackbot = 0
+    }
+  } else {
+    $slackbot = 0
+  }
+  if ($request['IXP'] -eq "on"){
+    $DemoIISXPlay = 1
+  } else {
+    $DemoIISXPlay = 0
+  }
+  if ($request['ssp'] -eq "on"){
+    $InstallSSP = 1
+  } else {
+    $InstallSSP = 0
+  }
+  if ($request['frame'] -eq "on"){
+    $InstallFrame = 1
+  } else {
+    $InstallFrame = 0
+  }
+  if ($request['move'] -eq "on"){
+    $move = 1
+  } else {
+    $move = 0
+  } 
+  if ($request['bpp'] -eq "on"){
+    $bpp = 1
+  } else {
+    $bpp = 0
+  } 
+  if ($request['xray'] -eq "on"){
+    $xray = 1
+  } else {
+    $xray = 0
+  } 
+  if ($request['HcV'] -eq "on"){
+    $HcV = 1
+  } else {
+    $HcV = 0
+  } 
+  if ($request['Splunk'] -eq "on"){
+    $Splunk = 1
+  } else {
+    $Splunk = 0
+  } 
+  if ($request['1CD'] -eq "on"){
+    $1CD = 1
+  } else {
+    $1CD = 0
+  }
+ if ($request['3TLamp'] -eq "on"){
+    $3TLamp = 1
+  } else {
+    $3TLamp = 0
+  }
+   if ($request['objects'] -eq "on"){
+    $buckets = 1
+  } else {
+    $buckets = 0
+  } 
+  if ($request['UpAOS'] -eq "on"){
+    $UpdateAOS = 1
+  } else {
+    $UpdateAOS = 0
+  } 
+  if ($request['backup'] -eq "on"){
+    $backup = 1
+  } else {
+    $backup = 0
+  } 
+  $pocname = $($request['pocname'])
+
+  if ($request['PCV'] -eq $null ){
+    
+  } else {
+    $pcv = $request['PCV']
+  }
+  if ($request['loc'] -eq $null ){
+
+  } else {
+
+    $loc = $request['loc']
+  } 
+  if ($request['ver'] -eq $null ){
+    $ver = "AOS"
+  } else {
+    $ver = $request['ver']
+  } 
+if ($request['IP'] -ne $null){ 
+  try {
+    Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE QueueUUID='$($request['Guid'])'"
+  } catch {}
+} 
+    $SQLQuery = "USE `"$SQLDatabase`"
+    INSERT INTO dbo.$SQLQueueTableName (QueueUUID, QUEUEStatus, QUEUEValid, QueueSource, DateCreated, PEClusterIP, SenderName, SenderEMail, PEAdmin, PEPass, debug, AOSVersion, PCVersion, Hypervisor, InfraSubnetmask, InfraGateway, DNSServer, POCname, PCmode, SystemModel, Nw1Vlan, Nw2DHCPStart, Nw2Vlan, Nw2subnet, Nw2gw, Location, VersionMethod, VPNUser, VPNPass, VPNURL, SetupSSP, DemoLab, EnableFlow, DemoXenDeskT, EnableBlueprintBackup, InstallEra, InstallFrame, InstallMove, InstallXRay, InstallObjects, UpdateAOS, DemoExchange, InstallKarbon, DemoIISXPlay, InstallFiles, InstallSplunk, InstallHashiVault, Install1CD, Slackbot, InstallBPPack, CVMIPs, Destroy, Install3TierLAMP, pcsidebin, pcsidemeta)
+
+    VALUES('$Guid','Ready','ToBeValidated','Website','$date','$($request['IP'])','$($request['sdn'])','$($request['sde'])','$($request['pea'])','$($request['pep'])','$dbg','AutoDetect','AutoDetect','AutoDetect','$($request['Sub'])','$($request['GW'])','$($request['dns'])','$($request['pocname'])','$($PCmode)','AutoDetect','$($request['Nw1V'])','$($request['Nw2D'])','$($request['Nw2V'])','$($request['Nw2S'])','$($request['Nw2G'])','$loc','$ver','$($request['vpnu'])','$($request['vpnp'])','$($request['vpnur'])','$InstallSSP','$DemoLab','$EnableFlow','$DemoXenDeskT','$backup','$InstallEra','$InstallFrame','$move','$xray','$buckets','$UpdateAOS','$DemoExchange','$installKarbon','$DemoIISXPlay','$InstallFiles','$Splunk','$HcV','$1CD','$Slackbot','$bpp','$($request['cvmips'])','$destroy','$3TLamp','$($request['pcsidebin'])','$($request['pcsidemeta'])')"
+    
+    $SQLQueryOutput = Invoke-Sqlcmd -query $SQLQuery -ServerInstance $SQLInstance 
+
+
+  
+
+  
+%>
+
+       <h1>Results</h1>
+      <pre>
+<%
+  Validate-QueueItem -Scanuuid $Guid -debug:2 -processingmode "SCAN" %> 
+      </pre>
+            <meta http-equiv="refresh" content="7; Queued.ps1x" />
+<%
+} else { 
+  if ($request['IP'] -ne $null){  
+    $pcv = $request['PCV']
+    $loc = $request['loc']
+    $ver = $request['ver']
+%>
+        <h1>Edit Queue Item</h1><br>
+<% 
+  } else { 
+    $pcv = "Latest"
+    if ($portable -eq 1){
+      $imagesize = (( get-childitem "$($Frontend)\data" | measure-object -sum length).sum /1024)/1024
+      if ($Imagesize -ge 1000){
+        $loc = "Local"
+      } else {
+        $loc = "www"
+      }
+      
+    } else {
+      $loc = "www"
+    }
+    
+    $ver = "AOS"
+
+
+%>
+
+        <h1>New Queue Item</h1><br>
+<% 
+} 
+
+
+%>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#chkPassport").click(function () {
+            if ($(this).is(":checked")) {
+                $("#dvPassport").show();
+            } else {
+                $("#dvPassport").hide();
+            }
+        });
+    });
+</script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#chkPassport2").click(function () {
+            if ($(this).is(":checked")) {
+                $("#dvPassport2").show();
+            } else {
+                $("#dvPassport2").hide();
+            }
+        });
+    });
+</script>
+<% if ($portable -eq 0) {%>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <a href=" " title="Enables slackbot messages, default is off, which means normal messages." style="background-color:#FFFFFF;color:#000000;text-decoration:none"><b>Enable Slackbot</b></a>
+      &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['slk'] -eq "on"){  %>
+        <input type=Checkbox name="slk" size="40" checked="on" >  
+      <% } else {  %>
+        <input type=Checkbox name="slk" size="40"   />    
+      <% } %>
+      
+<% } %>
+
+<label for="chkPassport">
+   <b>Show Advanced Settings? &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</b><input type="checkbox" id="chkPassport" />
+</label>
+
+<hr />
+
+  <% $PCMODE = $request['pcm'] %>
+
+
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Poc Name:  </b><img src="./images/info.jfif" height="254" width="25" align ="Right" title="6 Chars Max, no spaces or special characters. eg 'POC123'"/><input type=text name="pocname" size="40" value="<%=$request['pocname'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Prism Element Cluster IP Address:</b><img src="./images/info.jfif" height="254" width="25" align ="Right" title="IP Address of your PE Cluster e.g. '10.10.0.10', This has to be the last IP used in the subnet. all services deployed will be using IPaddresses higher then this number."/>  <input type=text name="IP" size="40" value="<% $request['IP'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Gateway:</b><img src="./images/info.jfif" height="254" width="25" title="Gateway your PE Cluster e.g. '10.10.0.1'." align ="Right"/></a>  <input type=text name="GW" size="40" value="<%=$request['GW']%>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>SubnetMask:</b><img src="./images/info.jfif" title="The Subnet mask of the PE cluster eg 255.255.255.128, subnet needs 64 hosts absolute minimal" height="254" width="25" align ="Right"/>  <input type=text name="Sub" size="40" value="<%=$request['Sub']%>"  /><br>
+
+        <% 
+  if ($request['IP'] -ne $null){  
+%>      
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>VLAN: </b><img src="./images/info.jfif" height="254" width="25" title="VLAN ID Integer Only eg 1 or 0" align ="Right"/> <input type=text name="Nw1V" size="40" value="<%=$request['Nw1V']%>" Readonly  /><br>
+<%  
+  } else {
+%>  
+       <form method="GET" action="" enctype="multipart/form-data">
+       <b>VLAN: </b><img src="./images/info.jfif" height="254" width="25" title="VLAN ID Integer Only eg 1 or 0" align ="Right"/> <input type=text name="Nw1V" size="40" value="<%=$request['Nw1V']%>"  /><br>
+<%  
+}
+%> 
+
+
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>DNS Server:</b><img src="./images/info.jfif" height="254" width="25" title="DNS Server, just one e.g. '4.4.4.4'." align ="Right"/><input type=text name="dns" size="40" value="<%=$request['dns']%>"  /><br>
+<% 
+  if ($request['IP'] -ne $null){  
+%>      
+
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>SenderName:</b><img src="./images/info.jfif" height="254" width="25" title="Sender name First<space>Middle<space>Last eg 'William Bradley Pitt'." align ="Right"/><input type=text name="sdn" size="40" value="<%=$request['sdn']%>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+       <b>SenderEMail:</b><img src="./images/info.jfif" height="254" width="25" title="Sender Email, no spaces eg 'William.Bradley.Pitt@nutanix.com'." align ="Right"/><input type=text name="sde" size="40" value="<%=$request['sde']%>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Prism Element Admin: </b><img src="./images/info.jfif" height="254" width="25" title="Username for PE admin e.g. 'admin'." align ="Right"/><input type=text name="pea" size="40" value="<%=$request['pea']%>"  /><br>
+<%  
+  } else {
+%>  
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>SenderName:</b><img src="./images/info.jfif" height="254" width="25" title="Sender name First<space>Middle<space>Last eg 'William Bradley Pitt'." align ="Right"/><input type=text name="sdn" size="40" value="<%=$sendername%>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+       <b>SenderEMail:</b><img src="./images/info.jfif" height="254" width="25" title="Sender Email, no spaces eg 'William.Bradley.Pitt@nutanix.com'." align ="Right"/><input type=text name="sde" size="40" value="<%=$user%>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Prism Element Admin: </b><img src="./images/info.jfif" height="254" width="25" title="Username for PE admin e.g. 'admin'." align ="Right"/><input type=text name="pea" size="40" value="admin"  /><br>
+<%  
+}
+%> 
+
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Prism Element Pass: </b><img src="./images/info.jfif" height="254" width="25" title="Password for PE Admin, use the desired password if still detault. Password must meet normal PE complexity requirements 'nx2Tech530!'." align ="Right"/><input type=password name="pep" size="40" value="<%=$request['pep']%>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+<% 
+  if ($request['IP'] -ne $null){  
+%>        
+        <b>Prism Central Node count: </b><img src="./images/info.jfif" height="254" width="25" title="1 or 3, certain features like XPlay or Karbon will overrule this seeting" align ="Right"/><input type=text name="pcm" size="40" value="<%=$PCmode%>"  /><br>
+<%  
+  } else {
+%>  
+       <b>Prism Central Node count: </b><img src="./images/info.jfif" height="254" width="25" title="1 or 3, certain features like XPlay or Karbon will overrule this seeting" align ="Right"/><input type=text name="pcm" size="40"        value="3"  /><br>
+<%  
+}
+%> 
+<div id="dvPassport" style="display: none">
+
+
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>CVM IPs (optional, only used for destroy): </b><img src="./images/info.jfif" height="254" width="25" title="Comma separated list, no spaces. This is only required if you want to use the destroy feature." align ="Right"/><input type=text name="cvmips" size="40" value="<%=$request['cvmips'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>VPN User (optional): </b><img src="./images/info.jfif" height="254" width="25" title="This is only required for offsite or external hosting, leave blanc." align ="Right"/><input type=text name="vpnu" size="40" value="<%=$request['vpnu'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>VPN Pass (optional): </b><img src="./images/info.jfif" height="254" width="25" title="This is only required for offsite or external hosting, leave blanc." align ="Right"/><input type=password name="vpnp" size="40" value="<%=$request['vpnp'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>VPN URL (optional): </b><img src="./images/info.jfif" height="254" width="25" title="This is only required for offsite or external hosting, leave blanc." align ="Right"/><input type=text name="vpnur" size="40" value="<%= $request['vpnur'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>PC Sideload URL - Binary (optional): </b><img src="./images/info.jfif" height="254" width="25" title="Designed to be used with endor, support employees" align ="Right"/><input type=text name="pcsidebin" size="40" value="<%= $request['pcsidebin'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>PC Sideload URL - Meta (optional): </b><img src="./images/info.jfif" height="254" width="25" title="Designed to be used with endor, support employees" align ="Right"/><input type=text name="pcsidemeta" size="40" value="<%= $request['pcsidemeta'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Network2 VLAN: </b><img src="./images/info.jfif" height="254" width="25" title="Secondary Network to provision, (optional), specify VLAN Integrer." align ="Right"/><input type=text name="Nw2V" size="40" value="<%= $request['Nw2V'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">        
+        <b>Network2 starting IP: </b><img src="./images/info.jfif" height="254" width="25" title="First IP in the second VLAN (optional)" align ="Right"/><input type=text name="Nw2D" size="40" value="<%= $request['Nw2D'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Network2 Gateway:  </b><img src="./images/info.jfif" height="254" width="25" title="Gateway for the second VLAN (optional) eg '10.10.0.1'" align ="Right"/><input type=text name="Nw2G" size="40" value="<%= $request['Nw2G'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+        <b>Network2 SubnetMask: </b><img src="./images/info.jfif" height="254" width="25" title="Subnet Mask for the second VLAN (optional) eg '255.255.255.128'" align ="Right"/><input type=text name="Nw2S" size="40" value="<%= $request['Nw2S'] %>"  /><br>
+      <form method="GET" action="" enctype="multipart/form-data">
+       <b>Payload Source: </b><img src="./images/info.jfif" height="254" width="25" title="Clear field to select a different region, this causes local image sources to be used. Used for NONE HPOC systems in our office. Use US for most cases. HPOC systems will overrule this setting. Use Local for portable mode or www for Online Portable mode" align ="Right"/> </a><input list="regions" name="loc" size="40" value="<%= $loc %>"  /><br>
+         <datalist id="regions">
+           <option value="www">
+           <option value="hpoc"> 
+           <option value="Local">         
+           </datalist> 
+        <b>Latest Version source: </b><img src="./images/info.jfif" title="Not Implemented" height="254" width="25" align ="Right"/><input list="sources" name="ver" size="40" value="<%=$ver%>"  /><br>
+         <datalist id="sources">
+           <option value="Portal">
+           <option value="AOS">          
+           </datalist> 
+        <b>Debug Level: </b><img src="./images/info.jfif" title="Sets debug level, this is for dev use only. Higher than 1 will not autostart." height="254" width="25" align ="Right"/><input list="debuglevel" name="dbg" size="40" value="<%=$request['dbg']%>"  /><br>
+         <datalist id="debuglevel">
+           <option value="1">
+           <option value="2">    
+           <option value="3">        
+           </datalist> 
+<% 
+  if ($request['IP'] -ne $null){  
+%>  
+    <b>Entry Guid: </b><img src="./images/info.jfif" height="254" width="25" title="Unique ID for this request, cannot be edited." align ="Right"/><input type=text name="guid" size="40" value="<%=$request['guid']%>" Readonly /><br>
+   
+<% 
+  } else { 
+  $Guid = ([guid]::newguid()).guid
+%>
+    
+     <b>Entry G.uid: </b><img src="./images/info.jfif" height="254" width="25" title="Unique ID for this request, cannot be edited." align ="Right"/><input type=text name="guid" size="40" value="<% $($guid) %>" Readonly /><br>
+<% 
+  } 
+
+
+%>
+
+         
+      <form method="GET" action="" enctype="multipart/form-data">
+      <form method="GET" action="" enctype="multipart/form-data">
+         <b>Prism Central Version: </b><img src="./images/info.jfif" height="254" width="25" title="Clear to select others. Specify the exact version if desired. Keep in mind that this might result in incompatible AOS combos. use wisely" align ="Right"/><input list="pcv" name="PCV" size="40" value="<%=$pcv%>"  /><br>
+           <datalist id="pcv">
+             <option value="Latest"
+             <option value="5.10.2">
+             <option value="5.10.1">
+             <option value="5.10.0.1">
+             <option value="5.9.2">
+             <option value="5.9.1">
+           </datalist> 
+        <br>   
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Enable BluePrint Backups:</b><img src="./images/info.jfif" height="254" width="25"  title="Creates a backup for the first 50 blueprints stored in CALM, credentials are not included.
+Backups are created every 15 minutes, and kept for 30 days, after 30 days only the last version is kept. 
+Use the restore page on this website to select the next restorepoint. "  align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['backup'] -eq "on"){  %>
+           <input type=Checkbox name="backup" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="backup" size="40" checked="on"  />       
+      <% } %>
+      <br>     
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Enable FLOW:</b><img src="./images/info.jfif" height="254" width="25"  title="Simply Enables Flow, no rules are imported or applied."  align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['Flow'] -eq "on"){  %>
+           <input type=Checkbox name="Flow" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="Flow" size="40"  checked="on"  />      
+      <% } %>
+      <br>
+      <b><font color="red">WARNING</font>: Destroy Cluster:</b><img src="./images/info.jfif" height="254" width="25"  title="Destroys the cluster prior recreating, dataloss guaranteed"  align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['destroy'] -eq "on"){  %>
+           <input type=Checkbox name="destroy" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="destroy" size="40"  />      
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Karbon:</b> <img src="./images/info.jfif" height="254" width="25" title="Enables Karbon, Auto updates through LCM
+Downloads the images and creates a production cluster." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['Kar'] -eq "on"){  %>
+           <input type=Checkbox name="Kar" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="Kar" size="40"  checked="on"  />    
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Upgrade AOS:</b><img src="./images/info.jfif" height="254" width="25"  title="Upgrades to the latest AOS Version, This feature is autoenabled on unsupported AOS versions. And recommended left disabled for demo`s"  align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['UpAOS'] -eq "on"){  %>
+           <input type=Checkbox name="UpAOS" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="UpAOS" size="40"/>       
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install X-Ray:</b><img src="./images/info.jfif" height="254" width="25"  title="Installs XRay, Resets the password and accepts the EULA"  align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['xray'] -eq "on"){  %>
+           <input type=Checkbox name="xray" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="xray" size="40" checked="on"/>       
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install ERA Demos:</b><img src="./images/info.jfif" height="254" width="25" title="Installs 6 ERA databases and 5 different Servers, including 3 clones. 
+MSSQL, Oracle, Maria and PostGres all configured and ready to demo, zero touch
+Self Service Portal Blueprint By Michael Haigh.
+Supported by the ERA Engineering Team
+" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['ERA'] -eq "on"){  %>
+           <input type=Checkbox name="ERA" size="40"  checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="ERA" size="40"  checked="on" />        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Move:</b><img src="./images/info.jfif" height="254" width="25" title="Installs Move, sets IP, registers ELA and sets password, Credits to John Woods." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['Move'] -eq "on"){  %>
+           <input type=Checkbox name="Move" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="Move" size="40"  checked="on"  />        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Exchange:</b><img src="./images/info.jfif" height="254"  title="Not Implemented, Installs Exchange Blueprint and fires the blueprint to build an Exchange ENV." width="25" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['XCH'] -eq "on"){  %>
+           <input type=Checkbox name="XCH" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="XCH" size="40" />        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Files And Shares:</b><img src="./images/info.jfif" height="254" width="25" title="Installs a 3 node file server cluster, Domain Joined with 3 Shares, userhome, public and department" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['FS'] -eq "on"){  %>
+           <input type=Checkbox name="FS" size="40"  checked="on" />
+      <% } else {  %>
+           <input type=Checkbox name="FS" size="40"   checked="on" / >        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install XenDesktop Demo:</b><img src="./images/info.jfif" height="254" width="25" title="Not Implemented, Installs a fully deployed XenDesktop, including the compilation of the boot image, ready for bootstorm demo" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['XD'] -eq "on"){  %>
+           <input type=Checkbox name="XD" size="40" checked="on" />
+      <% } else {  %>
+           <input type=Checkbox name="XD" size="40"  / >        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Xplay IIS Autoscale Demo:</b><img src="./images/info.jfif" height="254" width="25" title="Installs a Full IIS / XPlay demo using calm blueprints, Playbook, Alert Policy all created and ready to go, just generate CPU load on the IIS Webserver and see XPlay scale horizontally with CALM" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['IXP'] -eq "on"){  %>
+           <input type=Checkbox name="IXP" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="IXP" size="40"  checked="on"  / >        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Workshop Settings:</b><img src="./images/info.jfif" height="254" width="25" title="Sets the build to the banner and Color coding like the Workshop by Mark Lavi." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['Lab'] -eq "on"){  %>
+           <input type=Checkbox name="Lab" size="40" align="Right" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="Lab" size="40" align="Right" />        
+      <% } %>
+      <br>
+
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install SSP Settings:</b><img src="./images/info.jfif" height="254" width="25" title="Creates 3 projects with users and Admins linked to AD, in a multi-tentant setup." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['ssp'] -eq "on"){  %>
+           <input type=Checkbox name="ssp" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="ssp" size="40" checked="on"  />        
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Splunk:</b><img src="./images/info.jfif" height="254" width="25" title="Installs the Splunk Blueprint from the Nutanix Master Github Repo." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['Splunk'] -eq "on"){  %>
+           <input type=Checkbox name="Splunk" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="Splunk" size="40" checked="on" />        
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install HashiCorpVault:</b><img src="./images/info.jfif" height="254" width="25" title="Installs the HashiCorpVault Blueprint from the Nutanix Master Github Repo." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['HcV'] -eq "on"){  %>
+           <input type=Checkbox name="HcV" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="HcV" size="40" checked="on"  />
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install 1 Click Demo Portable Edition:</b><img src="./images/info.jfif" height="254" width="25" title="Installs 1 Click Demo Portable edition blueprint." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['1CD'] -eq "on"){  %>
+           <input type=Checkbox name="1CD" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="1CD" size="40" checked="on"  />    
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install a 3 Tier Lamp App:</b><img src="./images/info.jfif" height="254" width="25" title="Installs the 3 tier Lamp blueprint by Adrian Lucio." align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['3TLamp'] -eq "on"){  %>
+           <input type=Checkbox name="3TLamp" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="3TLamp" size="40" checked="on"  />    
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install BluePrint Pack:</b><img src="./images/info.jfif" height="254" width="25" title="Installs the blueprints from https://github.com/pipoe2h/gtsx2019 GTS 2019 EMEA Calmers. (In dev)" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['bpp'] -eq "on"){  %>
+           <input type=Checkbox name="bpp" size="40" checked="on"  />
+      <% } else {  %>
+           <input type=Checkbox name="bpp" size="40" checked="on"  >        
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Frame OnPrem:</b><img src="./images/info.jfif" height="254" width="25" title="Installs Frame OnPrem, requires SE Frame Account. (In dev)" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['frame'] -eq "on"){  %>
+           <input type=Checkbox name="frame" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="frame" size="40" >        
+      <% } %>
+      <br>
+      <form method="GET" action="" enctype="multipart/form-data">
+      <b>Install Objects:</b><img src="./images/info.jfif" height="254" width="25" title="Installs Objects" align ="Right"/>
+      <br>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+      <% if ($request['objects'] -eq "on"){  %>
+           <input type=Checkbox name="objects" size="40" checked="on"   />
+      <% } else {  %>
+           <input type=Checkbox name="objects" size="40" checked="on"  >        
+      <% } %>
+      <br>
+</div>
+<br><br>
+
+        <br><br>
+           By selecting agree, you are accepting the risks of dataloss and EULA customer acceptance.<br><br>
+           <form method="GET" action="" enctype="multipart/form-data">
+           <b>Agree:</b>&nbsp <input type=Checkbox name="Agree" size="40"  />
+        <br><br>
+          <%     $editURL= "EditQueue.ps1x" %>
+        <input type=submit value="Submit" onclick="window.location.href='<%= $editURL %>'" />
+      </form>
+    <% } %>
+
+        </li>
+
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</body>
+
+ 

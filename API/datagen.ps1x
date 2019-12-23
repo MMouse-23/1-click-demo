@@ -1,0 +1,46 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\Logging"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLOptionsTableName   = "QueueInfo"
+$global:debug=1
+$ModuleDir                    = "C:\1-click-demo\Modules\"
+Import-Module "$($ModuleDir)\Queue\Get-IncommingQueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Validate-QueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-Spawn-Base.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-PortableMode.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-Send-Confirmation.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Config-DetailedDataSet.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Write-Log.psm1" -DisableNameChecking;
+$time = (get-date).addhours(-72)
+if ($request.RequestType -eq "GET"){
+  $response.StatusCode = 405
+  $response.StatusDescription = "Only Post Methods are allowed here."
+} elseif ($request.RequestType -eq "POST"){
+  $json = (new-Object System.IO.StreamReader @($Request.InputStream, [System.Text.Encoding]::UTF8)).ReadToEnd()
+  $QueueUUIDobj = $json | convertfrom-json
+  $QueueUUID = $QueueUUIDobj.QueueUUID
+  $Statobjects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataGenTableName) WHERE QueueUUID = '$QueueUUID'";
+  $Statobjects | select QueueUUID,BuildAccount,ERAAPIAccount,MoveAPIAccount,DataServicesIP,PCClusterIP,PCNode1IP,PCnode2IP,PCnode3IP,PCNode1Name,PCNode2Name,PCNode3Name,ERA1Name,ERA1IP,DC1IP,DC2IP,DC1Name,DC2Name,Domainname,Nw1name,Nw2name,MoveIP,Move_ImageName,Move_VMName,XRayIP,XRay_ImageName,XRay_VMName,DC_ImageName,ERA_ImageName,ERA_MSSQLIP,ERA_MSSQLName,ERA_MSSQLImage,ERA_MariaName,ERA_PostGName,EraContainerName,Oracle1_0Image,Oracle1_1Image,Oracle1_2Image,OracleIP,Oracle_VMName,KarbonContainerName,KarbonIP,SysprepPassword,SENAME,SEROLE,SESlackID,SEUPN,SECompany,EnablePulse,XRayVersion,MoveVersion,Filesversion,CALMversion,Karbonversion,Objectsversion,ERAVersion,NCCVersion,Files1_ImageName,Files2_ImageName,Files2IP,Files2VM_Name,FS1_IntName,FS1_ExtName,FS1IntRange,FS1ExtRange,NW1DHCPStart,StoragePoolName,ImagesContainerName,DisksContainerName,NTPServer1,NTPServer2,NTPServer3,NTPServer4,smtpSender,smtpport,smtpServer,IISNLBIP,Supportemail,PrivateKey,PublicKey,AvailableAOSVersion,ERA_MySQLName,Frame_WinImage,Frame_CCAISO,Frame_AgentISO,Frame_GoldenVMName,Oracle1_3Image,Oracle1_4Image,Oracle1_5Image,Oracle1_6Image,Frame_GoldenVMIP,PCSideLoadImage,ObjectsExtRange,ObjectsIntRange,Analyticsversion,Mgmt1_VMname,Mgmt1_VMIP,Mgmt1_ImageName,Oracle1_7Image,Oracle1_8Image,Oracle1_9Image,WinTemplateIP,LinTemplateIP,XPlay2012IP,SplunkIP,SplunkName,SplunkImage | convertto-json
+} else {
+  $response.StatusCode = 405
+  $response.StatusDescription = "Only Post Methods are allowed here."
+}
+%>  

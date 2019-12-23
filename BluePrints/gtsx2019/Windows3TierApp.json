@@ -1,0 +1,1156 @@
+{
+	"spec": {
+		"description": "* [BugNET](http:\/\/@@{MSIIS.address}@@\/bugnet)",
+		"resources": {
+			"client_attrs": {
+				"cb490bc3_deployment": {
+					"y": -144,
+					"x": 198.75
+				},
+				"49669086_deployment": {
+					"y": -156,
+					"x": -157
+				}
+			},
+			"service_definition_list": [{
+				"singleton": false,
+				"action_list": [{
+					"description": "System action for creating an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "030017c3_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "5730e30f_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "030017c3_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_create"
+				}, {
+					"description": "System action for deleting an application. Deletes created VMs as well",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "6f5f997d_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "b01e7edf_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "6f5f997d_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_delete"
+				}, {
+					"description": "System action for starting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "c2b90e7d_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "0263f5a9_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "c2b90e7d_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_start"
+				}, {
+					"description": "System action for stopping an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "00b1cc9f_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "8aadc288_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "00b1cc9f_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_stop"
+				}, {
+					"description": "System action for restarting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "6c4b7c3b_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "a059f54d_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "6c4b7c3b_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_restart"
+				}],
+				"depends_on_list": [],
+				"name": "MSSQL",
+				"port_list": [],
+				"tier": "",
+				"variable_list": [],
+				"description": ""
+			}, {
+				"singleton": false,
+				"action_list": [{
+					"description": "System action for creating an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "a32eb7e1_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "246edeae_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "a32eb7e1_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_create"
+				}, {
+					"description": "System action for deleting an application. Deletes created VMs as well",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "50f354bf_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "4d3b43a7_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "50f354bf_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_delete"
+				}, {
+					"description": "System action for starting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "dc4eef9b_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "2388da62_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "dc4eef9b_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_start"
+				}, {
+					"description": "System action for stopping an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "b49dadd5_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "d4076a29_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "b49dadd5_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_stop"
+				}, {
+					"description": "System action for restarting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "64282cdb_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "65a2d304_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "64282cdb_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_restart"
+				}],
+				"depends_on_list": [{
+					"kind": "app_service",
+					"name": "MSSQL"
+				}],
+				"name": "MSIIS",
+				"port_list": [],
+				"tier": "",
+				"variable_list": [],
+				"description": ""
+			}],
+			"substrate_definition_list": [{
+				"description": "",
+				"action_list": [],
+				"type": "AHV_VM",
+				"name": "MSSQL2014",
+				"readiness_probe": {
+					"connection_type": "POWERSHELL",
+					"disable_readiness_probe": false,
+					"address": "@@{platform.status.resources.nic_list[0].ip_endpoint_list[0].ip}@@",
+					"delay_secs": "90",
+					"connection_port": 5985,
+					"login_credential_local_reference": {
+						"kind": "app_credential",
+						"name": "WIN_VM_CRED"
+					}
+				},
+				"editables": {
+					"create_spec": {
+						"resources": {
+							"nic_list": {},
+							"serial_port_list": {},
+							"disk_list": {}
+						}
+					}
+				},
+				"os_type": "Windows",
+				"create_spec": {
+					"name": "MSSQL-@@{calm_unique}@@",
+					"resources": {
+						"nic_list": [{
+							"nic_type": "NORMAL_NIC",
+							"ip_endpoint_list": [],
+							"network_function_chain_reference": null,
+							"network_function_nic_type": "INGRESS",
+							"mac_address": "",
+							"subnet_reference": {
+								"kind": "subnet",
+								"type": "",
+								"name": "",
+								"uuid": "4af5f38a-7ffa-4e02-872d-e2a8d3f0aef6"
+							},
+							"type": ""
+						}],
+						"serial_port_list": [],
+						"guest_tools": null,
+						"num_vcpus_per_socket": 2,
+						"num_sockets": 2,
+						"gpu_list": [],
+						"memory_size_mib": 6144,
+						"parent_reference": null,
+						"hardware_clock_timezone": "",
+						"guest_customization": {
+							"cloud_init": null,
+							"type": "",
+							"sysprep": {
+								"install_type": "PREPARED",
+								"unattend_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<unattend xmlns=\"urn:schemas-microsoft-com:unattend\">\n   <settings pass=\"specialize\">\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <ComputerName>@@{name}@@<\/ComputerName>\n         <RegisteredOrganization>Nutanix<\/RegisteredOrganization>\n         <RegisteredOwner>Acropolis<\/RegisteredOwner>\n         <TimeZone>UTC<\/TimeZone>\n      <\/component>\n      <component xmlns=\"\" name=\"Microsoft-Windows-TerminalServices-LocalSessionManager\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" processorArchitecture=\"amd64\">\n         <fDenyTSConnections>false<\/fDenyTSConnections>\n      <\/component>\n      <component xmlns=\"\" name=\"Microsoft-Windows-TerminalServices-RDP-WinStationExtensions\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" processorArchitecture=\"amd64\">\n         <UserAuthentication>0<\/UserAuthentication>\n      <\/component>\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Networking-MPSSVC-Svc\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <FirewallGroups>\n            <FirewallGroup wcm:action=\"add\" wcm:keyValue=\"RemoteDesktop\">\n               <Active>true<\/Active>\n               <Profile>all<\/Profile>\n               <Group>@FirewallAPI.dll,-28752<\/Group>\n            <\/FirewallGroup>\n         <\/FirewallGroups>\n      <\/component>\n   <\/settings>\n   <settings pass=\"oobeSystem\">\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <UserAccounts>\n            <AdministratorPassword>\n               <Value>@@{WIN_VM_CRED.secret}@@<\/Value>\n               <PlainText>true<\/PlainText>\n            <\/AdministratorPassword>\n         <\/UserAccounts>\n         <AutoLogon>\n            <Password>\n               <Value>@@{WIN_VM_CRED.secret}@@<\/Value>\n               <PlainText>true<\/PlainText>\n            <\/Password>\n            <Enabled>true<\/Enabled>\n            <Username>Administrator<\/Username>\n         <\/AutoLogon>\n         <FirstLogonCommands>\n            <SynchronousCommand wcm:action=\"add\">\n               <CommandLine>cmd.exe \/c netsh firewall add portopening TCP 5985 \"Port 5985\"<\/CommandLine>\n               <Description>Win RM port open<\/Description>\n               <Order>1<\/Order>\n               <RequiresUserInput>true<\/RequiresUserInput>\n            <\/SynchronousCommand>\n            <SynchronousCommand wcm:action=\"add\">\n               <CommandLine>powershell -Command \"Enable-PSRemoting -SkipNetworkProfileCheck -Force\"<\/CommandLine>\n               <Description>Enable PS-Remoting<\/Description>\n               <Order>2<\/Order>\n               <RequiresUserInput>true<\/RequiresUserInput>\n            <\/SynchronousCommand>\n            <SynchronousCommand wcm:action=\"add\">\n               <CommandLine>powershell -Command \"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned\"<\/CommandLine>\n               <Description>Enable Remote-Signing<\/Description>\n               <Order>3<\/Order>\n               <RequiresUserInput>false<\/RequiresUserInput>\n            <\/SynchronousCommand>\n         <\/FirstLogonCommands>\n         <OOBE>\n            <HideEULAPage>true<\/HideEULAPage>\n            <SkipMachineOOBE>true<\/SkipMachineOOBE>\n         <\/OOBE>\n      <\/component>\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Microsoft-Windows-International-Core\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <InputLocale>en-US<\/InputLocale>\n         <SystemLocale>en-US<\/SystemLocale>\n         <UILanguageFallback>en-us<\/UILanguageFallback>\n         <UILanguage>en-US<\/UILanguage>\n         <UserLocale>en-US<\/UserLocale>\n      <\/component>\n   <\/settings>\n<\/unattend>",
+								"type": ""
+							}
+						},
+						"power_state": "ON",
+						"type": "",
+						"boot_config": {
+							"boot_device": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 0,
+									"adapter_type": "SCSI"
+								}
+							},
+							"type": "",
+							"mac_address": ""
+						},
+						"disk_list": [{
+							"data_source_reference": {
+								"kind": "image",
+								"type": "",
+								"name": "Windows2012R2",
+								"uuid": "4c1e2a35-6fac-434e-b1d0-6e41ba2938be"
+							},
+							"type": "",
+							"disk_size_mib": 0,
+							"volume_group_reference": null,
+							"device_properties": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 0,
+									"adapter_type": "SCSI"
+								},
+								"device_type": "DISK"
+							}
+						}, {
+							"data_source_reference": {
+								"kind": "app_package",
+								"type": "",
+								"name": "MSSQL2014",
+								"uuid": "a364e480-94b1-0f39-1e5b-44b8676b146c"
+							},
+							"type": "",
+							"disk_size_mib": 0,
+							"volume_group_reference": null,
+							"device_properties": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 0,
+									"adapter_type": "IDE"
+								},
+								"device_type": "CDROM"
+							}
+						}, {
+							"data_source_reference": null,
+							"type": "",
+							"disk_size_mib": 102400,
+							"volume_group_reference": null,
+							"device_properties": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 1,
+									"adapter_type": "SCSI"
+								},
+								"device_type": "DISK"
+							}
+						}]
+					},
+					"availability_zone_reference": null,
+					"backup_policy": null,
+					"type": "",
+					"cluster_reference": null,
+					"categories": ""
+				},
+				"variable_list": []
+			}, {
+				"description": "",
+				"action_list": [],
+				"type": "AHV_VM",
+				"name": "MSIIS8",
+				"readiness_probe": {
+					"connection_type": "POWERSHELL",
+					"disable_readiness_probe": false,
+					"address": "@@{platform.status.resources.nic_list[0].ip_endpoint_list[0].ip}@@",
+					"delay_secs": "90",
+					"connection_port": 5985,
+					"login_credential_local_reference": {
+						"kind": "app_credential",
+						"name": "WIN_VM_CRED"
+					}
+				},
+				"editables": {
+					"create_spec": {
+						"resources": {
+							"nic_list": {},
+							"serial_port_list": {},
+							"disk_list": {}
+						}
+					}
+				},
+				"os_type": "Windows",
+				"create_spec": {
+					"name": "MSIIS-@@{calm_unique}@@",
+					"resources": {
+						"nic_list": [{
+							"nic_type": "NORMAL_NIC",
+							"ip_endpoint_list": [],
+							"network_function_chain_reference": null,
+							"network_function_nic_type": "INGRESS",
+							"mac_address": "",
+							"subnet_reference": {
+								"kind": "subnet",
+								"type": "",
+								"name": "",
+								"uuid": "4af5f38a-7ffa-4e02-872d-e2a8d3f0aef6"
+							},
+							"type": ""
+						}],
+						"serial_port_list": [],
+						"guest_tools": null,
+						"num_vcpus_per_socket": 2,
+						"num_sockets": 2,
+						"gpu_list": [],
+						"memory_size_mib": 6144,
+						"parent_reference": null,
+						"hardware_clock_timezone": "",
+						"guest_customization": {
+							"cloud_init": null,
+							"type": "",
+							"sysprep": {
+								"install_type": "PREPARED",
+								"unattend_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<unattend xmlns=\"urn:schemas-microsoft-com:unattend\">\n   <settings pass=\"specialize\">\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <ComputerName>@@{name}@@<\/ComputerName>\n         <RegisteredOrganization>Nutanix<\/RegisteredOrganization>\n         <RegisteredOwner>Acropolis<\/RegisteredOwner>\n         <TimeZone>UTC<\/TimeZone>\n      <\/component>\n      <component xmlns=\"\" name=\"Microsoft-Windows-TerminalServices-LocalSessionManager\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" processorArchitecture=\"amd64\">\n         <fDenyTSConnections>false<\/fDenyTSConnections>\n      <\/component>\n      <component xmlns=\"\" name=\"Microsoft-Windows-TerminalServices-RDP-WinStationExtensions\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" processorArchitecture=\"amd64\">\n         <UserAuthentication>0<\/UserAuthentication>\n      <\/component>\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Networking-MPSSVC-Svc\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <FirewallGroups>\n            <FirewallGroup wcm:action=\"add\" wcm:keyValue=\"RemoteDesktop\">\n               <Active>true<\/Active>\n               <Profile>all<\/Profile>\n               <Group>@FirewallAPI.dll,-28752<\/Group>\n            <\/FirewallGroup>\n         <\/FirewallGroups>\n      <\/component>\n   <\/settings>\n   <settings pass=\"oobeSystem\">\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <UserAccounts>\n            <AdministratorPassword>\n               <Value>@@{WIN_VM_CRED.secret}@@<\/Value>\n               <PlainText>true<\/PlainText>\n            <\/AdministratorPassword>\n         <\/UserAccounts>\n         <AutoLogon>\n            <Password>\n               <Value>@@{WIN_VM_CRED.secret}@@<\/Value>\n               <PlainText>true<\/PlainText>\n            <\/Password>\n            <Enabled>true<\/Enabled>\n            <Username>Administrator<\/Username>\n         <\/AutoLogon>\n         <FirstLogonCommands>\n            <SynchronousCommand wcm:action=\"add\">\n               <CommandLine>cmd.exe \/c netsh firewall add portopening TCP 5985 \"Port 5985\"<\/CommandLine>\n               <Description>Win RM port open<\/Description>\n               <Order>1<\/Order>\n               <RequiresUserInput>true<\/RequiresUserInput>\n            <\/SynchronousCommand>\n            <SynchronousCommand wcm:action=\"add\">\n               <CommandLine>powershell -Command \"Enable-PSRemoting -SkipNetworkProfileCheck -Force\"<\/CommandLine>\n               <Description>Enable PS-Remoting<\/Description>\n               <Order>2<\/Order>\n               <RequiresUserInput>true<\/RequiresUserInput>\n            <\/SynchronousCommand>\n            <SynchronousCommand wcm:action=\"add\">\n               <CommandLine>powershell -Command \"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned\"<\/CommandLine>\n               <Description>Enable Remote-Signing<\/Description>\n               <Order>3<\/Order>\n               <RequiresUserInput>false<\/RequiresUserInput>\n            <\/SynchronousCommand>\n         <\/FirstLogonCommands>\n         <OOBE>\n            <HideEULAPage>true<\/HideEULAPage>\n            <SkipMachineOOBE>true<\/SkipMachineOOBE>\n         <\/OOBE>\n      <\/component>\n      <component xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\" name=\"Microsoft-Windows-International-Core\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\">\n         <InputLocale>en-US<\/InputLocale>\n         <SystemLocale>en-US<\/SystemLocale>\n         <UILanguageFallback>en-us<\/UILanguageFallback>\n         <UILanguage>en-US<\/UILanguage>\n         <UserLocale>en-US<\/UserLocale>\n      <\/component>\n   <\/settings>\n<\/unattend>",
+								"type": ""
+							}
+						},
+						"power_state": "ON",
+						"type": "",
+						"boot_config": {
+							"boot_device": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 0,
+									"adapter_type": "SCSI"
+								}
+							},
+							"type": "",
+							"mac_address": ""
+						},
+						"disk_list": [{
+							"data_source_reference": {
+								"kind": "image",
+								"type": "",
+								"name": "Windows2012R2",
+								"uuid": "4c1e2a35-6fac-434e-b1d0-6e41ba2938be"
+							},
+							"type": "",
+							"disk_size_mib": 0,
+							"volume_group_reference": null,
+							"device_properties": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 0,
+									"adapter_type": "SCSI"
+								},
+								"device_type": "DISK"
+							}
+						}, {
+							"data_source_reference": null,
+							"type": "",
+							"disk_size_mib": 102400,
+							"volume_group_reference": null,
+							"device_properties": {
+								"type": "",
+								"disk_address": {
+									"type": "",
+									"device_index": 1,
+									"adapter_type": "SCSI"
+								},
+								"device_type": "DISK"
+							}
+						}]
+					},
+					"availability_zone_reference": null,
+					"backup_policy": null,
+					"type": "",
+					"cluster_reference": null,
+					"categories": ""
+				},
+				"variable_list": []
+			}],
+			"credential_definition_list": [{
+				"username": "administrator",
+				"description": "",
+				"type": "PASSWORD",
+				"secret": {
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {}
+					}
+				},
+				"name": "WIN_VM_CRED"
+			}, {
+				"username": "administrator",
+				"description": "",
+				"type": "PASSWORD",
+				"secret": {
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {}
+					}
+				},
+				"name": "SQL_CRED"
+			}],
+			"package_definition_list": [{
+				"description": "",
+				"action_list": [],
+				"type": "DEB",
+				"service_local_reference_list": [{
+					"kind": "app_service",
+					"name": "MSSQL"
+				}],
+				"name": "MSSQLPackage",
+				"version": "",
+				"options": {
+					"install_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "MSSQLPackage"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "InitializeDisk"
+							}, {
+								"kind": "app_task",
+								"name": "InstallMSSQL"
+							}, {
+								"kind": "app_task",
+								"name": "FirewallRules"
+							}],
+							"name": "87d54973_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [{
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "InitializeDisk"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "InstallMSSQL"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "InstallMSSQL"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "FirewallRules"
+									}
+								}],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "InitializeDisk",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "Get-Disk -Number 1 | Initialize-Disk -ErrorAction SilentlyContinue\nNew-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter -ErrorAction SilentlyContinue | Format-Volume -Confirm:$false\n",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "InstallMSSQL",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "$DriveLetter = $(Get-Partition -DiskNumber 1 -PartitionNumber 2 | select DriveLetter -ExpandProperty DriveLetter)\n$edition = \"Standard\"\n$HOSTNAME=$(hostname)\n$PackageName = \"MsSqlServer2014Standard\"\n$Prerequisites = \"Net-Framework-Core\"\n$silentArgs = \"\/IACCEPTSQLSERVERLICENSETERMS \/Q \/ACTION=install \/FEATURES=SQLENGINE,SSMS,ADV_SSMS,CONN,IS,BC,SDK,BOL \/SECURITYMODE=sql \/SAPWD=`\"@@{SQL_CRED.secret}@@`\" \/ASSYSADMINACCOUNTS=`\"@@{SQL_CRED.username}@@`\" \/SQLSYSADMINACCOUNTS=`\"@@{SQL_CRED.username}@@`\" \/INSTANCEID=MSSQLSERVER \/INSTANCENAME=MSSQLSERVER \/UPDATEENABLED=False \/INDICATEPROGRESS \/TCPENABLED=1 \/INSTALLSQLDATADIR=`\"${DriveLetter}:\\Microsoft SQL Server`\"\"\n$setupDriveLetter = \"D:\"\n$setupPath = \"$setupDriveLetter\\setup.exe\"\n$validExitCodes = @(0)\n\nif ($Prerequisites){\nInstall-WindowsFeature -IncludeAllSubFeature -ErrorAction Stop $Prerequisites\n}\n\nWrite-Output \"Installing $PackageName....\"\n\n$install = Start-Process -FilePath $setupPath -ArgumentList $silentArgs -Wait -NoNewWindow -PassThru\n$install.WaitForExit()\n\n$exitCode = $install.ExitCode\n$install.Dispose()\n\nWrite-Output \"Command [`\"$setupPath`\" $silentArgs] exited with `'$exitCode`'.\"\nif ($validExitCodes -notcontains $exitCode) {\nWrite-Output \"Running [`\"$setupPath`\" $silentArgs] was not successful. Exit code was '$exitCode'. See log for possible error messages.\"\nexit 1\n}",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSSQL"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "FirewallRules",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "New-NetFirewallRule -DisplayName \"SQL Server\" -Direction Inbound -Protocol TCP -LocalPort 1433 -Action allow\nNew-NetFirewallRule -DisplayName \"SQL Admin Connection\" -Direction Inbound -Protocol TCP -LocalPort 1434 -Action allow\nNew-NetFirewallRule -DisplayName \"SQL Database Management\" -Direction Inbound -Protocol UDP -LocalPort 1434 -Action allow\nNew-NetFirewallRule -DisplayName \"SQL Service Broker\" -Direction Inbound -Protocol TCP -LocalPort 4022 -Action allow\nNew-NetFirewallRule -DisplayName \"SQL Debugger\/RPC\" -Direction Inbound -Protocol TCP -LocalPort 135 -Action allow\nNew-NetFirewallRule -DisplayName \"SQL Browser\" -Direction Inbound -Protocol TCP -LocalPort 2382 -Action allow",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "b58c360f_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "87d54973_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					},
+					"type": "",
+					"uninstall_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "MSSQLPackage"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "c5e51cfd_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "8cc4ed37_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "c5e51cfd_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					}
+				},
+				"variable_list": []
+			}, {
+				"description": "",
+				"action_list": [],
+				"type": "DEB",
+				"service_local_reference_list": [{
+					"kind": "app_service",
+					"name": "MSIIS"
+				}],
+				"name": "MSIISPackage",
+				"version": "",
+				"options": {
+					"install_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "MSIISPackage"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "InitializeDisk"
+							}, {
+								"kind": "app_task",
+								"name": "InstallWebPI"
+							}, {
+								"kind": "app_task",
+								"name": "InstallNetFeatures"
+							}, {
+								"kind": "app_task",
+								"name": "InstallBugNetApp"
+							}],
+							"name": "a1381c2a_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [{
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "InitializeDisk"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "InstallWebPI"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "InstallWebPI"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "InstallNetFeatures"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "InstallNetFeatures"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "InstallBugNetApp"
+									}
+								}],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "InitializeDisk",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "Get-Disk -Number 1 | Initialize-Disk -ErrorAction SilentlyContinue\nNew-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter -ErrorAction SilentlyContinue | Format-Volume -Confirm:$false\n",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "InstallWebPI",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Install WPI\nNew-Item c:\/msi -Type Directory\nInvoke-WebRequest 'http:\/\/download.microsoft.com\/download\/C\/F\/F\/CFF3A0B8-99D4-41A2-AE1A-496C08BEB904\/WebPlatformInstaller_amd64_en-US.msi' -OutFile c:\/msi\/WebPlatformInstaller_amd64_en-US.msi\nStart-Process 'c:\/msi\/WebPlatformInstaller_amd64_en-US.msi' '\/qn' -PassThru | Wait-Process\ncd 'C:\/Program Files\/Microsoft\/Web Platform Installer'; .\\WebpiCmd.exe \/Install \/Products:'UrlRewrite2,ARRv3_0' \/AcceptEULA \/Log:c:\/msi\/WebpiCmd.log\n",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "InstallNetFeatures",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Enable Repair via Windows Update\n$servicing = \"HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\policies\\Servicing\"\nNew-Item -Path $servicing -Force\nSet-ItemProperty -Path $servicing -Name RepairContentServerSource -Value 2\n\n# Install Features\nInstall-WindowsFeature -Name NET-Framework-Core\nInstall-WindowsFeature -Name NET-WCF-Services45 -IncludeAllSubFeature\n",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "MSIIS"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "InstallBugNetApp",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Create the installation configuration file\n$configFile = \"AppPath[@]Default Web Site\/bugnet\nDbServer[@]@@{MSSQL.address}@@\nDbName[@]@@{DbName}@@\nDbUsername[@]@@{DbUsername}@@\nDatabase Password[@]@@{DbPassword}@@\nDbAdminUsername[@]sa\nDbAdminPassword[@]@@{SQL_CRED.secret}@@\"\n\necho $configFile >> BugNET0.app\n\n# Install the application via Web PI\nWebpiCmd-x64.exe \/Install \/UseRemoteDatabase \/Application:BugNET@BugNET0.app \/AcceptEula\n",
+								"script_type": "npsscript",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "WIN_VM_CRED"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "ebf1c608_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "a1381c2a_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					},
+					"type": "",
+					"uninstall_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "MSIISPackage"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "3cf4f8b3_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "52f56569_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "3cf4f8b3_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					}
+				},
+				"variable_list": []
+			}, {
+				"description": "",
+				"action_list": [],
+				"type": "SUBSTRATE_IMAGE",
+				"service_local_reference_list": [],
+				"name": "MSSQL2014_ISO",
+				"version": "",
+				"options": {
+					"type": "",
+					"name": "MSSQL2014.iso",
+					"resources": {
+						"image_type": "ISO_IMAGE",
+						"checksum": {
+							"checksum_algorithm": "",
+							"type": "",
+							"checksum_value": ""
+						},
+						"source_uri": "http:\/\/download.microsoft.com\/download\/7\/9\/F\/79F4584A-A957-436B-8534-3397F33790A6\/SQLServer2014SP3-FullSlipstream-x64-ENU.iso",
+						"version": {
+							"product_version": "2014",
+							"type": "",
+							"product_name": "MSSQL"
+						},
+						"architecture": "X86_64",
+						"type": ""
+					},
+					"description": ""
+				},
+				"variable_list": []
+			}],
+			"app_profile_list": [{
+				"deployment_create_list": [{
+					"type": "GREENFIELD",
+					"action_list": [],
+					"depends_on_list": [],
+					"name": "49669086_deployment",
+					"published_service_local_reference_list": [],
+					"max_replicas": "1",
+					"package_local_reference_list": [{
+						"kind": "app_package",
+						"name": "MSSQLPackage"
+					}],
+					"substrate_local_reference": {
+						"kind": "app_substrate",
+						"name": "MSSQL2014"
+					},
+					"min_replicas": "1",
+					"variable_list": [],
+					"description": ""
+				}, {
+					"type": "GREENFIELD",
+					"action_list": [],
+					"depends_on_list": [],
+					"name": "cb490bc3_deployment",
+					"published_service_local_reference_list": [],
+					"max_replicas": "1",
+					"package_local_reference_list": [{
+						"kind": "app_package",
+						"name": "MSIISPackage"
+					}],
+					"substrate_local_reference": {
+						"kind": "app_substrate",
+						"name": "MSIIS8"
+					},
+					"min_replicas": "1",
+					"variable_list": [],
+					"description": ""
+				}],
+				"description": "",
+				"action_list": [],
+				"name": "Default",
+				"variable_list": [{
+					"val_type": "STRING",
+					"description": "",
+					"name": "DbName",
+					"type": "LOCAL",
+					"value": "BugNET",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "DbUsername",
+					"type": "LOCAL",
+					"value": "BugNETUser",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "DbPassword",
+					"type": "SECRET",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {},
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}]
+			}],
+			"published_service_definition_list": [],
+			"default_credential_local_reference": {
+				"kind": "app_credential",
+				"name": "WIN_VM_CRED"
+			},
+			"type": "USER"
+		},
+		"name": "Demo-Windows-3Tier-Microsoft"
+	},
+	"api_version": "3.0",
+	"metadata": {
+		"last_update_time": "1546979547781905",
+		"kind": "blueprint",
+		"spec_version": 28,
+		"creation_time": "1546876820098792",
+		"name": "WindowsTieredApp",
+		"project_reference": {
+			"kind": "project",
+			"uuid": "---PROJECTREF---"
+		}
+	}
+}

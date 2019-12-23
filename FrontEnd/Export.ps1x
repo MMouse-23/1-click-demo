@@ -1,0 +1,134 @@
+
+
+<%
+                                                                                       
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\Logging"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\Logging" 
+}
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+
+$ModuleDir                    = "C:\1-click-demo\Modules"
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+}  
+
+$SQLbackups = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataUserTableName) WHERE SenderEmail='$user'" -MaxCharLength 3500000
+$BluePrintBackups = $null
+Foreach ($item in $SQLbackups){
+  #write "Looping for index $($item.BackupIndex)"
+  $BackupColumnCountint = 0 
+  do {
+    $BackupColumnCountint++
+    #write "Checking Column $BackupColumnCountint"
+    $BackupColumnCount = '{0:d3}' -f $BackupColumnCountint
+    $bpname = $null
+    $BPJson = $null
+    $BPName = $item."BluePrint$($BackupColumnCount)_Name" | where {$_ -ne "NA" -and $_ -notmatch "No backup was present for thi"}
+    $BPJson = $item."BluePrint$($BackupColumnCount)_JSON" 
+    #write "checking if BluePrint$($BackupColumnCount)_Name exists"
+    #write "checking if BluePrint$($BackupColumnCount)_JSON exists"
+    if ($bpname -and $bpjson){
+      $object = [PSCustomObject]@{
+        BPName = $BPName 
+        Index = $item.BackupIndex
+        Timestamp = $item.DateCreated
+        JSON = $BPJson
+        QueueUUID = $item.QueueUUID
+      }
+      #write "Adding 1 object to Array"
+      [array] $BluePrintBackups += $object
+    }
+  } until ($BackupColumnCountint -ge 50)
+}
+$unique = $BluePrintBackups | sort Timestamp | sort BPname -unique 
+[array]$list = $unique.bpname
+$lastbackups = $null
+foreach ($BP in $list){
+  [array] $lastbackups += $BluePrintBackups | where {$_.BPName -eq $bp } | sort Timestamp | select -last 1 ## Select the last backup item.
+}
+
+$Filter= $request['BPName']
+
+
+$BPName    = $request['BPName']
+$QueueUUID = $request['QueueUUID'] 
+$Index     = $request['Index']
+
+$json = ($BluePrintBackups | where {$_.QueueUUID -eq $QueueUUID -and $_.Index -eq $Index -and $_.BPName -eq $BPName}).JSON
+$filename = "$($BPName)-$($QueueUUID)"
+$json | out-file .\$($filename).json -force -confirm:0 -ea:0
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  get-content "$($Frontend)\app\functions\header-portable.html"
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = "get-content $($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+
+%>
+
+ <div id="bodyContent" class="n-body-content" style="display: block;width:50%;margin: 0 auto;">
+
+    <!-- Render the content based on the state of the app. -->
+    <div id="stateContainer" class="n-state-container">
+    <div class="n-state-content-form"><!-- Configuration Form -->
+<div id="configurationFormContainer" class="n-configuration-form-container">
+
+  <!-- Configuration Holder -->
+  <div class="configViewHolder">
+    <div class="startViewHolder view-holder" data-test="startViewHolder" style="display: block;"><div><div id="startContainer" class="n-start-container">
+  <div class="content-container">
+    <div class="startPageGuideContainer">
+      <br> Click on the image to download the blueprint </B><br><br>
+
+
+<a href="./<%$filename%>.json" download><img border="0" alt="W3Schools" src="./images/download.png" width="100" height="100">
+</a>
+
+ 
+          
+        </tr>                    
+        
+<%
+ 
+
+
+
+
+%>
+    </div>
+  </div>
+</div>
+<meta http-equiv="refresh" content="20">
+</div>
+</div>
+</body>
+
+

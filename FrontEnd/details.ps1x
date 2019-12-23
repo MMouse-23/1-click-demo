@@ -1,0 +1,137 @@
+
+
+<%
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+
+$queueuuid =  $request['QueueUUID']
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation"
+
+$time = (get-date).addhours(-22)
+$filters =  $request['filters']
+$Datavar      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataVarTableName) WHERE QueueUUID='$QueueUUID';" 
+
+$Datagen      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataGenTableName) WHERE QueueUUID='$QueueUUID';"
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $sender = $datavar.SenderEMail
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+} 
+
+   if ($user -eq $sender -or $Portable -eq 1){
+   
+%>
+
+
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datavar.peclusterip):9440"%>>Prism Element</a><br> 
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.pcclusterip):9440"%>>Prism Central</a><br>
+
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.pcclusterip):9440/console/#page/explore/calm"%>>Calm</a><br>
+<% 
+if ($datavar.InstallEra -ge 1){
+%>
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.ERA1IP)"%>>ERA</a><br>
+<%
+}
+%>
+<% 
+if ($datavar.hypervisor -match "ESX|VMware"){
+%>
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datavar.VCenterIP)"%>>VCenter</a><br>
+<%
+}
+%> 
+<%
+if ($datavar.InstallKarbon -eq 1){ 
+%>
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.pcclusterip):7050"%>>Karbon</a><br>
+<%
+}
+%>
+<% 
+if ($datavar.InstallObjects -eq 1){
+%>
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.pcclusterip):9440/console/#page/explore/ebrowser/objectstores/?entity_type=objectstore"%>>Objects</a><br>
+<%
+}
+%> 
+<%
+if ($datavar.InstallMove -eq 1){  
+%>
+        <a target="_blank" rel="noopener noreferrer" href=http://<%"$($datagen.MoveIP)"%>>Move</a><br>
+<%
+}
+%>
+<%
+if ($datavar.InstallXRay -eq 1){ 
+%>
+        <a target="_blank" rel="noopener noreferrer" href=http://<%"$($datagen.XRayIP)"%>>XRay</a><br> 
+<%
+}
+if ($datavar.InstallFiles -eq 1){ 
+%>
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datavar.peclusterip):9440/console/#page/file_server"%>>Files & Analytics</a><br>
+<%
+}
+%>
+<br>
+
+
+
+
+
+<button onclick="myFunction()">Copy Password</button>
+<br><br>
+<script>
+function myFunction() {
+  var copyText = document.getElementById("myInput");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999)
+  document.execCommand("copy");
+  alert("Copied the text: " + copyText.value);
+}
+</script>
+
+
+  <% $datavar | ConvertTo-Html -as list%>
+
+    <br><br><B>Output Data</B><br><br>
+
+  <% $datagen | ConvertTo-Html -as list %>
+
+<% 
+   } else {
+%>
+      User <% $user%> is not allowed to read this config file.
+<% 
+   }
+%>
+<br><br><br>
+<input type="text" value="<%$($datavar.pepass)%>" id="myInput" style="width: 1231px;">

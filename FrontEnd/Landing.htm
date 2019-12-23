@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from 10.66.4.49:8000/gui/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 12 Jan 2019 19:48:47 GMT -->
+<head>
+  <title>Nutanix 1 Click Demo</title>
+
+  <!-- Meta -->
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="Nutanix 1 Click Demo">
+
+  <!-- Prevent cache -->
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+
+  <!-- Compatibility Mode -->
+  <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE" />
+
+  <script src="app-extension/extras/browser/ua-parserb439.js?uiv=1538669642983"></script>
+  <script>
+    var uaParser = new UAParser();
+    var uaResult = uaParser.getResult().browser;
+    if ((uaResult.name === 'Firefox' && parseInt(uaResult.major, 10) >= 31) ||
+        (uaResult.name === 'Chrome' && parseInt(uaResult.major, 10) >= 45) ||
+        (uaResult.name === 'Safari' && parseInt(uaResult.major, 10) >= 8) ||
+        (uaResult.name === 'IE' && parseInt(uaResult.major, 10) >= 10) ||
+        uaResult.name === 'Edge') {
+    } else if (window.location.href.indexOf('ignoreBrowser') === -1) {
+      window.location.replace('app-extension/extras/browser/browser.html');
+    }
+  </script>
+
+  <link rel="apple-touch-icon" sizes="180x180"
+        href="app-extension/assets/images-ext/favicon/apple-touch-icon.png">
+
+  <link rel="icon" type="image/png" sizes="32x32"
+        href="app-extension/assets/images-ext/favicon/favicon-32x32.png">
+
+  <link rel="icon" type="image/png" sizes="16x16"
+        href="app-extension/assets/images-ext/favicon/favicon-16x16.png">
+
+  <link rel="manifest"
+         href="app-extension/assets/images-ext/favicon/manifestfa3f.html?uiv=1538669642983on">
+
+  <link rel="mask-icon" color="#5bbad5"
+        href="app-extension/assets/images-ext/favicon/safari-pinned-tab.svg">
+
+  <meta name="theme-color" content="#e3e3e3">
+
+  <!-- Style: Nutanix login style first for express loading -->
+  <link href="app/assets/styles/includes/css/nutanix-login.minb439.css?uiv=1538669642983"
+        rel="stylesheet" type="text/css" />
+
+  <!-- Default CSS from Third Party Libraries
+  ================================================== -->
+  <link href="app/assets/styles/thirdparty.minb439.css?uiv=1538669642983"
+        rel="stylesheet" type="text/css" />
+
+  <!-- Style: Default Bootstrap style -->
+  <link href="lib/bootstrap-2.2.1/css/bootstrapb439.css?uiv=1538669642983" rel="stylesheet" />
+
+  <!-- Style: Default Antiscroll style-->
+  <link href="lib/antiscroll/css/antiscrollb439.css?uiv=1538669642983" rel="stylesheet" />
+
+  <!-- Customized CSS with Nutanix Flavor
+  ================================================== -->
+
+  <!-- Style: Nutanix Foundation style -->
+  <link href="app-extension/assets/styles/includes/css/nutanix.minb439.css?uiv=1538669642983"
+        rel="stylesheet" />
+
+</head>
+
+
+
+
+
+<body class="n-body-active"><div id="n-content-wrapper"><!-- Content
+================================================== -->
+
+<!-- Main navigation bar and page wrapper
+================================================== -->
+<div class="container-fluid">
+
+  <!-- Notification Message
+  ================================================== -->
+  <div id="n-ctr-notification">
+    <!-- @view: Notification view goes here... -->
+  </div>
+
+  <!-- Header
+  ================================================== -->
+  <div id="n-header" class="header" data-test="header">
+    <div class="n-navigation" style="max-width: 500px">
+      <div class="left-menu">
+        <!-- Logo
+        ============================================ -->
+        <div class="n-header-logo">
+          <a class="n-logo-link">
+            <img src="./app-extension/assets/images-ext/logo.svg">
+          </a>
+        </div>
+        <!-- Foundation Navigation steps
+        ============================================= -->
+        <div class="config-nav-container">
+          <ul class="foundation-config-nav">
+            <li navsubview="start" class="start-cfg active" data-test="start-cfg" onclick="location.href='Landing.htm';" style="display: inline-block;">
+              <a>1. Welcome</a>
+            </li>
+            <li navsubview="global" class="global-cfg" data-test="global-cfg" onclick="location.href='Queued.ps1x';"  style="display: inline-block;">
+              <a>2. Queued</a>
+            </li>
+            <li navsubview="blocknode" class="bn-cfg" data-test="blocknode-cfg" onclick="location.href='Running.ps1x';" style="display: inline-block;">
+              <a>3. Live Status</a>
+            </li>
+            <li navsubview="global" class="global-cfg" data-test="global-cfg" onclick="location.href='History.ps1x';"  style="display: inline-block;">
+              <a>4. History</a>
+            </li>
+           </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Body Content
+  ================================================== -->
+     <img src="images/ntnxLogo.png" align="right" height="200" width="200"> <br>
+  <div id="bodyContent" class="n-body-content" style="display: block;;width: 50%;margin: 0 auto;">
+    <div id="stateContainer" class="n-state-container">
+   <br> <br> <br>
+            <h1>1 Click Demo!</h1>
+            <br>
+            <br>
+ 
+
+
+      <ol>
+
+                  This is an automated Demo service, sole purpose, 1 click Nutanix Demos! <br>
+            This services runs in a Nutanix datacenter using Windows Powershell <br>
+            Once the task is created the system will build several demos completely installed and ready to go.<br>
+            The source should be a blanc Foundation PE cluster, with no logins since its foundation.<br>
+            This can be a physical block in our office, or a hosted POC, Anything reachable in our network.<br>
+            Please read the instructions below to get started! Keep in mind this system is not final yet.<br> 
+        <li class="startStep">
+    
+            Forward your Hosted POC email (Foundation Finished) to michell.grauwmans@nutanix.com <br>
+            Wait for the reply and login here.<br> 
+            You can check the <a href='Queued.ps1x'> Queued </a> page if you recieved a validation error.<br>
+            Or<br><br>
+            Slackbot in <B>#Foundation_addon</B> Channel (Beta!)<br>
+            Say something with the word "build" or "start"<br>
+            <br>
+            Or<br><br>
+            The <a href='Queued.ps1x'> Queued </a> page on this website<br>
+          
+        </li>
+        
+          <li class="startStep">
+
+            Please do not login to the cluster until you have recieved confirmation this process is completed.)<br>
+            Password set/reset, register, etc, will be done by this service.<br>
+
+          </li>
+        
+        <li class="startStep">
+          
+            This process takes about 65 minutes depending on the options selected, the GEO location of the cluster and other factors.<br>
+            There is a lot of redundancy in this system, its as failure resistant as feasible. <br>
+            This service builds with several threads in parallel, yet the core takes this long to run. <br> 
+            Image download, PC Download, PC install and LCM updates are the main reasons.<br>
+            This system uses a message-bus/queuing system, at start keep track of your email, incase the request is not validated.<br>
+            You will recieve a queued and started mail, read all the Spec details, IPs, Domain Name etc there.<br>
+            Once running, you should recieve a mail after ~65 Minutes indicating a success.<br>
+            The auto abort on failure is not implemented completly yet. <br>
+            Ping me for questions or read the log.(<a href='Running.ps1x'> Running </a> or <a href='History.ps1x'> History </a> Tabs)<br>
+            Once completed login (PE/PC) with <B>first.middle.last@pocname.nutanix.local</B> using the password specified by you.<br>
+            For Applications login names can differ, but all share the same password.(with the exception of AHV hosts)<br>
+
+        </li>
+        <li class="startStep">
+
+          1 Click Demo requires several images to be pushed.<br>
+          Depending on the PE internet Bandwidth, this can take several hours to complete. HPOC is fast and takes only minutes per image.<br>
+          If this is not a hosted POC, you can specify an EU/US region for downloads, using the new entry on the <a href='Queued.ps1x'> Queued </a> page. <br>
+
+        <li class="startStep">
+
+          When forwarding the mail, use one of the following parameters to configure the deployment.<br>
+          Please use the format -newline-parametername:value no spaces, one parameter per line, the first 25 lines are read.<br>
+          In terms of 1 click simplicity, the options below do not need to be specified; <br>
+          These settings are all on by default or provide the most logical choice.<br>
+          <br>
+          <B>PCmode:1|3</B><br>
+          Default is scale out PC, yet automatically set to 1 for configurations or demos with scaleout limitations like Karbon pre GA<br>
+          <B>queue:manual</B><br>
+          Queues the request on the <a href='Queued.ps1x'> Queued </a> page. This so it can be edited before submit.<br>
+          <B>karbon:1|0</B><br>
+          When set to 1, PC mode is also set to 1, PC setting is overruled.<br>
+          Karbon is on the backlog for development.(Soon).<br>
+          Images are uploaded.<br>
+          <B>era:1|0</B><br>
+          Installs ERA end 2 END. 4 Databases, 4 Time machine DBs, 3 Servers<br>
+          <B>files:1|0</B><br>
+          Installs Files using AOS its latest available version(old), Including 3 shares, AD Joined.<br>
+          <B>iis:1|0</B><br>
+          Installs XPlay Demo on 5.10.x, Windows IIS server Autoscale including loadbalance, using XPLAY REST and Calm!<br>
+          End 2 End automated install.<br> 
+          Simply generate CPU load and go!<br>
+          <B>ssp:1|0</B><br>
+          Creates the 3 Projects each mapped to 1 out of 3 customers in AD, Users and Admins.<br>        
+          <B>lab:1|0</B><br>
+          Installs Workshop color scheme and changes the login banners.<br>       
+          <B>slackbot:2|1|0</B><br>
+          Gives normal or info logging to a private Slackbot message. Please mute the bot if higher then 1, 0 is default<br>      
+        </li>
+        <li class="startStep">
+          Items you can expect to recieve: 
+          <ul style="list-style-type:circle">
+            <li>Prism Element Registered, pulse disabled (option)</li>
+            <li>Prism Central installed and registered, latest version available to AOS</li>
+            <li>--1 node Prism Central</li>
+            <li>--3 node Prism Central</li>
+            <li>2 Domain Controllers,1 AD Forest, 1 AD Domain</li>
+            <li>~ 800 user and service accounts, group members and UPNs set.</li>
+            <li>A dozen groups mapped to Multi Customer SSP</li>
+            <li>SSO, All SSH and Portal Passwords synced, including the above and below.</li>
+            <li>Prism Element joined to the domain</li>
+            <li>Prism Element joined to the Prism Central Cluster</li>
+            <li>Prism Central joined to the domain</li>
+            <li>Calm Enabled</li>
+            <li>Calm updated using LCM</li>
+            <li>Flow Enabled</li>
+            <li>Karbon Cluster, inclduing K8 Dashboard etc (By Jose Gomez)</li>
+            <li>Files installed in a 3 node 1TB cluster.</li>
+            <li>3 Shares created based on domain Auth.</li>
+            <li>4 SSP Projects a created based on domain groups.(MSP Demo)</li>
+            <li>The requesting person has a domain admin account that allows login to Pe / Pc using its UPN.</li>
+            <li>All Settings you can imagine are set(SMTP,NTP,DNS,PC/PE)</li>
+            <li>7 Running CALM Apps</li>
+            <li>7 Blueprints devided over 4 SSP customers</li>
+            <li>Color scheme changed as per workshops for PE and PC(option)</li>
+            <li>ERA is installed, configured and deployed.</li>
+            <li>-SQL Server Installed, Oracle Installed</li>
+            <li>-MariaDB and PostGresDB Provisioned.</li>
+            <li>-5 Source Databases with active GOLD SLA Protection policies. Each database registered in time machine.</li>
+            <li>-2 Cloned with SSP Portal Calm Blueprint Frontend (By Michael Haigh)</li>
+            <li>XPlay is activated on 5.10 and includes alert policy, playbook and a full autoscale IIS demo with Calm</li>
+        </ul>
+        </li>
+        <li class="startStep">
+          Roadmap (in order of planning): 
+          <ul style="list-style-type:circle">
+            <li>Demo End Result Tester.</li>
+            <li>Consume the best BluePrints.</li>
+            <li>Windows Patching Application with CALM, Run Reports, Download Patches, Install patches for Category X Windows VMs</li>
+            <li>Open to ideas..</li> 
+            <li>1 Click Demo Foundation VM</li>   
+        </li>
+          <li class="startStep">
+          Credits: 
+          <ul style="list-style-type:circle">
+            <li>Harry Yang</li>
+            <li>Zihong Lu</li>
+            <li>Sarah Hernandez</li>
+            <li>Bala Kuchibhotla</li>
+            <li>Jagan Reddy</li>
+            <li>Bakul Banthia</li>
+            <li>Mark Lavi</li>
+            <li>Michael Haigh</li>
+            <li>Sundeep Gupta</li>
+            <li>Dutch SE Team</li>
+            <li>and Many Others</li>
+        </li>
+<br><br>
+        <a href="https://github.com/MMouse-23/FoundationDemoAddon">GitHub Repo</a>(Private)<br>
+        Ping Michell Grauwmans for access, will be public after TS2019 Barcelona
+
+      </ol>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</body>
+
+ 
+

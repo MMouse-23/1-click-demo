@@ -1,0 +1,47 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\Logging"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\Logging" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLOptionsTableName   = "QueueInfo"
+$global:debug=1
+$ModuleDir                    = "C:\HostedPocProvisioningService\Modules\"
+Import-Module "$($ModuleDir)\Queue\Get-IncommingQueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Validate-QueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-Spawn-Base.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-PortableMode.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-Send-Confirmation.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Config-DetailedDataSet.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Write-Log.psm1" -DisableNameChecking;
+$time = (get-date).addhours(-72)
+if ($request.RequestType -eq "GET"){
+  #If method is get, API returns the plain json used for POST
+  $Statobjects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
+  $Statobjects | select QueueUUID,Status,Percentage,CurrentChapter,TotalChapters,DateCreated,DateStopped,POCName,PEClusterIP,PCClusterIP,ErrorCount,WarningCount,PSErrorCount,ERAFailureCount,PCInstallFailureCount,ThreadCount,BuildTime,Debug,SENAME,Sender,AOSVersion,AHVVersion,PCVersion,ObjectsVersion,CalmVersion,KarbonVersion,FilesVersion,AnalyticsVersion,NCCVersion,ERAVersion,XRayVersion,MoveVersion,VMsDeployed,GBsDeployed,GBsRAMUsed,CoreCap,MemCapGB,DiskCapGB | convertto-json
+} elseif ($request.RequestType -eq "POST"){
+  $json = (new-Object System.IO.StreamReader @($Request.InputStream, [System.Text.Encoding]::UTF8)).ReadToEnd()
+  $QueueUUIDobj = $json | convertfrom-json
+  $QueueUUID = $QueueUUIDobj.QueueUUID
+  $Statobjects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE QueueUUID = '$QueueUUID'";
+  $Statobjects | select QueueUUID,Status,Percentage,CurrentChapter,TotalChapters,DateCreated,DateStopped,POCName,PEClusterIP,PCClusterIP,ErrorCount,WarningCount,PSErrorCount,ERAFailureCount,PCInstallFailureCount,ThreadCount,BuildTime,Debug,SENAME,Sender,AOSVersion,AHVVersion,PCVersion,ObjectsVersion,CalmVersion,KarbonVersion,FilesVersion,AnalyticsVersion,NCCVersion,ERAVersion,XRayVersion,MoveVersion,VMsDeployed,GBsDeployed,GBsRAMUsed,CoreCap,MemCapGB,DiskCapGB | convertto-json
+} else {
+  $response.StatusCode = 405
+  $response.StatusDescription = "Only Post and Get Methods are allowed here."
+}
+%>  

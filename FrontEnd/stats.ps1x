@@ -1,0 +1,282 @@
+
+
+<%
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"   
+
+
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+$queueuuid =  $request['LogUUID']
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation" 
+
+$filters =  $request['filters']
+if ($filters -eq "1Day"){
+  $time = (get-date).addhours(-24)
+  $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time'";
+} elseif ($filters -eq "1Week"){
+  $time = (get-date).adddays(-7)
+  $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time'";
+} elseif ($filters -eq "1Month"){
+  $time = (get-date).adddays(-31)
+  $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time'";
+} else {
+  $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName)";
+}   
+   $1Day    = "Stats.ps1x?filters=1Day"
+   $1Week   = "Stats.ps1x?filters=1Week"
+   $1Month   = "Stats.ps1x?filters=1Month"
+   $AllUrl  = "Stats.ps1x"
+
+
+$Validations       = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataValidationTableName)" 
+$users = $null
+$completed = $Statobjects | where {$_.status -eq "Completed"}
+$pcinstallfailurePercentage = ((($completed.PCInstallFailureCount | measure-object -sum).sum) / $completed.count) * 100
+$KarboninstallfailurePercentage = ((($completed.KarbonInstallFailureCount | measure-object -sum).sum) / $completed.count) * 100
+$ERAinstallfailurePercentage = ((($completed.ERAInstallFailureCount | measure-object -sum).sum) / $completed.count) * 100
+$succescounter = 0
+Foreach ($stat in $Statobjects){
+  $validation = $Validations | where { $_.queueuuid -eq $stat.queueuuid}
+  if ($validation){
+    if ($Validation.ERA_Validated -eq 1 -and $Validation.Calm_Validated -and $Validation.Karbon_Validated -and $Validation.Files_Validated -and $Validation.Core_Validated -eq 1){
+      $succescounter ++
+    }
+  } 
+}
+
+$validationPercentage = ($succescounter / $Statobjects.count) * 100
+$Hourssaved = $completed.count * 4
+
+$Topusers = $Statobjects.Sender | where { $_ -notmatch "Michell"} | group | sort count -Descending| select -first 25
+$unique = $Statobjects.Sender | sort -unique 
+
+foreach ($user in $topusers){
+  $PSObject = New-Object PSObject -Property @{
+    Name = ((($user.name -split "@")[0]) -replace "\.", ' ')
+    Number = $user.count
+  }
+  [array]$arrayusers += $psobject
+}
+
+
+
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Windows.Forms.DataVisualization
+
+$Chart = New-object System.Windows.Forms.DataVisualization.Charting.Chart
+$ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+$Series = New-Object -TypeName System.Windows.Forms.DataVisualization.Charting.Series
+$ChartTypes = [System.Windows.Forms.DataVisualization.Charting.SeriesChartType]
+
+$process= get-process
+
+$Series.ChartType = $ChartTypes::Pie
+
+$Chart.Series.Add($Series)
+$Chart.ChartAreas.Add($ChartArea)
+
+$Chart.Series['Series1'].Points.DataBindXY([array]$arrayusers.Name, [array]$arrayusers.number)
+
+$Chart.Width = 700
+$Chart.Height = 400
+$Chart.Left = 0
+#$Chart.Top = 10
+$Chart.BackColor = [System.Drawing.Color]::White
+
+$Chart.BorderDashStyle = 'Solid'
+
+$ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
+$ChartTitle.Text = ''
+$Font = New-Object System.Drawing.Font @('Microsoft Sans Serif','18', [System.Drawing.FontStyle]::Bold)
+$ChartTitle.Font =$Font
+$Chart.Titles.Add($ChartTitle)
+
+
+$Chart.Series[‘Series1’][‘PieLabelStyle’] = ‘Disabled’
+
+$Legend = New-Object System.Windows.Forms.DataVisualization.Charting.Legend
+$Legend.IsEquallySpacedItems = $True
+$Legend.BorderColor = 'Black'
+#$Chart.Legends.Add($Legend)
+$chart.Series["Series1"].LegendText = "#VALX (#VALY)"
+
+$Chart.Series['Series1']['PieLineColor'] = 'Black'
+$Chart.Series['Series1']['PieLabelStyle'] = 'Outside'
+$Chart.Series['Series1'].Label = "#VALX (#VALY)"
+
+
+ 
+
+$ChartArea.Area3DStyle.Enable3D=$True
+$ChartArea.Area3DStyle.Inclination = 50
+try{
+  $Chart.SaveImage('$($Frontend)\images\Topusers.jpeg', 'jpeg')
+} catch {}
+
+
+$differenttypes = $Logging | select EntryType
+$differenttypes = $differenttypes.entrytype | sort -Unique
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+
+$times = $completed.BuildTime | 
+    where {$_} | 
+    foreach { 
+
+        if ($_ -match "(?<m>\d{2}):(?<s>\d{2})\:(?<t>\d{2})") 
+        
+        {
+  
+            ((New-TimeSpan -Hour $matches.m -minute $matches.s -Second $matches.t) + [TimeSpan]::FromMilliseconds(10*$Matches.t)) 
+            
+        }
+    } 
+
+$averagebuild = [timespan]::FromTicks( ($times | Measure-Object -Average -Property Ticks).Average)
+$fastbuild    = [timespan]::FromTicks( ($times | Measure-Object -Minimum -Property Ticks).Minimum) 
+
+%>
+
+
+  <div id="bodyContent" class="n-body-content" style="display: block;;width: 40%;margin: 0 auto;">
+    <div id="stateContainer" class="n-state-container">
+   <br> <br> 
+
+        <h1>1 Click Demo Statistics</h1>
+<br> <br>
+
+<img src="./images/bg-white.gif">
+<B>Select Statistics Scope</B><br>
+
+
+<%
+if ($filters -eq "1Day"){
+%>    
+    <input name="viewmode" type=radio value="1 Day" checked onclick="window.location.href='<%= $1Day %>'" /> 1 Day <br>
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="1 Day" onclick="window.location.href='<%= $1Day %>'" /> 1 Day <br>
+<%
+}
+if ($filters -eq "1Week"){
+%>    
+    <input name="viewmode" type=radio value="1 Week" checked onclick="window.location.href='<%= $1Week %>'" /> 1 Week <br>
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="1 Week" onclick="window.location.href='<%= $1Week %>'" /> 1 Week <br>
+<%
+}
+if ($filters -eq "1Month"){
+%>  
+    <input name="viewmode" type=radio value="1 Month" checked onclick="window.location.href='<%= $1Month %>'" /> 1 Month<br>
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="1 Month" onclick="window.location.href='<%= $1Month %>'" /> 1 Month<br>
+<%
+} 
+if ($filters -eq "AllUrl"){
+%>
+    <input name="viewmode" type=radio value="Show All" checked onclick="window.location.href='<%= $AllUrl %>'" /> Show All<br><br>
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="Show All" onclick="window.location.href='<%= $AllUrl %>'" /> Show All<br><br>
+<%
+} 
+
+%>
+ <br>   
+        <h3>Generic Stats</h3>      
+         <div id="NOrefresh">
+        <table margin-left=0px border=0 cellpadding=4 width=600 align=left >
+       
+<br>  
+    
+ <tr><td style="text-align: left; border: 0;"><font color=black>PC Install Failure Rate</font></td><td style="text-align: right; border: 0;"><font color=black><% [math]::Round($pcinstallfailurePercentage) %> %</font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>ERA Install Failure Rate</font></td><td style="text-align: right; border: 0;"><font color=black><% [math]::Round($ERAFailureCount) %> %</font></td></tr>  
+ <tr><td style="text-align: left; border: 0;"><font color=black>Karbon Install Failure Rate</font></td><td style="text-align: right; border: 0;"><font color=black><% [math]::Round($KarboninstallfailurePercentage) %> %</font></td> </tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Validation Percentage</font></td><td style="text-align: right; border: 0;"><font color=black><% [math]::Round($validationPercentage) %> %</font></td> </tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Hours Saved</font></td><td style="text-align: right; border: 0;"><font color=black><% [math]::Round($Hourssaved) %> Hours</font></td> </tr>          
+ <tr><td style="text-align: left; border: 0;"><font color=black>Demo Labs Built</font></td><td style="text-align: right; border: 0;"><font color=black><% [math]::Round($completed.count) %> Demos</font></td> </tr>  
+
+
+   
+        </table>  
+
+
+<br><br><br><br><br><br><br><br>
+                 <br><h3>Top Users</h3> 
+                 There are a total of <%$unique.count%> unique Users
+
+  <img src="images/Topusers.jpeg" align="center" height="420" width="600" > <br>
+               <h3>Versioning</h3> 
+         <div id="NOrefresh">
+        <table margin-left=0px border=0 cellpadding=4 width=600 align=left >
+ <br>  
+  <% $AOSVersions = $statobjects.aosversion | where {$_ -match "[0-9]"} %>
+  <% $PCVersions  = $statobjects.PCversion  | where {$_ -match "[0-9]"} %>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed AOS Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($AOSVersions | % { [version]$_}  | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed PC Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($PCVersions | % {[version]$_} | sort | select -last 1) %></font></td></tr> 
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed Calm Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.CalmVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed ERA Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.ERAVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed XRay Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.XRayVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed Buckets Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.ObjectsVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed NCC Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.NCCVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed Move Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.MoveVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Last Known Installed Files Version</font></td><td style="text-align: right; border: 0;"><font color=black><% [string]($statobjects.FilesVersion | % {try{[version]$_}catch{} } | sort | select -last 1) %></font></td></tr>
+        
+
+
+
+
+        </table> 
+<br>  <br><br><br><br><br><br><br><br><br><br><br><br>
+               <h3>Fun Stats</h3> 
+         <div id="NOrefresh">
+        <table margin-left=0px border=0 cellpadding=4 width=600 align=left >
+ <br>  
+    
+ <tr><td style="text-align: left; border: 0;"><font color=black>VMs Deployed</font></td><td style="text-align: right; border: 0;"><font color=black><% ($statobjects.VMsDeployed |measure-object -sum).sum %> VMs</font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Storage Used</font></td><td style="text-align: right; border: 0;"><font color=black><% ($statobjects.GBsDeployed |measure-object -sum).sum %> GB</font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>RAM Used</font></td><td style="text-align: right; border: 0;"><font color=black><% ($statobjects.GBsRAMUsed |measure-object -sum).sum %> GB</font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Total Threads Executed</font></td><td style="text-align: right; border: 0;"><font color=black><% ($statobjects.ThreadCount |measure-object -sum).sum %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Average Build Time</font></td><td style="text-align: right; border: 0;"><font color=black><% "$("{0:d2}" -f [int]$([math]::Round($averagebuild.Hours))):$("{0:d2}" -f [int]$([math]::Round($averagebuild.Minutes))):$("{0:d2}" -f [int]$([math]::Round($averagebuild.Seconds)))"  %></font></td></tr>
+ <tr><td style="text-align: left; border: 0;"><font color=black>Fastest Build Time</font></td><td style="text-align: right; border: 0;"><font color=black><% "$("{0:d2}" -f [int]$([math]::Round($fastbuild.Hours))):$("{0:d2}" -f [int]$([math]::Round($fastbuild.Minutes))):$("{0:d2}" -f [int]$([math]::Round($fastbuild.Seconds)))" %> </font></td></tr>
+
+
+        </table> 
+<br>  <br>  <br>  <br>  <br>  <br>.  
+
+ </div>
+ </div>
+ </div>

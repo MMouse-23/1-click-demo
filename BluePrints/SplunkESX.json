@@ -1,0 +1,506 @@
+{
+	"status": {},
+	"product_version": "2.7.1.2",
+	"spec": {
+		"description": "",
+		"resources": {
+			"client_attrs": {
+				"Splunk_Service2": {
+					"y": 220,
+					"x": 500
+				}
+			},
+			"service_definition_list": [{
+				"singleton": false,
+				"action_list": [{
+					"description": "System action for creating an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "436b8806_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "6fa942e0_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "436b8806_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_create"
+				}, {
+					"description": "System action for deleting an application. Deletes created VMs as well",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "a33e37d9_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "ffa55735_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "a33e37d9_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_delete"
+				}, {
+					"description": "System action for starting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "c56edf45_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "7ab6e619_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "c56edf45_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_start"
+				}, {
+					"description": "System action for stopping an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "2cd45802_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "642b36dd_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "2cd45802_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_stop"
+				}, {
+					"description": "System action for restarting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "e3e43d46_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "42f57ffc_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "e3e43d46_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_restart"
+				}],
+				"depends_on_list": [],
+				"name": "Splunk_Service2",
+				"port_list": [],
+				"tier": "",
+				"variable_list": [],
+				"description": ""
+			}],
+			"substrate_definition_list": [{
+				"description": "",
+				"action_list": [],
+				"type": "VMWARE_VM",
+				"name": "Splunk",
+				"readiness_probe": {
+					"connection_type": "SSH",
+					"retries": "5",
+					"disable_readiness_probe": false,
+					"address": "@@{platform.ipAddressList[0]}@@",
+					"delay_secs": "60",
+					"connection_port": 22,
+					"login_credential_local_reference": {
+						"kind": "app_credential",
+						"name": "Splunk_VM"
+					}
+				},
+				"editables": {
+					"create_spec": {
+						"resources": {
+							"template_nic_list": {},
+							"nic_list": {},
+							"template_controller_list": {},
+							"controller_list": {},
+							"guest_customization": {
+								"linux_data": {}
+							},
+							"template_disk_list": {}
+						}
+					}
+				},
+				"os_type": "Linux",
+				"create_spec": {
+					"name": "@@{SERVER_NAME}@@",
+					"type": "PROVISION_VMWARE_VM",
+					"drs_mode": true,
+					"cluster": "PHX-POC002",
+					"host": "",
+					"resources": {
+						"nic_list": [],
+						"template_nic_list": [],
+						"template_controller_list": [],
+						"num_vcpus_per_socket": 1,
+						"num_sockets": 4,
+						"controller_list": [],
+						"memory_size_mib": 8192,
+						"power_state": "poweron",
+						"guest_customization": {
+							"customization_name": "",
+							"cloud_init": "#cloud-config\nusers:\n  - name: centos\n    ssh-authorized-keys:\n      - @@{INSTANCE_PUBLIC_KEY}@@\n    sudo: ['ALL=(ALL) NOPASSWD:ALL']",
+							"linux_data": null,
+							"customization_type": "GUEST_OS_LINUX",
+							"type": "",
+							"windows_data": null
+						},
+						"template_disk_list": [],
+						"type": "",
+						"account_uuid": "2fa6a7a8-5fbf-4f19-b5a1-69db82dd4bee",
+						"disk_list": []
+					},
+					"template": "50324be7-3fd1-0631-30be-e21a0e200903",
+					"datastore": "",
+					"storage_pod": "OS",
+					"clone_is_template": false
+				},
+				"variable_list": []
+			}],
+			"credential_definition_list": [{
+				"username": "centos",
+				"description": "",
+				"type": "KEY",
+				"secret": {
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {}
+					}
+				},
+				"name": "Splunk_VM"
+			}],
+			"package_definition_list": [{
+				"description": "",
+				"action_list": [],
+				"type": "DEB",
+				"service_local_reference_list": [{
+					"kind": "app_service",
+					"name": "Splunk_Service2"
+				}],
+				"name": "Package1",
+				"version": "",
+				"options": {
+					"install_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "Package1"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "Setup_OS"
+							}, {
+								"kind": "app_task",
+								"name": "Install_Splunk"
+							}],
+							"name": "8b8e1190_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [{
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "Setup_OS"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "Install_Splunk"
+									}
+								}],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "Setup_OS",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "#!\/bin\/bash\nset -ex\n\n# Disable THP\n# Check the current THP flags set\nsudo cat \/sys\/kernel\/mm\/transparent_hugepage\/enabled\nsudo cat \/sys\/kernel\/mm\/transparent_hugepage\/defrag\n\n# Disable THP\necho 'never' > sudo tee \/sys\/kernel\/mm\/transparent_hugepage\/enabled\necho 'never' > sudo tee \/sys\/kernel\/mm\/transparent_hugepage\/defrag\n\n# Check if the flags are set\nsudo cat \/sys\/kernel\/mm\/transparent_hugepage\/enabled\nsudo cat \/sys\/kernel\/mm\/transparent_hugepage\/defrag\n\n# Set the file descriptor limit\nsudo sysctl -w fs.file-max=65535\necho 'Current value of file descriptors set is ' \nsudo cat \/proc\/sys\/fs\/file-max\n\n# Set hostname\nsudo hostnamectl set-hostname @@{SERVER_NAME}@@\nsudo hostnamectl status\n",
+								"script_type": "sh",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "Splunk_VM"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Splunk_Service2"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "Install_Splunk",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "#!\/bin\/bash\n\n# Install wget if it doesn't exist\nsudo yum -y install wget\n\n# Fetch Splunk binary\nwget -O splunk-7.1.2-a0c72a66db66-Linux-x86_64.tgz 'https:\/\/www.splunk.com\/bin\/splunk\/DownloadActivityServlet?architecture=x86_64&platform=linux&version=7.1.2&product=splunk&filename=splunk-7.1.2-a0c72a66db66-Linux-x86_64.tgz&wget=true'\n\n# User and Group\nsudo mkdir \/opt\/splunk\n# sudo groupadd splunk\n# sudo useradd -d \/opt\/splunk -m -g splunk splunk\n\n# Untar the binaries\ngunzip splunk-7.1.2-a0c72a66db66-Linux-x86_64.tgz\ntar -xvf splunk-7.1.2-a0c72a66db66-Linux-x86_64.tar\n\n# Set the admin password\nexport PASS=@@{SPLUNK_ADMIN_PASSWORD}@@\necho '[user_info]' > \/tmp\/user-seed.conf\necho 'USERNAME = admin' >> \/tmp\/user-seed.conf\necho 'PASSWORD = '$PASS >> \/tmp\/user-seed.conf\n\ncat \/tmp\/user-seed.conf\n\n# move Splunk setup to \/opt\nexport SPLUNK_HOME=\/opt\/splunk\nexport PATH=$SPLUNK_HOME\/bin:$PATH\nsudo cp -rp splunk\/* \/opt\/splunk\/\n\n# Change ownership of splunk folder\nsudo chown -R centos: \/opt\/splunk\/\n\n# Start splunk service\nsplunk start --answer-yes --no-prompt --accept-license\n\n# Stop splunk service\nsplunk stop\n\n# Copy the user credentials file\nsudo mv \/tmp\/user-seed.conf $SPLUNK_HOME\/etc\/system\/local\nsudo chown -R centos: $SPLUNK_HOME\/etc\/system\/local\/user-seed.conf\n\n# Start the splunk service again\nsplunk start\n",
+								"script_type": "sh",
+								"type": "",
+								"command_line_args": "",
+								"login_credential_local_reference": {
+									"kind": "app_credential",
+									"name": "Splunk_VM"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "c1981290_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "8b8e1190_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					},
+					"type": "",
+					"uninstall_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "Package1"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "ef4a5c16_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "74e6f4b4_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "ef4a5c16_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					}
+				},
+				"variable_list": []
+			}],
+			"app_profile_list": [{
+				"deployment_create_list": [{
+					"type": "GREENFIELD",
+					"action_list": [],
+					"depends_on_list": [],
+					"name": "0cef6335_deployment",
+					"published_service_local_reference_list": [],
+					"max_replicas": "1",
+					"package_local_reference_list": [{
+						"kind": "app_package",
+						"name": "Package1"
+					}],
+					"substrate_local_reference": {
+						"kind": "app_substrate",
+						"name": "Splunk"
+					},
+					"min_replicas": "1",
+					"variable_list": [],
+					"description": ""
+				}],
+				"description": "",
+				"action_list": [],
+				"name": "Splunk_App_Profile",
+				"variable_list": [{
+					"val_type": "STRING",
+					"is_mandatory": false,
+					"description": "",
+					"data_type": "BASE",
+					"type": "LOCAL",
+					"name": "SERVER_NAME",
+					"value": "Splunk01-PHX-POC002",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					},
+					"is_hidden": false
+				}, {
+					"val_type": "STRING",
+					"is_mandatory": false,
+					"description": "",
+					"data_type": "BASE",
+					"type": "LOCAL",
+					"name": "INSTANCE_PUBLIC_KEY",
+					"value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDYKydoDAHU0l+YB+QcBcHGJqa5Jm2LIX0f391cGjTAs4\/Lt1dF4KOV0t\/49tJR0ysro5xa9npDws\/iUR9k5\/YO6td5NwZr\/D1Q1agDg1pBBYx+Tub8qhUyYWbYqdIs14eqQG4\/ScKp0C3LEMC73o5dKHs1c0khYiwkjENA2TD2DiIz\/FGl+7XsBp00C2CKreVuTnsDtDvB5mkWekdUaP+PGD982LxL3Qf4oRB3uxSUGGnlLYT0ssgaYwYq7oagTZI6JvnS03OO5jiiZA9B8K9eqBKjEzP+PUcCmMNQkQF2yqOdInuD0f0BPyLt6k2HbIvwRBpf\/3rr3EJ\/Imm2E76t0BsBv8c9aRBJelO1Om58ZHCJnXbqmS9cB\/FqDuNWmV3I6a\/5NwDGXdPiwUaqrmqCujnVJO2r79OJUzsSy+l\/p2v7CT9B3vjwOnKjZ4AirggNpf7JgITWlqFjuA0siyK+WhJCo\/M00fwy4m9KEStCmoOITuQ2RATuzdW1ZT2VoYDbpz6GG5FoS8lFUeVhUG9026PgTxCE3efQ8fwrRzT3FbNehl+isx5cc\/cRFdXiR8kGpd5vnLB4BsSuo0rH6BOE2TKGcJ9W4ii6W\/XinUDs\/GbEoV8E\/pXyfeEVqoR287zau\/\/f1YIX+vwiaAPVWANatAPtWuXZ0qgAUmJjyVg4dw== michell.grauwmans@nutanix.com",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"is_hidden": false
+				}, {
+					"val_type": "STRING",
+					"is_mandatory": false,
+					"description": "",
+					"data_type": "BASE",
+					"type": "SECRET",
+					"name": "SPLUNK_ADMIN_PASSWORD",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {},
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					},
+					"is_hidden": false
+				}, {
+					"val_type": "STRING",
+					"is_mandatory": false,
+					"description": "",
+					"data_type": "BASE",
+					"type": "SECRET",
+					"name": "SPLUNK_LICENSE",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {},
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					},
+					"is_hidden": false
+				}]
+			}],
+			"published_service_definition_list": [],
+			"default_credential_local_reference": {
+				"kind": "app_credential",
+				"name": "Splunk_VM"
+			},
+			"type": "USER"
+		},
+		"name": "Demo-Linux-Enterprise-Splunk"
+	},
+	"api_version": "3.0",
+	"metadata": {
+		"last_update_time": "1572777079295324",
+		"kind": "blueprint",
+		"spec_version": 4,
+		"creation_time": "1572731465771463",
+		"name": "Demo-Linux-Enterprise-Splunk"
+	}
+}

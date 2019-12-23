@@ -1,0 +1,176 @@
+
+
+<%
+                                                                                       
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"     
+
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+
+
+$SQLbackups = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataUserTableName) WHERE SenderEmail='$user'" -MaxCharLength 3500000
+$BluePrintBackups = $null
+Foreach ($item in $SQLbackups){
+  #write "Looping for index $($item.BackupIndex)"
+  $BackupColumnCountint = 0 
+  do {
+    $BackupColumnCountint++
+    #write "Checking Column $BackupColumnCountint"
+    $BackupColumnCount = '{0:d3}' -f $BackupColumnCountint
+    $bpname = $null
+    $BPJson = $null
+    $BPName = $item."BluePrint$($BackupColumnCount)_Name" | where {$_ -ne "NA" -and $_ -notmatch "No backup was present for thi"}
+    $BPJson = $item."BluePrint$($BackupColumnCount)_JSON" 
+    #write "checking if BluePrint$($BackupColumnCount)_Name exists"
+    #write "checking if BluePrint$($BackupColumnCount)_JSON exists"
+    if ($bpname -and $bpjson){
+      $object = [PSCustomObject]@{
+        BPName = $BPName 
+        Index = $item.BackupIndex
+        Timestamp = $item.DateCreated
+        JSON = $BPJson
+        QueueUUID = $item.QueueUUID
+      }
+      #write "Adding 1 object to Array"
+      [array] $BluePrintBackups += $object
+    }
+  } until ($BackupColumnCountint -ge 50)
+}
+$unique = $BluePrintBackups | sort Timestamp | sort BPname -unique 
+[array]$list = $unique.bpname
+$lastbackups = $null
+foreach ($BP in $list){
+  [array] $lastbackups += $BluePrintBackups | where {$_.BPName -eq $bp } | sort Timestamp | select -last 1 ## Select the last backup item.
+}
+
+$Filter= $request['BPName']
+
+if ($filter){
+  $restores = $BluePrintBackups | where {$_.BPName -eq $Filter } | sort Timestamp -Descending
+} else {
+  $restores = $BluePrintBackups | sort Timestamp -Descending
+}
+
+
+%>
+ <div id="bodyContent" class="n-body-content" style="display: block;width:50%;margin: 0 auto;">
+
+    <!-- Render the content based on the state of the app. -->
+    <div id="stateContainer" class="n-state-container">
+    <div class="n-state-content-form"><!-- Configuration Form -->
+<div id="configurationFormContainer" class="n-configuration-form-container">
+
+  <!-- Configuration Holder -->
+  <div class="configViewHolder">
+    <div class="startViewHolder view-holder" data-test="startViewHolder" style="display: block;"><div><div id="startContainer" class="n-start-container">
+  <div class="content-container">
+    <div class="startPageGuideContainer">
+        <br>You have <B><% $BluePrintBackups.count %></B> Total Backups<br>  
+
+
+
+        <br>Identical Backups are filtered<br>
+        <br>Please see the list below (only the last backup is shown)<br>
+        <br>Choose the backup to Export<br><br>
+
+
+
+     <table margin-left=40px border=5 cellpadding=4 width=800 align=left>
+         <tr>
+          <th style="color:#204FA0;background-color:#BDD043">Export</th>
+          <th style="color:#204FA0;background-color:#BDD043">Blueprint Name</th>
+          <th style="color:#204FA0;background-color:#BDD043">Backup Index</th>
+          <th style="color:#204FA0;background-color:#BDD043">Last Backup Date</th>
+          <th style="color:#204FA0;background-color:#BDD043">Spec Version</th>
+
+ 
+          
+        </tr>                    
+        
+<%
+ $previousrestore = $null
+foreach ($item in $restores){
+            
+             
+ %> 
+
+       <tr>   
+<%
+$bpnameenc = [System.Web.HttpUtility]::UrlEncode($($item.BPName))
+ $ExportURL = "Export.ps1x?BPName=$bpnameenc&QueueUUID=$($item.QueueUUID)&Index=$($item.Index)"
+
+  if ($previousrestore -ne $item.json){
+    $previousrestore = $item.json
+    try{
+      $object = $item.json | convertfrom-json -ea:0
+    } catch {}
+
+%>
+        <td style="text-align: center;" width="50"><input type=submit value="Export Json" onclick="window.location.href='<%= $ExportURL %>'" /> </td>
+        <td style="text-align: center;" width="150"><%= $($item.BPName) %></td>
+        <td style="text-align: center;" width="75"><%= $($item.Index) %></td>
+        <td style="text-align: center;" width="75"><%= $($item.Timestamp) %></td>
+<% 
+    if ($object.metadata ) {
+%>        
+        <td style="text-align: center;" width="75"><%= $($object.metadata.spec_version) %></td>
+<%
+    } else {
+%>
+        <td style="text-align: center;" width="125"><img src="./images/loading-red-spot.gif" height="254" width="254" align ="center" title="NO Validation Record found"/>
+<%
+    }
+%>
+       </tr>
+
+<% 
+    
+  } else {
+
+    
+  }
+} 
+%>
+  </table> <br>  
+        
+        <br><br>  <br><br>  
+<br><br><br><br>
+
+    </div>
+  </div>
+</div>
+<meta http-equiv="refresh" content="20">
+</div>
+</div>
+</body>
+
+

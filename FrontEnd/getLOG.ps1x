@@ -1,0 +1,178 @@
+
+
+<%
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+$queueuuid =  $request['LogUUID']
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation" 
+
+
+$ModuleDir                    = "C:\1-click-demo\Modules"
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+
+$time = (get-date).addhours(-22)
+$filters =  $request['filters']
+if ($filters -match "Tail"){
+  $Logging      = Invoke-Sqlcmd -ServerInstance $SQLInstLog -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName) WHERE QueueUUID='$($queueuuid)' order by 'Date' DESC" 
+} else {
+  $Logging      = Invoke-Sqlcmd -ServerInstance $SQLInstLog -Query "SELECT TOP 50000 * FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName) WHERE QueueUUID='$($queueuuid)' order by 'Date'"
+}
+
+$differenttypes = $Logging | select EntryType
+$differenttypes = $differenttypes.entrytype | sort -Unique
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+
+
+
+   
+   $entrytype = $request['Entry']
+   if ($entrytype -eq $null -or $entrytype -eq "None"){
+
+    $entrytype= "NONE"
+
+   } else {
+
+    $logging = $logging |where {$_.entrytype -eq $entrytype}
+
+   }
+   $item = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE QueueUUID='$QueueUUID';" 
+   $sender = $item.SenderEMail
+   $ErrorURL= "getLOG.ps1x?LogUUID=$($item.QueueUUID)&filters=Error&Entry=None"
+   $AllURL= "getLOG.ps1x?LogUUID=$($item.QueueUUID)&filters=ALL&Entry=None" 
+   $TailURL= "getLOG.ps1x?LogUUID=$($item.QueueUUID)&filters=Tail&Entry=None" 
+   $selecturl= "getLOG.ps1x?LogUUID=$($item.QueueUUID)&filters=Select&Entry=Base"
+   if ($user -eq $sender -or $Portable -eq 1){
+   
+%>  
+  <div id="bodyContent" class="n-body-content" style="display: inline-block; left: 70px;">
+    <div id="stateContainer" class="n-state-container">
+      <form method="GET" action="" enctype="multipart/form-data">
+       <b>Type Filter (Search from the list, paste entry in URL): </b><br><img src="./images/info.jfif" height="254" width="25" title="Select a Type Filter from the list" align="right" style=" margin: 0px 1100px 0px 0px;"/> </a><input list="EntryTypes" name="Entry" size="5" value="" style="width: 150px;" />
+         <datalist id="EntryTypes">
+         <option value="None">
+<%
+
+foreach ($type in $differenttypes){
+%>    
+        <option value="<% $($type) %>"> 
+<%
+} 
+
+%>         
+           </datalist> <br><br>
+
+ 
+    <B>Select Logging Mode:</B><br>
+
+<%
+
+if ($filters -eq "Error"){
+%>    
+    <input name="viewmode" type=radio value="Hide Info" checked onclick="window.location.href='<%= $ErrorURL %>'" /> Hide Info <br>
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="Hide Info" onclick="window.location.href='<%= $ErrorURL %>'" /> Hide Info <br>
+<%
+}
+if ($filters -eq "ALL"){
+%>  
+    <input name="viewmode" type=radio value="Show All" checked onclick="window.location.href='<%= $AllURL %>'" /> Show All<br>
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="Show All" onclick="window.location.href='<%= $AllURL %>'" /> Show All<br>
+<%
+} 
+if ($filters -eq "Tail"){
+%>
+    <input name="viewmode" type=radio value="Tail Log" checked onclick="window.location.href='<%= $TailURL %>'" /> Reverse Tail Log<br><br>
+    <meta http-equiv="refresh" content="60">
+<%
+} else {
+%>
+    <input name="viewmode" type=radio value="Tail Log" onclick="window.location.href='<%= $TailURL %>'" /> Reverse Tail Log<br><br>
+<%
+} 
+
+
+%>
+
+        <br>Loading logfile for <% $queueuuid %> below .<br><br>
+        
+         <div id="NOrefresh">
+        <table margin-left=60px border=5 cellpadding=4 width=1600 align=left >
+       
+        <tr>
+          <th width=250 style="color:#204FA0;background-color:#BDD043">Time Stamp</th>
+          <th width=100 style="color:#204FA0;background-color:#BDD043">Type</th>
+          <th style="color:#204FA0;background-color:#BDD043">Log Content</th>
+          </tr>
+   
+          <% foreach ($line in $logging){ %>
+       
+          <%   if ($line.Logtype -eq "Chapter"){ %>
+
+ <td style="text-align: center; border: 0;"><font color=black><% "$($line.date)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=black><% "$($line.entrytype)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=Blue><% "$($line.message)" %></font></td></tr>
+
+          <%   } elseif ($line.Logtype -eq "WARN"){ %>    
+      
+ <td style="text-align: center; border: 0;"><font color=black><% "$($line.date)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=black><% "$($line.entrytype)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=orange><% "$($line.message)" %></font></td></tr>
+
+          <%   } elseif ($line.Logtype -match "ERR"){ %>
+  
+ <td style="text-align: center; border: 0;"><font color=black><% "$($line.date)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=black><% "$($line.entrytype)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=red><% "$($line.message)" %></font></td></tr>
+
+          <%   } elseif ($filters -ne "Error") { %>
+
+ <td style="text-align: center; border: 0;"><font color=black><% "$($line.date)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=black><% "$($line.entrytype)" %></font></td>
+ <td style="text-align: Left; border: 0;"><font color=black><% "$($line.message)" %></font></td></tr>            
+
+          <%   }  %>
+      <%    } %>
+   
+        </table> <br>  
+ </div>
+<% 
+   } else {
+%>
+      User <% $user%> is not allowed to read this log file.
+<% 
+   }
+%>
+

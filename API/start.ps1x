@@ -1,0 +1,85 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLOptionsTableName   = "QueueInfo"
+$global:debug=1
+$ModuleDir                    = "C:\1-click-demo\Modules\"
+Import-Module "$($ModuleDir)\Queue\Get-IncommingQueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Validate-QueueItem.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-Spawn-Base.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Queue\Lib-PortableMode.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-Send-Confirmation.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Config-DetailedDataSet.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-Write-Log.psm1" -DisableNameChecking;
+
+if ($request.RequestType -eq "GET"){
+  #If method is get, API returns the plain json used for POST
+  $Options      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLOptionsTableName)";
+  $options      = $Options | select ID,QueueValue,Description,Required,AcceptedValues,Validation,ConfluenceLinkInt,ConfluenceLinkDemo,CLASS
+  $Object       = New-Object PSObject;
+  
+  foreach ($item in $options){
+    if ($item.AcceptedValues -match ","){
+      $value = (($item.AcceptedValues).split(","))[0]
+    } else {
+      $value = ""
+    }
+    $Object | add-member Noteproperty $item.queuevalue      $value;
+  }
+  $Object | ConvertTo-Json -Depth 2
+} elseif ($request.RequestType -eq "POST"){
+  $json = (new-Object System.IO.StreamReader @($Request.InputStream, [System.Text.Encoding]::UTF8)).ReadToEnd()
+  $datavar = $json | convertfrom-json
+  $date = get-date 
+  $QueueUUID = ([guid]::newguid()).guid
+  $headers = ($datavar | gm | where {$_.membertype -eq "noteproperty"}).name
+  $Headerstring = $null
+  $valuestring = $null
+  foreach ($head in $headers){
+    $Headerstring += "$($head), "
+    $valuestring +=  "`'$($datavar.$($head))`', "
+  }
+  $global:debug = 0
+  $Headerstring += "Destroy"
+  $valuestring += "`'0`'"
+  $SQLQuery = "USE `"$SQLDatabase`"
+    INSERT INTO dbo.$SQLQueueTableName (QueueUUID, QUEUEStatus, QUEUEValid, QueueSource, DateCreated, $Headerstring)
+
+    VALUES('$QueueUUID','Ready','ToBeValidated','API','$date', $valuestring)"
+    
+  try {
+    $SQLQueryOutput = Invoke-Sqlcmd -query $SQLQuery -ServerInstance $SQLInstance -ErrorAction 'Stop'
+  } catch {
+    $response.StatusCode = 400
+  }
+  $validation = Validate-QueueItem -processingmode "SCAN" -scanuuid $QueueUUID
+  if ($validation -ne "OK"){
+    $response.StatusCode = 400
+    } else {
+      $Object       = New-Object PSObject;
+      $Object | add-member Noteproperty QueueUUID $QueueUUID
+      return $Object | ConvertTo-Json
+    }
+} else {
+  $response.StatusCode = 405
+  $response.StatusDescription = "Only Post and Get Methods are allowed here."
+}
+%>  

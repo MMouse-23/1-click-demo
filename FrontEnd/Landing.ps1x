@@ -1,0 +1,122 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:debug=1
+$ModuleDir                    = "C:\1-click-demo\Modules\Queue"
+
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+} 
+
+%>
+
+
+  <div id="bodyContent" class="n-body-content" style="display: block;;width: 40%;margin: 0 auto;">
+    <div id="stateContainer" class="n-state-container">
+   <br> <br> <br>
+            <h1>1 Click Demo!</h1>
+            <br>
+            <br>
+
+<%
+            if ($Portable -eq 1){
+%>
+               Welcome to the <B>Portable edition </B>of 1 click demo! <br>
+               Portable edition runs in single user mode, No authentication. Also on the API.<br>
+               The Datasource is by default a dropbox location, 70GB Download is required on each run.<br>
+               There are also options to download most of the payload to this Windows VM.<br>
+               Also, keep in mind, this setup will use the remaining of the subnet specified by the Prism Element IP.<br>
+               See the <a href='Help.ps1x'> help </a> section for more details.
+<%
+            }
+%>
+            This is an automated Demo service, sole purpose, 1 click Nutanix Demos! <br>
+            Once the task is queued the system will build several demos completely installed and ready to go.<br>
+<br>
+            <B> Requirements </B><br><br>
+            The source should be a blanc Foundation PE cluster, with no logins since its foundation. <br>
+            AOS Version needs to be on or above 5.10.4.<br>
+            Both Nutanix and admin user need to be default or as per specified See the <a href='Help.ps1x'> help </a> section for more details.<br>
+ <%
+            if ($Portable -ne 1){
+%> 
+            This can be a physical block in our office, or a hosted POC, Anything reachable in our network.<br>
+            Please read the SE Wiki Site for instructions.<br>
+<%
+            }
+%>
+            <br>
+            <a href="https://confluence.eng.nutanix.com:8443/display/SEW/1-Click-Demo">1-Click-Demo SE WIKI</a><br><br>
+               <B> Getting Started </B>
+
+        
+ <%
+            if ($Portable -ne 1){
+%>           
+            <li class="startStep">
+            For HPOC systems Forward your Hosted POC email (Foundation Finished) to 1-click-demo@nutanix.com <br>
+            Wait for the reply and login here. Do not change the subject and leave the Forward prefix untouched.<br>
+<%
+            }
+%>
+
+        <li class="startStep">
+            For manual creation click <a href='Queued.ps1x'> Here </a> to create a new entry on the queued page on this website<br>
+ <%
+            if ($Portable -ne 1){
+%>  
+            This is not recommended for HPOC systems, send <b>queue:manaual</b> in the body of the email if you want to edit options here.<br>
+ <%
+            }
+%>         
+        </li>
+        </ol>
+            <br><B> Instructions </B>
+             <ol>
+          <li class="startStep">
+
+            Please do not login to the cluster until you have recieved confirmation this process is completed.)<br>
+            Password set/reset, register, etc, will be done by this service.<br>
+
+          </li>     
+      </ol>
+      </div>
+  
+
+</div>
+</body>
+
+ 
+

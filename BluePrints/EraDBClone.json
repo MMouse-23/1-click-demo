@@ -1,0 +1,1479 @@
+{
+	"spec": {
+		"description": "",
+		"resources": {
+			"client_attrs": {
+				"None": {
+					"y": 443,
+					"x": 658.75
+				},
+				"f9a4c530_deployment": {
+					"y": 299,
+					"x": 510
+				},
+				"f6be2786_deployment": {
+					"y": 331,
+					"x": 827.75
+				}
+			},
+			"service_definition_list": [{
+				"singleton": false,
+				"action_list": [{
+					"description": "System action for creating an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "0bfadcbf_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "975ed99a_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "0bfadcbf_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_create"
+				}, {
+					"description": "System action for deleting an application. Deletes created VMs as well",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "9ade3d68_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "cf884050_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "9ade3d68_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_delete"
+				}, {
+					"description": "System action for restarting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "1124d60e_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "6bcf94d3_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "1124d60e_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_restart"
+				}, {
+					"description": "System action for starting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "0ae24e3c_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "84c12573_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "0ae24e3c_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_start"
+				}, {
+					"description": "System action for stopping an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "bf858e3b_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "6e2e5ff2_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "bf858e3b_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_stop"
+				}, {
+					"description": "",
+					"type": "user",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "1ValidateSnapIdTask"
+							}],
+							"name": "14e0d247_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "1ValidateSnapIdTask",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Get Time Machine Capability\nurl  = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/tms\/@@{TM_ID}@@\/capability?summary=false&time-zone=UTC\"\nresp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n\nif resp.ok:\n  \n  # If the SnapshotID macro is empty, we need to grab the last snap\n  if \"@@{source_snapshot_id}@@\" == \"\":\n  \n    # Cycle through the snapshot modes\n    for modes in json.loads(resp.content)['capability']:\n\n      # We only care about the recent \"Continuous\" snapshots\n      if modes['mode'] == \"CONTINUOUS\":\n        \n        # If there are no snapshots, error out\n        if not modes['snapshots']:\n          print \"ERROR: You must either provide a Snapshot ID, OR have a Continuous Snapshot.\"\n          exit(1)\n          \n        # Else, grab the last Snapshot ID and exit success\n        else:\n          print \"VALIDATED_SNAP_ID={0}\".format(modes['snapshots'][len(modes['snapshots'])-1]['id'])\n          exit(0)\n      \n  # If the snapshot macro is not empty, we need to check that it's a valid snap ID\n  else:\n    \n    # Cycle through the snapshot modes\n    for modes in json.loads(resp.content)['capability']:\n      \n      # Cycle through the snapshots if they exist\n      if modes['snapshots']:\n        for snapshot in modes['snapshots']:\n          \n          # If the SnapshotID macro equals an actual Snap ID, then print out and exit success\n          if snapshot['id'] == \"@@{source_snapshot_id}@@\":\n            print \"VALIDATED_SNAP_ID={0}\".format(snapshot['id'])\n            exit(0)\n          \n    # If we've gotten to this point, the SnapshotID macro is not a valid Snap ID, so error out\n    print \"ERROR: The Snapshot ID you entered is not valid. You must either:\"\n    print \"  1. Provide a valid Snapshot ID from the list below, or\"\n    print \"  2. Leave the SnapshotID field blank to use the last Snapshot.\"\n    print \"  ========================\"\n\n    # Cycle through the snapshot modes\n    for modes in json.loads(resp.content)['capability']:\n      print \"{0} MODE\".format(modes['mode'])\n    \n      # Cycle through the snapshots if they exist\n      if modes['snapshots']:\n        for snapshot in modes['snapshots']:\n          print \"  ------------------------\"\n          print \"  Snapshot ID (copy this): {0}\".format(snapshot['id'])\n          print \"  Snapshot Time Stamp:     {0}\".format(snapshot['snapshotTimeStamp'])\n        \n      # Print message if the don't exist\n      else:\n        print \"  ------------------------\"\n        print \"  No {0} snapshots exist.\".format(modes['mode'].lower())\n\n    exit(1)\n  \n  # If we've gotten this far, something unknown went wrong\n  print \"Unknown error.  Please contact your Administrator.\"\n  exit(1)\n\n# In the event something went wrong with the API call\nelse:\n  print \"Get Time Machine Capability request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["VALIDATED_SNAP_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "cc6c835b_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "14e0d247_dag"
+						},
+						"variable_list": []
+					},
+					"name": "ValidateSnapID"
+				}],
+				"depends_on_list": [],
+				"name": "Era",
+				"port_list": [],
+				"tier": "",
+				"variable_list": [{
+					"val_type": "STRING",
+					"description": "",
+					"name": "TM_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "SOURCE_DBSERVER_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "VALIDATED_SNAP_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "VM_NAME",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "WORKING_DIR",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "ERA_BASE",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "COMPUTE_PROFILE_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "NETWORK_PROFILE_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "DB_PROFILE_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "CLONE_OPERATION_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "CLONE_ENTITY_NAME",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "CLONE_SERVER_IP",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "CLONE_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "CLONE_SERVER_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "REFRESH_OPERATION_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "CLEANUP_OPERATION_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "DEREGISTER_OPERATION_ID",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}],
+				"description": ""
+			}, {
+				"singleton": false,
+				"action_list": [{
+					"description": "System action for creating an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Clone"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "6fba9cbb_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "01945104_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "6fba9cbb_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_create"
+				}, {
+					"description": "System action for deleting an application. Deletes created VMs as well",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Clone"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "8bee20f0_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "fe42eb38_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "8bee20f0_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_delete"
+				}, {
+					"description": "System action for restarting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Clone"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "04cc6e24_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "ffd25064_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "04cc6e24_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_restart"
+				}, {
+					"description": "System action for starting an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Clone"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "9d7e4dfb_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "ef6acd35_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "9d7e4dfb_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_start"
+				}, {
+					"description": "System action for stopping an application",
+					"type": "system",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Clone"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "897e9b24_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "b81e8f8b_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "897e9b24_dag"
+						},
+						"variable_list": []
+					},
+					"name": "action_stop"
+				}],
+				"depends_on_list": [],
+				"name": "Clone",
+				"port_list": [],
+				"tier": "",
+				"variable_list": [],
+				"description": ""
+			}],
+			"substrate_definition_list": [{
+				"description": "",
+				"action_list": [],
+				"type": "EXISTING_VM",
+				"name": "EraServer",
+				"readiness_probe": {
+					"connection_type": "SSH",
+					"retries": "5",
+					"disable_readiness_probe": true,
+					"address": "@@{ip_address}@@",
+					"delay_secs": "60",
+					"connection_port": 22,
+					"login_credential_local_reference": {
+						"kind": "app_credential",
+						"name": "era_creds"
+					}
+				},
+				"os_type": "Linux",
+				"create_spec": {
+					"type": "PROVISION_EXISTING_MACHINE",
+					"address": "@@{era_ip}@@"
+				},
+				"variable_list": []
+			}, {
+				"description": "",
+				"action_list": [],
+				"type": "EXISTING_VM",
+				"name": "Era_Cloned_DB",
+				"readiness_probe": {
+					"connection_type": "SSH",
+					"retries": "5",
+					"disable_readiness_probe": false,
+					"address": "@@{ip_address}@@",
+					"delay_secs": "60",
+					"connection_port": 22,
+					"login_credential_local_reference": {
+						"kind": "app_credential",
+						"name": "db_server_creds"
+					}
+				},
+				"os_type": "Linux",
+				"create_spec": {
+					"type": "PROVISION_EXISTING_MACHINE",
+					"address": "@@{Era.CLONE_SERVER_IP}@@"
+				},
+				"variable_list": []
+			}],
+			"credential_definition_list": [{
+				"username": "era",
+				"description": "",
+				"type": "KEY",
+				"secret": {
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {}
+					}
+				},
+				"name": "db_server_creds",
+				"editables": {
+					"secret": true
+				}
+			}, {
+				"username": "admin",
+				"description": "",
+				"type": "PASSWORD",
+				"secret": {
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {}
+					}
+				},
+				"name": "era_creds"
+			}],
+			"package_definition_list": [{
+				"description": "",
+				"action_list": [],
+				"type": "DEB",
+				"service_local_reference_list": [{
+					"kind": "app_service",
+					"name": "Era"
+				}],
+				"name": "EraPackage",
+				"version": "",
+				"options": {
+					"install_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "EraPackage"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "1GetDbHostInfo"
+							}, {
+								"kind": "app_task",
+								"name": "2ValidateSnapID"
+							}, {
+								"kind": "app_task",
+								"name": "3GetInputFile"
+							}, {
+								"kind": "app_task",
+								"name": "4GetProfileIDs"
+							}, {
+								"kind": "app_task",
+								"name": "5CloneDb"
+							}, {
+								"kind": "app_task",
+								"name": "6MonitorOperation"
+							}, {
+								"kind": "app_task",
+								"name": "7GetDatabaseInfo"
+							}],
+							"name": "7bd63f34_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [{
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "3GetInputFile"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "4GetProfileIDs"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "4GetProfileIDs"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "5CloneDb"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "5CloneDb"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "6MonitorOperation"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "6MonitorOperation"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "7GetDatabaseInfo"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "2ValidateSnapID"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "3GetInputFile"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "1GetDbHostInfo"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "2ValidateSnapID"
+									}
+								}],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "1GetDbHostInfo",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Set Time Machine ID by doing a GET on the Database\nurl  = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/databases\/name\/@@{source_db_name}@@?detailed=true\"\nresp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n\n# If the response is ok, set to our TM_ID variable\nif resp.ok:\n  print \"TM_ID={0}\".format(json.loads(resp.content)['timeMachineId'])\n  print \"SOURCE_DBSERVER_ID={0}\".format(json.loads(resp.content)['primaryHost'])\n\n# If it is not, make a new call to get list of possible databases\nelse:\n  print \"Error: Database named '@@{source_db_name}@@' was not found.\"\n  print \"\"\n  print \"The valid database_name values on this Era server are:\"\n  print \"======================================================\"\n  \n  url  = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/databases\"\n  resp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n  \n  for dbs in json.loads(resp.content):\n    if not dbs['clone']:\n      print dbs['name']\n  \n  print \"======================================================\"\n  print \"Please use one of the above databases, and try again.\"\n  exit(1)",
+								"eval_variables": ["TM_ID", "SOURCE_DBSERVER_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "2ValidateSnapID",
+							"state": "ACTIVE",
+							"attrs": {
+								"type": "CALL_RUNBOOK",
+								"inarg_list": [],
+								"runbook_reference": {
+									"kind": "app_runbook",
+									"name": "cc6c835b_runbook"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "CALL_RUNBOOK",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "3GetInputFile",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Get Time Machine Capability\nurl  = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/tms\/@@{TM_ID}@@\/clones\/input-file?category=database%3Bvm_info\"\nresp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n\nif resp.ok:\n  \n  # Cycle through the various properties\n  for property in json.loads(resp.content)['properties']:\n    \n    # Set the various variables\n    if property['name'] == \"vm_name\":\n      print \"VM_NAME={0}\".format(property['default_value'])\n    elif property['name'] == \"working_dir\":\n      print \"WORKING_DIR={0}\".format(property['default_value'])\n    elif property['name'] == \"era_deploy_base\":\n      print \"ERA_BASE={0}\".format(property['default_value'])\n\n# In the event something went wrong with the API call\nelse:\n  print \"Get Input File request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["VM_NAME", "WORKING_DIR", "ERA_BASE"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "4GetProfileIDs",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Get Time Machine Capability\nurl  = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/dbservers\/@@{SOURCE_DBSERVER_ID}@@?detailed=true&load-drive=false\"\nresp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n\nif resp.ok:\n  \n  # Cycle through the various properties\n  for property in json.loads(resp.content)['properties']:\n    \n    # Set the various variables\n    if property['name'] == \"compute_profile_id\":\n      print \"COMPUTE_PROFILE_ID={0}\".format(property['value'])\n    elif property['name'] == \"network_profile_id\":\n      print \"NETWORK_PROFILE_ID={0}\".format(property['value'])\n    elif property['name'] == \"db_parameter_profile_id\":\n      print \"DB_PROFILE_ID={0}\".format(property['value'])\n\n# In the event something went wrong with the API call\nelse:\n  print \"Get Input File request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["COMPUTE_PROFILE_ID", "NETWORK_PROFILE_ID", "DB_PROFILE_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "5CloneDb",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Set the Clone DB Name\nif \"@@{cloned_db_name}@@\" == \"\":\n  cloneName = '@@{source_db_name}@@_Clone_@@{calm_time(\"%Y%m%d%H%M\")}@@'\nelse:\n  cloneName = \"@@{cloned_db_name}@@\"\n\n# Set the URL and payload\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/tms\/@@{TM_ID}@@\/clones\"\npayload = {\n  \"snapshotId\": \"@@{VALIDATED_SNAP_ID}@@\",\n  \"cloneDescription\": \"Clone of '@@{source_db_name}@@' managed through Calm application @@{calm_application_name}@@\",\n  \"timeZone\": \"UTC\",\n  \"cloneName\": cloneName,\n  \"cloneInfo\": [\n    {\n      \"name\": \"db_password\",\n      \"value\": \"@@{cloned_db_password}@@\"\n    },\n    {\n      \"name\": \"vm_name\",\n      \"value\": \"@@{VM_NAME}@@\"\n    },\n    {\n      \"name\": \"client_public_key\",\n      \"value\": \"@@{cloned_db_public_key}@@\"\n    },\n    {\n      \"name\": \"working_dir\",\n      \"value\": \"@@{WORKING_DIR}@@\"\n    },\n    {\n      \"name\": \"era_deploy_base\",\n      \"value\": \"@@{ERA_BASE}@@\"\n    },\n    {\n      \"name\": \"create_dbserver\",\n      \"value\": True\n    },\n    {\n      \"name\": \"compute_profile_id\",\n      \"value\": \"@@{COMPUTE_PROFILE_ID}@@\"\n    },\n    {\n      \"name\": \"network_profile_id\",\n      \"value\": \"@@{NETWORK_PROFILE_ID}@@\"\n    },\n    {\n      \"name\": \"db_parameter_profile_id\",\n      \"value\": \"@@{DB_PROFILE_ID}@@\"\n    }\n  ],\n  \"timeMachineId\": \"@@{TM_ID}@@\",\n  \"latestSnapshot\": False\n}\n\n# Make the call and set the response operation ID to the variable\nresp = urlreq(url, verb='POST', auth='BASIC', user=era_user, passwd=era_pass, params=json.dumps(payload), headers=headers)\nif resp.ok:\n  print \"CLONE_OPERATION_ID={0}\".format(json.loads(resp.content)['operationId'])\nelse:\n  print \"Post Database clone request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["CLONE_OPERATION_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "6MonitorOperation",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds, headers, and URL\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/operations\/@@{CLONE_OPERATION_ID}@@\"\n\n# Monitor the operation\nfor x in range(60):\n  \n  print \"Sleeping for 60 seconds.\"\n  sleep(60)\n  resp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n  print \"Percentage Complete: {0}\".format(json.loads(resp.content)['percentageComplete'])\n  \n  # If complete, break out of loop\n  if json.loads(resp.content)['percentageComplete'] == \"100\":\n    break\n\n# If the operation did not complete within 60 minutes, assume it's not successful and error out\nif json.loads(resp.content)['percentageComplete'] != \"100\":\n  print \"Get Operation ID timed out\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)\n\n# Get the newly provision DB Entity Name and set it to a variable\nprint \"CLONE_ENTITY_NAME={0}\".format(json.loads(resp.content)['entityName'])",
+								"eval_variables": ["CLONE_ENTITY_NAME"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "3600",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "7GetDatabaseInfo",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Get DB Server IP and ID\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/clones\/name\/@@{CLONE_ENTITY_NAME}@@?detailed=true\"\nresp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\nif resp.ok:\n  print \"CLONE_SERVER_IP={0}\".format(json.loads(resp.content)['hostIP'])\n  print \"CLONE_ID={0}\".format(json.loads(resp.content)['id'])\n  print \"CLONE_SERVER_ID={0}\".format(json.loads(resp.content)['primaryHost'])\nelse:\n  print \"Get DB info request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["CLONE_SERVER_IP", "CLONE_ID", "CLONE_SERVER_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "a56589a3_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "7bd63f34_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					},
+					"type": "",
+					"uninstall_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "EraPackage"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "1CleanupDB"
+							}, {
+								"kind": "app_task",
+								"name": "2MonitorCleanupOp"
+							}, {
+								"kind": "app_task",
+								"name": "3DeregisterDBServer"
+							}, {
+								"kind": "app_task",
+								"name": "4MonitorDeregOp"
+							}],
+							"name": "99b487fd_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [{
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "1CleanupDB"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "2MonitorCleanupOp"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "2MonitorCleanupOp"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "3DeregisterDBServer"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "3DeregisterDBServer"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "4MonitorDeregOp"
+									}
+								}],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "1CleanupDB",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Cleanup the DB and get Operation ID\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/clones\/@@{CLONE_ID}@@?cleanup=true\"\nresp = urlreq(url, verb='DELETE', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\nif resp.ok:\n  #print \"CLEANUP_OPERATION_ID={0}\".format(json.loads(resp.content)['operationId'])\n  print \"Success!\"\nelse:\n  print \"Cleanup Clone Operation failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["CLEANUP_OPERATION_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "2MonitorCleanupOp",
+							"state": "ACTIVE",
+							"attrs": {
+								"script": "# Set creds, headers, and URL\n#era_user = '@@{era_creds.username}@@'\n#era_pass = '@@{era_creds.secret}@@'\n#headers = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n#url     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/operations\/@@{CLEANUP_OPERATION_ID}@@\"\n\n# Monitor the operation\n#for x in range(60):\n  \n#  print \"Sleeping for 30 seconds.\"\n#  sleep(30)\n#  resp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n#  print \"Percentage Complete: {0}\".format(json.loads(resp.content)['percentageComplete'])\n  \n  # If complete, break out of loop\n#  if json.loads(resp.content)['percentageComplete'] == \"100\":\n#    break    \n\n# If the operation did not complete within 10 minutes, assume it's not successful and error out\n#if json.loads(resp.content)['percentageComplete'] != \"100\":\n#  print \"Cleanup Operation timed out\", json.dumps(json.loads(resp.content), indent=4)\n#  exit(1)\nsleep(60)",
+								"type": "",
+								"command_line_args": "",
+								"exit_status": [],
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "3DeregisterDBServer",
+							"state": "ACTIVE",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Cleanup the DB and get Operation ID\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/dbservers\/@@{CLONE_SERVER_ID}@@?remove=false&soft-remove=false&delete=true&delete-vm-snapshots=true&delete-vgs=true\"\nresp = urlreq(url, verb='DELETE', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\nif resp.ok:\n  print \"DEREGISTER_OPERATION_ID={0}\".format(json.loads(resp.content)['operationId'])\nelse:\n  print \"Deregister DB Server Operation failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["DEREGISTER_OPERATION_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "4MonitorDeregOp",
+							"state": "ACTIVE",
+							"attrs": {
+								"script": "# Set creds, headers, and URL\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/operations\/@@{DEREGISTER_OPERATION_ID}@@\"\n\n# Monitor the operation\nfor x in range(60):\n  \n  print \"Sleeping for 30 seconds.\"\n  sleep(30)\n  resp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n  print \"Percentage Complete: {0}\".format(json.loads(resp.content)['percentageComplete'])\n  \n  # If complete, break out of loop\n  if json.loads(resp.content)['percentageComplete'] == \"100\":\n    break    \n\n# If the operation did not complete within 10 minutes, assume it's not successful and error out\nif json.loads(resp.content)['percentageComplete'] != \"100\":\n  print \"Deregistration Operation timed out\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"type": "",
+								"command_line_args": "",
+								"exit_status": [],
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "a8f36ab1_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "99b487fd_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					}
+				},
+				"variable_list": []
+			}, {
+				"description": "",
+				"action_list": [],
+				"type": "DEB",
+				"service_local_reference_list": [{
+					"kind": "app_service",
+					"name": "Clone"
+				}],
+				"name": "Package2",
+				"version": "",
+				"options": {
+					"install_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "Package2"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "58ca4a03_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "8b1f1a7b_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "58ca4a03_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					},
+					"type": "",
+					"uninstall_runbook": {
+						"task_definition_list": [{
+							"target_any_local_reference": {
+								"kind": "app_package",
+								"name": "Package2"
+							},
+							"retries": "0",
+							"description": "",
+							"message_list": [],
+							"child_tasks_local_reference_list": [],
+							"name": "ee8bedbe_dag",
+							"state": "ACTIVE",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "faacff5d_runbook",
+						"state": "ACTIVE",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "ee8bedbe_dag"
+						},
+						"message_list": [],
+						"variable_list": []
+					}
+				},
+				"variable_list": []
+			}],
+			"app_profile_list": [{
+				"deployment_create_list": [{
+					"type": "GREENFIELD",
+					"action_list": [],
+					"depends_on_list": [],
+					"name": "f6be2786_deployment",
+					"published_service_local_reference_list": [],
+					"max_replicas": "1",
+					"package_local_reference_list": [{
+						"kind": "app_package",
+						"name": "Package2"
+					}],
+					"substrate_local_reference": {
+						"kind": "app_substrate",
+						"name": "Era_Cloned_DB"
+					},
+					"min_replicas": "1",
+					"variable_list": [],
+					"description": ""
+				}, {
+					"type": "GREENFIELD",
+					"action_list": [],
+					"depends_on_list": [],
+					"name": "f9a4c530_deployment",
+					"published_service_local_reference_list": [],
+					"max_replicas": "1",
+					"package_local_reference_list": [{
+						"kind": "app_package",
+						"name": "EraPackage"
+					}],
+					"substrate_local_reference": {
+						"kind": "app_substrate",
+						"name": "EraServer"
+					},
+					"min_replicas": "1",
+					"variable_list": [],
+					"description": ""
+				}],
+				"description": "",
+				"action_list": [{
+					"description": "Run this action to get a list of Snapshot times and IDs of the clone's parent.",
+					"type": "user",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "1GetSnapshotList"
+							}],
+							"name": "a0f9d050_dag",
+							"attrs": {
+								"edges": [],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "1GetSnapshotList",
+							"attrs": {
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Get Time Machine Capability\nurl  = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/tms\/@@{TM_ID}@@\/capability?summary=false&time-zone=UTC\"\nresp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n\nif resp.ok:\n  \n  # Cycle through the snapshot modes\n  for modes in json.loads(resp.content)['capability']:\n    print \"{0} MODE\".format(modes['mode'])\n    \n    # Cycle through the snapshots if they exist\n    if modes['snapshots']:\n      for snapshot in modes['snapshots']:\n        print \"  ------------------------\"\n        print \"  Snapshot ID (copy this): {0}\".format(snapshot['id'])\n        print \"  Snapshot Time Stamp:     {0}\".format(snapshot['snapshotTimeStamp'])\n        \n    # Print message if the don't exist\n    else:\n      print \"  ------------------------\"\n      print \"  No {0} snapshots exist.\".format(modes['mode'].lower())\n\nelse:\n  print \"Get Time Machine Capability request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"type": "",
+								"command_line_args": "",
+								"exit_status": [],
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "b03f406f_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "a0f9d050_dag"
+						},
+						"variable_list": []
+					},
+					"name": "Get Parent Snapshot List"
+				}, {
+					"description": "Run this action to refresh your database clone to a newer snapshot.  Optionally specify a snapshot ID, if left blank, the clone will be refreshed to the most recent snapshot.",
+					"type": "user",
+					"critical": false,
+					"runbook": {
+						"task_definition_list": [{
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [{
+								"kind": "app_task",
+								"name": "1ValidateSnapID"
+							}, {
+								"kind": "app_task",
+								"name": "2RefreshClone"
+							}, {
+								"kind": "app_task",
+								"name": "3MonitorOperation"
+							}],
+							"name": "0bf61154_dag",
+							"attrs": {
+								"edges": [{
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "1ValidateSnapID"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "2RefreshClone"
+									}
+								}, {
+									"from_task_reference": {
+										"kind": "app_task",
+										"name": "2RefreshClone"
+									},
+									"edge_type": "user_defined",
+									"type": "",
+									"to_task_reference": {
+										"kind": "app_task",
+										"name": "3MonitorOperation"
+									}
+								}],
+								"type": ""
+							},
+							"timeout_secs": "0",
+							"type": "DAG",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "1ValidateSnapID",
+							"attrs": {
+								"type": "CALL_RUNBOOK",
+								"inarg_list": [],
+								"runbook_reference": {
+									"kind": "app_runbook",
+									"name": "cc6c835b_runbook"
+								}
+							},
+							"timeout_secs": "0",
+							"type": "CALL_RUNBOOK",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "2RefreshClone",
+							"attrs": {
+								"exit_status": [],
+								"script": "# Set creds and headers\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\n\n# Set the URL and payload\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/clones\/@@{CLONE_ID}@@\/refresh\"\npayload = {\n  \"cloneId\": \"@@{CLONE_ID}@@\",\n  \"snapshotId\": \"@@{VALIDATED_SNAP_ID}@@\",\n  \"latestSnapshot\": False,\n  \"timeZone\": \"UTC\",\n  \"cloneInfo\": [\n    {\n      \"name\": \"working_dir\",\n      \"value\": \"@@{WORKING_DIR}@@\"\n    }\n  ]\n}\n\n# Make the call and set the response operation ID to the variable\nresp = urlreq(url, verb='POST', auth='BASIC', user=era_user, passwd=era_pass, params=json.dumps(payload), headers=headers)\nif resp.ok:\n  print \"REFRESH_OPERATION_ID={0}\".format(json.loads(resp.content)['operationId'])\nelse:\n  print \"Post Database refresh request failed\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)",
+								"eval_variables": ["REFRESH_OPERATION_ID"],
+								"eval_scope": "local",
+								"type": "",
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "SET_VARIABLE",
+							"variable_list": []
+						}, {
+							"target_any_local_reference": {
+								"kind": "app_service",
+								"name": "Era"
+							},
+							"retries": "0",
+							"description": "",
+							"child_tasks_local_reference_list": [],
+							"name": "3MonitorOperation",
+							"attrs": {
+								"script": "# Set creds, headers, and URL\nera_user = '@@{era_creds.username}@@'\nera_pass = '@@{era_creds.secret}@@'\nheaders = {'Content-Type': 'application\/json', 'Accept': 'application\/json'}\nurl     = \"https:\/\/@@{era_ip}@@:8443\/era\/v0.8\/operations\/@@{REFRESH_OPERATION_ID}@@\"\n\n# Monitor the operation\nfor x in range(60):\n  \n  print \"Sleeping for 30 seconds.\"\n  sleep(30)\n  resp = urlreq(url, verb='GET', auth='BASIC', user=era_user, passwd=era_pass, headers=headers)\n  print \"Percentage Complete: {0}\".format(json.loads(resp.content)['percentageComplete'])\n  \n  # If complete, break out of loop\n  if json.loads(resp.content)['percentageComplete'] == \"100\":\n    break\n\n# If the operation did not complete within 20 minutes, assume it's not successful and error out\nif json.loads(resp.content)['percentageComplete'] != \"100\":\n  print \"Get Operation ID timed out\", json.dumps(json.loads(resp.content), indent=4)\n  exit(1)\n\n# Get the newly provision DB Entity Name and set it to a variable\n#print \"DB_ENTITY_NAME={0}\".format(json.loads(resp.content)['entityName'])",
+								"type": "",
+								"command_line_args": "",
+								"exit_status": [],
+								"script_type": "static"
+							},
+							"timeout_secs": "0",
+							"type": "EXEC",
+							"variable_list": []
+						}],
+						"description": "",
+						"name": "2264c81a_runbook",
+						"main_task_local_reference": {
+							"kind": "app_task",
+							"name": "0bf61154_dag"
+						},
+						"variable_list": [{
+							"val_type": "STRING",
+							"description": "",
+							"name": "era_snapshot_id",
+							"type": "LOCAL",
+							"value": "",
+							"label": "",
+							"attrs": {
+								"type": ""
+							},
+							"editables": {
+								"value": true
+							}
+						}]
+					},
+					"name": "Refresh Clone"
+				}],
+				"name": "Default",
+				"variable_list": [{
+					"val_type": "STRING",
+					"description": "",
+					"name": "source_db_name",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "source_snapshot_id",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "cloned_db_name",
+					"type": "LOCAL",
+					"value": "",
+					"label": "",
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "cloned_db_password",
+					"type": "SECRET",
+					"value": "",
+					"label": "",
+					"attrs": {
+						"is_secret_modified": false,
+						"secret_reference": {},
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "cloned_db_public_key",
+					"type": "LOCAL",
+					"value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUm18acWv344TgOXBuOnozuSXytDuqKFVE0+x7CK\/dZ6Y331lBF+f8AE\/Ng3tzxvCDUeth3pa7XO\/Y95zc+hTLGROBmWdgidfykBi2FeQ6hZOcsUDslPUL3Ig8UpPzbOva276YP3266+1BGjLi14neBSJvpSV2DvXQovMb57mhAWs9BlVj3UIviHBMQYXc9RUiyoTBYphqQi5THsQafEFEA+3EJ\/NLhqF4CTRZoxMk+VDZbQCCYk0SNEDvDnhEUCIQW1KDg8HDaHrCcRE8DKwi1dgDjASwcUeDuaFto0WrUaj8FdOvaIwjLKYC9DUgsPel+FOLNkg0cPi0vuXb1CGZ era@domain.com",
+					"label": "",
+					"attrs": {
+						"type": ""
+					},
+					"editables": {
+						"value": true
+					}
+				}, {
+					"val_type": "STRING",
+					"description": "",
+					"name": "era_ip",
+					"type": "LOCAL",
+					"value": "10.45.5.40",
+					"label": "",
+					"attrs": {
+						"type": ""
+					}
+				}]
+			}],
+			"published_service_definition_list": [],
+			"default_credential_local_reference": {
+				"kind": "app_credential",
+				"name": "era_creds"
+			},
+			"type": "USER"
+		},
+		"name": "SSPTool-Corp-ERA-Nutanix"
+	},
+	"api_version": "3.0",
+	"metadata": {
+		"last_update_time": "1552572027144077",
+		"kind": "blueprint",
+		"spec_version": 42,
+		"creation_time": "1552412797232639",
+		"name": "EraDatabaseClone",
+		"project_reference": {
+          "kind": "project",
+          "uuid": "167bb3d0-23bb-42cd-9c65-66c31c4bbc0a"
+        }
+	}
+}

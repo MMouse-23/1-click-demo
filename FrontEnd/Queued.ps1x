@@ -1,0 +1,332 @@
+
+
+<%
+                                                                                     
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+                                                                                    
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+$ModuleDir                    = "C:\1-click-demo\Modules\" 
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation"
+$global:debug=1
+
+
+
+Import-Module "$($ModuleDir)\Queue\Validate-QueueItem.psm1" -DisableNameChecking
+Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking;       
+
+$time = (get-date).addhours(-22)
+$queueobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100000 * FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE DateCreated >= '$time'"; 
+$manual = $queueobjects | where {$_.QueueStatus -eq "Manual" -or $_.QueueStatus -eq "Ready"}                                                                                  
+                                                                                      
+                      
+
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($FrontEnd)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($FrontEnd)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+%>
+
+ <div id="bodyContent" class="n-body-content" style="display: block;width:60%;margin: 0 auto;">
+
+    <!-- Render the content based on the state of the app. -->
+    <div id="stateContainer" class="n-state-container">
+    <div class="n-state-content-form"><!-- Configuration Form -->
+<div id="configurationFormContainer" class="n-configuration-form-container">
+
+  <!-- Configuration Holder -->
+  <div class="configViewHolder">
+    <div class="startViewHolder view-holder" data-test="startViewHolder" style="display: block;"><div><div id="startContainer" class="n-start-container">
+  <div class="content-container">
+    <div class="startPageGuideContainer">
+       
+        <br>Welcome! This page will show your items pending in the queue.<br>  
+        <br>It can take up to 2 minutes before your item shows up or moves between queues.<br>   <br>
+   
+            <br>
+
+<input type=submit value="New" onclick="window.location.href='EditQueue.ps1x'" /><br><br><br>
+
+        <b>1 Click Demo Queue:</b><br>
+
+ <% 
+ if ($Manual){ 
+ %>
+        
+
+         <br>These items need correction and will not be auto submitted.<br><br>
+        <div id="load_tweets1">
+
+
+        <table border=1 cellpadding=5 width=1200 style="empty-cells:show" cellspacing="0";>
+         <tr>
+          <th style="color:#204FA0;background-color:#BDD043">Date Submitted</th>
+          <th style="color:#204FA0;background-color:#BDD043">POC Name</th>
+          <th style="color:#204FA0;background-color:#BDD043">Queue Status</th>
+          <th style="color:#204FA0;background-color:#BDD043">UUID</th>
+          <th style="color:#204FA0;background-color:#BDD043">SenderName</th>
+          <th style="color:#204FA0;background-color:#BDD043">Edit</th>
+          <th style="color:#204FA0;background-color:#BDD043">Remove</th>
+          <th style="color:#204FA0;background-color:#BDD043">Start</th>
+          <th style="color:#204FA0;background-color:#BDD043">Validation Status</th>
+         </tr> 
+
+<%
+  foreach ($manitem in $manual){
+    $global:queueuuid = $manitem.queueuuid 
+    $validation = Validate-QueueItem -processingmode "SCAN" -scanuuid $manitem.queueuuid 
+      
+    
+    $RemoveURL= "QueueMover.ps1x?QueueUUID=$($manitem.queueuuid)&Action=Archive"
+    $ForceURL= "QueueMover.ps1x?QueueUUID=$($manitem.queueuuid)&Action=Ready"
+    $ShowValid= "Queued.ps1x?QueueUUID=$($manitem.queueuuid)"
+    if ($manitem.DemoLab -eq "0"){
+      $dlb = ""
+    } else {
+      $dlb = "on"
+    } 
+    if ($manitem.Slackbot -eq "0"){
+      $Slack = ""
+    } else {
+      $Slack = "on"
+    } 
+    if ($manitem.Destroy -eq "0"){
+      $destroy = ""
+    } else {
+      $destroy = "on"
+    } 
+    if ($manitem.Installmove -eq "0"){
+      $move = ""
+    } else {
+      $move = "on"
+    }
+    if ($manitem.InstallXRay -eq "0"){
+      $xray = ""
+    } else {
+      $xray = "on"
+    }            
+    if ($manitem.EnableFlow -eq "0"){
+      $flow = ""
+    } else {
+      $flow = "on"
+    }
+    if ($manitem.DemoXenDeskT -eq "0"){
+      $dxd = ""
+    } else {
+      $dxd = "on"
+    }
+    if ($manitem.InstallFrame -eq "0"){
+      $frame = ""
+    } else {
+      $frame = "on"
+    }
+    if ($manitem.InstallEra -eq "0"){
+      $era = ""
+    } else {
+      $era = "on"
+    }
+    if ($manitem.DemoExchange -eq "0"){
+      $xch = ""
+    } else {
+      $xch = "on"
+    }
+    if ($manitem.InstallKarban -eq "0"){
+      $krb = ""
+    } else {;
+      $krb = "on";
+    };
+    if ($manitem.DemoIISXPlay -eq "0"){;
+      $xpI = "";
+    } else {;
+      $xpI = "on";
+    };
+    if ($manitem.InstallFiles -eq "0"){;
+      $IFS = "";
+    } else {;
+      $IFS = "on";
+    };
+    if ($manitem.InstallSSP -eq "0"){;
+      $ssp = "";
+    } else {;
+      $ssp = "on";
+    };
+    if ($manitem.InstallSplunk -eq "0"){;
+      $Splunk = "";
+    } else {;
+      $Splunk = "on";
+    };
+    if ($manitem.InstallHashiVault -eq "0"){;
+      $HcV = "";
+    } else {;
+      $HcV = "on";
+    };
+    if ($manitem.InstallBPPack -eq "0"){;
+      $bpp = "";
+    } else {;
+      $bpp = "on";
+    };
+    if ($manitem.UpdateAOS -eq "0"){;
+      $UpAOS = "";
+    } else {;
+      $UpAOS = "on";
+    };
+    if ($manitem.InstallObjects -eq "0"){;
+      $objects = "";
+    } else {;
+      $objects = "on";
+    };
+    if ($manitem.Install3TierWin -eq "0"){;
+      $3TWin = "";
+    } else {;
+      $3TWin = "on";
+    };
+    if ($manitem.EnableBlueprintBackup -eq "0"){;
+      $Backup = "";
+    } else {;
+      $backup = "on";
+    };
+    $PCm = $manitem.pcmode
+    $loc = $manitem.Location
+    $ver = $manitem.VersionMethod
+    $dbg = $manitem.debug
+    if ($dbg -le 1){
+      $dbg = 1
+    }
+    $Nameencode     = [System.Web.HttpUtility]::UrlEncode($($manitem.POCNAME))
+    $IPencode       = [System.Web.HttpUtility]::UrlEncode($($manitem.PEClusterIP))
+    $Senderencode   = [System.Web.HttpUtility]::UrlEncode($($manitem.SenderName))
+    $Emailencode    = [System.Web.HttpUtility]::UrlEncode($($manitem.SenderEMail))
+    $gatewayencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.InfraGateway))
+    $Subnetencode   = [System.Web.HttpUtility]::UrlEncode($($manitem.InfraSubnetmask))
+    $dnsencode      = [System.Web.HttpUtility]::UrlEncode($($manitem.DNSServer))
+    $PEAdminencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.PEAdmin))
+    $PEPassencode   = [System.Web.HttpUtility]::UrlEncode($($manitem.PEPass))
+    $VPNUserencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.VPNUser))
+    $VPNPassencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.VPNPass))
+    $VPNURLencode   = [System.Web.HttpUtility]::UrlEncode($($manitem.VPNURL))
+    $VPNURLencode   = [System.Web.HttpUtility]::UrlEncode($($manitem.VPNURL))
+    $nw2dhcpencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.Nw2DHCPStart))
+    $nw2vlanencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.nw2vlan))
+    $nw2subnetencode= [System.Web.HttpUtility]::UrlEncode($($manitem.nw2subnet))
+    $nw2gwencode    = [System.Web.HttpUtility]::UrlEncode($($manitem.nw2gw))  
+    $nw1vlanencode  = [System.Web.HttpUtility]::UrlEncode($($manitem.nw1vlan))    
+    $GuidEncode     = [System.Web.HttpUtility]::UrlEncode($($manitem.queueUUID))
+    $pcvencode      = [System.Web.HttpUtility]::UrlEncode($($manitem.PCVersion))
+    $cvmipsencode   = [System.Web.HttpUtility]::UrlEncode($($manitem.CVMIPs))
+    
+    $editURL= "EditQueue.ps1x?Nw2D=$nw2dhcpencode&Nw1V=$nw1vlanencode&Nw2V=$nw2vlanencode&Nw2S=$nw2subnetencode&Nw2G=$nw2gwencode&pocname=$Nameencode&IP=$IPencode&GW=$gatewayencode&Sub=$Subnetencode&dns=$dnsencode&vpnu=$VPNUserencode&vpnp=$VPNPassencode&vpnur=$VPNURLencode&sdn=$Senderencode&sde=$Emailencode&pea=$PEAdminencode&pep=$PEPassencode&PCV=$pcvencode&Lab=$($dlb)&Flow=$($flow)&Kar=$($krb)&ERA=$($era)&XCH=$($xch)&FS=$($IFS)&XD=$($dxd)&IXP=$($xpI)&IFS=$($IFS)&ssp=$($ssp)&Guid=$GuidEncode&slk=$Slack&Move=$move&pcm=$pcm&ver=$ver&loc=$loc&dbg=$dbg&Splunk=$Splunk&HcV=$HcV&3TWin=$3TWin&bpp=$bpp&objects=$objects&UpAOS=$UpAOS&frame=$frame&backup=$backup&$xray=$xray&Destroy=$destroy&cvmips=$cvmipsencode"
+%>
+
+
+        <tr>
+          <td style="text-align: center;"><%= $($manitem.DateCreated) %></td>
+          <td style="text-align: center;"><%= $($manitem.POCNAME) %></td>
+          <td style="text-align: center;"><%= $($manitem.QueueStatus) %></td>
+          <td style="text-align: center;"><%= $($manitem.queueUUID) %></td>
+          <td style="text-align: center;"><%= $($manitem.SenderName) %></td>
+
+        <% if ($($manitem.SenderEMail) -eq $user -or $portable -eq 1){  %>
+          <% if ($($manitem.QueueStatus) -eq "ready"){ %>
+            <td style="text-align: center;">Starting</a></td>
+          <% } else {  %>
+            <td style="text-align: center;"><a href=<%= $editURL %> >Edit</a></td>
+          <% }  %>
+          <td style="text-align: center;"><a href=<%= $RemoveURL %> >Remove</a></td>
+          <% if ($($manitem.QueueStatus) -eq "ready"){ %>
+              <td style="text-align: center;">Starting</a></td>
+            <% } else { %>
+              <td style="text-align: center;"><a href=<%= $ForceURL %> >Start</a></td>
+            <% }  %>
+       
+        <% } else { %>
+          <td style="text-align: center;">Unauthorized</td>
+          <td style="text-align: center;">Unauthorized</td>
+          <td style="text-align: center;">Unauthorized</td>       
+      <% }  %>
+
+<%   
+    if ($validation -notcontains "Error"){ 
+
+%> 
+               <td style="text-align: center;"><a href=<%= $ShowValid %> ><img src="images/Green.gif" style="width:50px;height:50px;"></a></td>
+<%  
+    } else {
+%>
+               <td style="text-align: center;"><a href=<%= $ShowValid %> ><img src="images/red.gif" style="width:40px;height:50px;"></td>
+<%   
+    } 
+%>
+         </tr>
+<% 
+  } 
+%>
+        </table>      
+
+     <br>
+<% 
+  if ($request['QueueUUID'] -ne $null -and $request['QueueUUID'] -ne "") {
+%>
+      <h2>Validation Details</h2>
+      <pre>
+      <br>
+<%
+
+    Validate-QueueItem -processingmode "SCAN" -Scanuuid $request['QueueUUID']
+
+%> 
+
+      </pre>
+<%
+  } 
+} else { 
+%>
+ <br>There are no pending items in the queue.<br><br>
+<% 
+} 
+%>
+        </li>
+   
+ 
+
+
+
+
+        </li>
+
+
+    </div>
+  </div>
+</div>
+<meta http-equiv="refresh" content="20">
+</div>
+</div>
+</body>
+
+

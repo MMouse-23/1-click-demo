@@ -1,0 +1,123 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:debug=1
+
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"
+
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+} 
+
+%>
+
+  <div id="bodyContent" class="n-body-content" style="display: block;;width: 40%;margin: 0 auto;">
+    <div id="stateContainer" class="n-state-container">
+   <br> <br> <br>
+            <h1>Help</h1>
+            <br>
+            <br>
+<%            
+      if ($Portable -eq 1){
+%>
+            <B>Generic Requirements</B><br><br>
+            -1-3 node PE Cluster with 384 RAM or more- 256 is untested.<br>
+            -Free VLAN that is specified and in the same as the prism Element cluster IP.<br>
+            -1TB Storage<br>
+            -No Proxy based, Internet connection for the cluster.<br>
+            -Open the console to enjoy or demonstrate the build, but careful, because selecting text in the blue screens pauses that Job!<br><br>
+            -VMware does not work in the portable edition, YET, HPOC only<br>
+
+            <B>Troubleshooting</B><br><br>
+            <B>Job not starting?</B> <br><br>
+            In Portable edition Jobs always run in the console of the vm. RDP into the machine.<br>
+            Check the logfiles here: c:\1-click-demo\system\logging<br>
+            Did you run the nutanix CMDlets in the console?<br>
+            The job can be found in Scheduled Tasks in windows, Base-Queueuuid try to start it. (saves you retying the form.)<br>
+            You cannot execute a second build with the same UUID. Resubmit the form. ^^Only to be used for troubleshooting<br>
+            If a job crashes lock files may exist or remain in c:\1-click-demo\Locks\, clean if you want to restart.<br>
+            Disable Maintenance and BackendProcessor Tasks and run the files in the console. You can see the same in the logfiles above.<br>
+            If you did not install the secret files (Token URL in the Calm Blueprint), then you have to reconstruct the ERA auto download config.<br><br>
+            <B>Network issues? </B><br><br>
+            1-click-demo uses the entire VLan that you specify. Starting from the given Prism Element cluster spedified.
+            This can cause conflicts if run in a wrong environment, like larger subnets.<br>
+            You can edit the config here: c:\1-click-demo\modules\LIB-Config-DetailedDataSet.psm1<br>
+            1-click-demo uses both a static range and a IPAM range in the subnet between PE Cluster and the end of the subnet.<br>
+            This is because the IPAM Endpoint is hardcoded to the end of the subnet.<br><br>
+            <B>PE Cannot Login Issues?</B><br><br>
+            1-click-demo requires the admin AND nutanix user to be default or as per given. One password will be used for both.<br>
+            Passwords containing the word Nutanix / admin wont work, as the that contains the same word as the username<br>
+            Normal foundation based clusters all comply to these specs.<br>
+            <br>
+            <B>Local Payload</B><br><br>
+            If you wish to use the local payload instead of the Dropbox location, please stop the backend processor.<br>
+            Delete c:\windows\temp\downloaded.txt and restart the backendprocessor in the console. <br>
+            it will prompt for a download, please make sure your internet connection is stable. No MD5 checking in place for this download.<br>
+            Once the payload is downloaded, change the source in the advanced options on the new build page: <a href='Queued.ps1x'> Here </a>. <br>
+            Clear the field to select Local once the images are downloaded, dont forget to start the backendprocessor once you are done.<br>
+            <br><br>
+            <B>Generic</B><br><br>
+            The website / API / Or Mailbox (mailbox disabled in in portable edition) can create a Queue item. Once this queue item is validated, its started using a base thread.<br>
+            The 3 above can create a table entry that the BackendProcessor handles and starts. Mainteance is only required for the auto download config files and long term running instances.<br>
+            If not in prortable mode, the backend processor also handles the outlook mailbox.<br>
+            The backedprocessor handles the processing of queue items and the validation module actually moves the queue item.<br>
+            Once the queue item is in ready state. It will be picked up by the backend processor.<br>
+            Once that has completed, a scheduled task is created called Base-Queueuuid.<br>
+            A Base thread is simply a scheduled task in the windows task scheduler, firing the base processor with the correct queueuuid;<br>
+            which then starts its own watchdog and several other threads to serve the actual build process in total ~50 (25 + 1 Watchdog each) threads are run for 1 cluster.<br>
+            Each thread has its own watchdog, but only the base watchdog maintains the statistics.<br>
+            Each thread is aware of its parent and shall monitor if the parent is still alive, if not childs will die with the parent.<br>
+            Maintenance also does cleaning of tasks. Checking logfiles and timestamps. <br>
+            Do not change install dirs as this might break that logic, and it will kill itself.<br><br>
+            <B>Errors and Reds</B><br><br>
+            Generally dont matter unless the screen is full of them for an half hour. some / most errors are self healing, a handfull of reds is normal..
+
+<%            
+      }
+%>          <br><br><br>
+            Demo Instructions are documented on the SE Wiki Site here:<br>
+            <a href="https://confluence.eng.nutanix.com:8443/display/SEW/1-Click-Demo">1-Click-Demo SE WIKI</a><br><br>
+
+<br>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</body>
+
+ 
+

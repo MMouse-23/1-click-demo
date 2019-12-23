@@ -1,0 +1,34 @@
+
+
+<%
+                             
+                                                                                           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\Logging"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\Logging" 
+}
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLOptionsTableName   = "QueueInfo"
+$global:debug=1
+$ModuleDir                    = "C:\HostedPocProvisioningService\Modules\Queue"
+
+$Options      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLOptionsTableName)";
+
+
+$json = $options | select ID,QueueValue,Description,Required,AcceptedValues,Validation,ConfluenceLinkInt,ConfluenceLinkDemo,CLASS| ConvertTo-Json -Depth 2
+
+$json
+
+%>
+
+

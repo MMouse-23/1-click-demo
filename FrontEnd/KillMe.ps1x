@@ -1,0 +1,161 @@
+<% 
+                                             
+           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation"
+$global:debug=1
+$ModuleDir                    = "C:\1-click-demo\Modules\Base"
+$Lockdir                      = "C:\1-click-demo\Lock"
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"                                                                                
+Import-Module "$($ModuleDir)\LIB-Write-Log.psm1" -DisableNameChecking;                                                                                       
+if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+
+$QueueUUID = $request['QueueUUID']                                                                               
+$datavar = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataVarTableName) WHERE QueueUUID='$QueueUUID';"
+$datagen = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataGenTableName) WHERE QueueUUID='$QueueUUID';"
+                                                                                          
+if ($datavar.senderemail -ne $user -and $datagen.supportemail -ne $user){
+  $approved = 0
+  write $datavar.senderemail
+  write $user
+} else {
+  $approved = 1
+}                                                                                  
+                                                                                       
+                                                                                       
+%>                                                                                           
+
+  <!-- Body Content
+  ================================================== -->
+ <div id="bodyContent" class="n-body-content" style="display: block;">
+
+    <!-- Render the content based on the state of the app. -->
+    <div id="stateContainer" class="n-state-container">
+    <div class="n-state-content-form"><!-- Configuration Form -->
+<div id="configurationFormContainer" class="n-configuration-form-container">
+
+  <!-- Configuration Holder -->
+  <div class="configViewHolder">
+    <div class="startViewHolder view-holder" data-test="startViewHolder" style="display: block;"><div><div id="startContainer" class="n-start-container">
+  <div class="content-container">
+    <div class="startPageGuideContainer">
+    
+<%  
+    
+    write-log -message "Working with ID $QueueUUID"
+    $action = $request['Action']
+         %>  <br>  <% 
+
+
+    if ($approved -eq 1){
+
+      write-log -message "Datavar User is matching with current user"
+
+    }
+
+     %> 
+ <br> <br>
+    <%  
+    write-log -message "Action is $action"
+
+    if ($action -eq "Kill" -and $approved -eq 1){ 
+      write "Action is Kill"
+      $root = get-process -id $datavar.rootPID -ea:0
+      $lockfile = "$($Lockdir)\$($datavar.PEClusterIP)-base.lck"
+      remove-item $lockfile -ea:0
+      if (!$root){
+        Write-log -message "Root is dead already......" 
+      } else {
+        write-log "Killing Core"
+        write $datavar.rootPID
+        #$hide = stop-process -id $datavar.rootPID -ea:0
+        (Get-WmiObject win32_process -Filter "ProcessId = '$($datavar.rootPID)'").terminate()
+        sleep 5
+      }
+      $query ="UPDATE [$($SQLDatabase)].[dbo].[$($SQLDataStatsTableName)] 
+        SET Status = 'User Terminated'
+        WHERE QueueUUID='$($QueueUUID)';" 
+      $Update = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query $query
+
+ %> 
+ <br>
+      <br> <b> Thread Stopped </b> <br>
+      <meta http-equiv="refresh" content="3; Running.ps1x" />
+<% 
+    } elseif ($action -eq "clean" -and $approved -eq 1) {
+      write "Action is Clean"
+      $tasks = get-scheduledtask | where {$_.taskname -match $QueueUUID -and $_.taskpath -notmatch "Microsoft|Scripting|Backup"}
+      foreach ($task in $tasks){
+        write-log "Stopping task $($task.taskname)"
+        $task | stop-scheduledtask -ea:0
+        $task | unregister-scheduledtask -confirm:0 -ea:0
+      }
+      $processes = Get-WmiObject Win32_Process |where {$_.commandline -match $QueueUUID}
+
+      write-log "We are terminating $($processes.count) Powershell processes."
+        
+      foreach ($thread in $processes){
+        $Threadinfo  = $thread.commandline -split "\\" | select -last 1
+        write-log "We are terminating $($threadinfo.split(".")[0])"
+        stop-process -id $thread.ProcessId -force -confirm:0 -ea:0
+        write-log "Thread with command line $($thread.commandline) terminated."
+      }
+      $query ="UPDATE [$($SQLDatabase)].[dbo].[$($SQLDataStatsTableName)] 
+        SET Status = 'User Cleaned'
+        WHERE QueueUUID='$($QueueUUID)';" 
+      $Update = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query $query
+%> 
+      <br><br><b> Thread Cleaned </b>
+      <meta http-equiv="refresh" content="3; Running.ps1x" />
+<%  
+
+    } else {  
+
+ %> 
+      <b> You are not Authorized for this ID </b>
+      <meta http-equiv="refresh" content="5; Running.ps1x" />
+<% 
+
+    }
+%>    
+        </li>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</body>
+
+ 

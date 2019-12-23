@@ -1,0 +1,96 @@
+<% 
+                                             
+           
+if ($env:computername -match "dev"){
+  $global:SQLInstance           = "1-click-dev\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-dev\SQLEXPRESS"
+} else {
+  $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
+  $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
+}
+
+
+
+$global:SQLDatabase           = "1ClickDemo"
+$global:SQLQueueTableName     = "Queue"
+$global:SQLDataVarTableName   = "DataVar"
+$global:SQLDataGenTableName   = "DataGen"
+$global:SQLLoggingTableName   = "Logging"
+$global:SQLDataStatsTableName = "DataStats"
+$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDataValidationTableName  = "DataValidation"
+$global:debug=1
+$ModuleDir                    = "C:\1-click-demo\Modules\Queue"
+$global:BaseDir               = "C:\1-click-demo\"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"                                                                                
+                                                                                       
+   if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
+  $global:portable = 0
+} else {
+  $global:portable = 1
+}
+if ($Portable -eq 1){
+  $user = "Portable 1-click-demo"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
+  $content -replace "---Username---", $user
+} else {
+  $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
+  $sendername              = $user.split("@")[0]
+  $sendername              = $sendername.replace('.', ' ')
+  $content = get-content "$($Frontend)\app\functions\header.html"
+  $content -replace "---Username---", $user
+}  
+                                                                                    
+                                                                                       
+                                                                                       
+                                                                                       
+                                                                                       
+%>                                                                                           
+
+  <!-- Body Content
+  ================================================== -->
+ <div id="bodyContent" class="n-body-content" style="display: block;">
+
+    <!-- Render the content based on the state of the app. -->
+    <div id="stateContainer" class="n-state-container">
+    <div class="n-state-content-form"><!-- Configuration Form -->
+<div id="configurationFormContainer" class="n-configuration-form-container">
+
+  <!-- Configuration Holder -->
+  <div class="configViewHolder">
+    <div class="startViewHolder view-holder" data-test="startViewHolder" style="display: block;"><div><div id="startContainer" class="n-start-container">
+  <div class="content-container">
+    <div class="startPageGuideContainer">
+
+<% 
+    if ($request['Action'] -eq "Archive"){ 
+        
+
+      $query = "UPDATE [$($SQLDatabase)].[dbo].$($SQLQueueTableName) 
+          SET QueueStatus = 'Archived'
+          WHERE QueueUUID='$($request['QueueUUID'])';" 
+      $Update = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query $query;
+
+ %> 
+      <b> Item Deleted </b>
+      <meta http-equiv="refresh" content="3; Queued.ps1x" />
+<% 
+    } else { 
+      $query = "UPDATE [$($SQLDatabase)].[dbo].$($SQLQueueTableName) 
+          SET QueueStatus = 'Ready'
+          WHERE QueueUUID='$($request['QueueUUID'])';" 
+      $Update = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query $query;
+%> 
+      <b> Item Moved </b>
+      <meta http-equiv="refresh" content="3; Queued.ps1x" />
+    <% } %>    
+    
+        </li>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</body>
+
+ 
