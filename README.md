@@ -2,9 +2,7 @@
 
 
 
-
-
-**Current Version 1.1.1.2**
+**Current Version 1.1.1.3**
 
 ## Introduction
 
@@ -26,6 +24,18 @@
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.1.1.3
+
+**Fixes:**
+- Queue Manual sending finished emails, missing manual mail message.
+- Missing 3 Node PC IPs.
+- XRay 3.6.1 new URL structure.
+- Better LCM Status messages. 
+
+**Features:**
+- ERA Low RAM, ERA Supports 384GB ram blocks, only Maria, PostGres and MySQL will be installed, including blueprint. Oracle, MSSQL and PostgresHA are disabled.
+
 
 ## Release notes 1.1.1.2
 
@@ -196,7 +206,7 @@ Hence progress indicator is not time relative. (edited)
 > This blueprint will be released on the 1.1.0 version of 1CD.
 
 
-## Dev Version 1.1.1.3
+## Version 1.1.1.3
 
 **Fixes:**
 - Queue Manual sending finished emails, missing manual mail message.
