@@ -1091,7 +1091,7 @@
 							"name": "Install Office 365",
 							"state": "ACTIVE",
 							"attrs": {
-								"script": "choco install office365proplus -y",
+								"script": "choco install office365proplus -y --ignore-checksums",
 								"type": "",
 								"command_line_args": "",
 								"exit_status": [],
