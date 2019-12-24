@@ -56,37 +56,35 @@ if ($Portable -eq 1){
 <h2>1-click-demo Portable Edition</h2>
 
 <br>
+<font color="Orange">The download is no longer available, please use the <a href="https://github.com/MMouse-23/1-click-demo/blob/master/BluePrints/1CD.json"> Blueprint </a> or Extract from the running VM in 1-click-demo.</font><br>
 <font color="Orange">Warning, This package is internal only.</font><br>
 <font color="Orange">It contains a Windows license.</font><br>
 <font color="RED">Do not go onsite with this system unless you are comfortable.</font><br>
 No other licensed software is present on this image.<br>
 <br>
 
-<div style="text-align: center">
-  <a href="https://dl.dropboxusercontent.com/s/dya87xtkn9tyi0p/1CD.zip"> Image   </a> <img border="0" alt="W3Schools" src="./images/zip.jpg" width="50"</a> <br>
-
-</div>
-
-
 
 <br><br>
 <h3>Usage</h3>
 <ol>
-<li>Download and Unzip (22GB)</li>
-<li>Power On the VM (build on VMware workstation 15.0.2 build-10952284)</li>
+<li>Run 1-click-demo on HPOC and extract the running application</li>
+<li>Use 1-click-image or manual SCP copy to extract the VM</li>
+<li>or use the <a href="https://github.com/MMouse-23/1-click-demo/blob/master/BluePrints/1CD.json">blueprint </a> to build your own, see slack and BP Description details for instructions</li>
+<li>Convert the VM to format of your choice using qemu-img
+<li>Power On the VM on your own hypervisor.</li>
 <li>System logs in Automatically. (svc_foundation / Vrijdag01! if you need RDP for some reason</li>
 <li>Check the IP, make sure the VMware Nic is in Bridge mode.</li>
 <li>Check the DHCP address, set an IP if needed, but DHCP is fine.</li>
-<li>Make sure you have and internet connection on the VM. before proceeding</li>
+<li>Make sure the subnet your are targeting is empty above the Prism Element IP</li>
 <li>By default 1CD works in online mode. No need to do anything.</li>
 <li>Optional to download the main payload. Keep in mind, this payload is about 50GB.</li>
 <li>Do this on a fast internet connection, and after you moved the image to its final destination.</li>
-<li>Not all content is downloaded offline, this is not a full darksite version yet.<br />Always online payload is about 7 GB. PC, Karbon, Files and NCC.<br />Once the powershell script ends the backend processor should be ready to run.</li>
+<li>Not all content is downloaded offline, this is not a full darksite version yet.<br />Always online payload is about 7 GB. PC, Karbon, Files and NCC.<br />Once the powershell script ends the backend processor should be ready to run, you will not be prompted or ask to change these settings.</li>
+<li>The videos below are outdated, no manual actions are required except checking the status on the webpage as per below.</li>
 </ol>
 <p>Please validate that this is the case, by opening the Live Status page on the website on its DHCP Address. The Queue Processor should be green. This means you are all set.<br />Before you head up to the client its wise to test the thing.<br />For the portable edition, email is obviously disabled.</p>
 <br> <b>The <a href="https://dl.dropboxusercontent.com/s/3i6p4f9c0un075c/Prep1CD.mp4"> video </a> below shows how to run the prepare / install on your laptop:</b>
 <video controls src="https://dl.dropboxusercontent.com/s/3i6p4f9c0un075c/Prep1CD.mp4" width="640" height="360"></video>
-
 <br>
 
 <h3>Testing</h3>
