@@ -69,7 +69,7 @@ Function Wrap-Update-LCMV2-PC {
   
     } else {
       
-      if ($loops -ge 2){
+      if ($loops -ge 3){
         write-log -message "Hung LCM Inventory Task" -SEV "WARN"
   
         LIB-Send-Confirmation -reciever $datavar.SenderEMail -datagen $datagen -datavar $datavar -mode "LCMHung" -logfile $logfile
@@ -78,6 +78,39 @@ Function Wrap-Update-LCMV2-PC {
         [array]$updates += 1
       
       } else {
+
+        write-log -message "Getting DNS servers";
+        
+        try{
+          [array]$DNS =REST-Get-DNS-Servers -datagen $datagen -datavar $datavar -mode $mode
+          
+          if ($dns){
+    
+            write-log -message "We have $($Dns.count) DNS servers to remove";
+    
+            $hide = REST-Remove-DNS-Servers -datagen $datagen -datavar $datavar -DNSArr $dns -mode $mode
+            
+          } else {
+    
+            write-log -message "There are no DNS Servers to Remove";
+    
+          }
+          $DNS =$null
+          [array]$DNS += $datagen.DC1IP
+          [array]$DNS += $datagen.DC2IP
+          $hide = REST-Add-DNS-Servers -datagen $datagen -datavar $datavar -DNSArr $dns -mode $mode   
+    
+          write-log -message "Checking DNS servers"
+              
+          REST-Get-DNS-Servers -datagen $datagen -datavar $datavar -mode $mode
+    
+          write-log -message "DNS Setup Success";
+
+        } catch {
+      
+          write-log -message "DNS Setup Failure" -sev "WARN"
+
+        }
 
         write-log -message "Let me try the inventory again!" -SEV "WARN"
 

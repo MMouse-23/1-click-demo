@@ -938,14 +938,15 @@ do {
       sleep 10
       REST-Px-Update-NCC -datavar $datavar -datagen $datagen -mode "PE" -target $TargetPE.version
 
-      write-log -message "Running PC Installer Wrapper for Post Install" -sev "CHAPTER" -slacklevel 1
-
-      Wrap-Post-PC -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile
-
       write-log -message "Running Full LCM Prism Central Updates (REST)" -sev "CHAPTER" -slacklevel 1
 
       $updates = Wrap-Update-LCMV2-PC -datagen $datagen -datavar $datavar -logfile $logfile
 
+      write-log -message "Running PC Installer Wrapper for Post Install" -sev "CHAPTER" -slacklevel 1
+
+      $LauchCommand = 'Wrap-Post-PC -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile'
+      Lib-Spawn-Wrapper -Type "Post-PC" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
+  
       write-log -message "Getting Versions"
 
       $calmversion = ($updates | where {$_.Name -match "Calm"}).version
