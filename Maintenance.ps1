@@ -286,12 +286,15 @@ if ((get-date).adddays(-5) -ge $uptime ){
 $total4time = 0
 $validatedCounter = 0
 $startingCounter = 10
+$threshold = $startingCounter - 3
+
 [array]$Stats = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE Status='Completed'"
 $last10 = $Stats | sort DateCreated | where {$_.AHVVersion -match "Nutanix|AHV" }| select -last 10
 foreach ($stat in $last10){
   $Validation = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataValidationTableName) WHERE QueueUUID='$($stat.QueueUUID)';"
   if (!$validation){
     $startingCounter = $startingCounter -1
+    $threshold = $threshold - 1
   }
   if ($validation.ERA_Validated -eq 1 -and $validation.Calm_Validated -eq 1 -and $validation.Karbon_Validated -eq 1 -and $validation.Core_Validated -eq 1 -and $validation.Files_Validated -eq 1 -and $validation.Objects_Validated -eq 1){
     $validatedCounter ++
@@ -321,13 +324,15 @@ if ($Averagetime.totalseconds -ge $Limitseconds){
   } else {
     $subject = "Prod 1CD Service Buildtime Monitoring"
   }
-  Send-MailMessage -BodyAsHtml -body $body -to $datagenTemp.supportemail -from $datagenTemp.smtpsender -port $datagenTemp.smtpport -smtpserver $datagenTemp.smtpserver -subject $subject
+  if ($portable -eq 0){
+    Send-MailMessage -BodyAsHtml -body $body -to $datagenTemp.supportemail -from $datagenTemp.smtpsender -port $datagenTemp.smtpport -smtpserver $datagenTemp.smtpserver -subject $subject
+  }
 } else {
 
   write-log -message "Average Build time is $Averagetime, threshold at $limittime<br>";
 
 }
-$threshold = $startingCounter - 3
+
 if ($validatedCounter -lt $threshold){
   $datagenTemp = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataGenTableName) WHERE QueueUUID='$($last10[0].QueueUUID)';"
   $body = $null
@@ -348,7 +353,9 @@ if ($validatedCounter -lt $threshold){
   } else {
     $subject = "Prod 1CD Service Validation Monitoring"
   }
-  Send-MailMessage -BodyAsHtml -body $body -to $datagenTemp.supportemail -from $datagenTemp.smtpsender -port $datagenTemp.smtpport -smtpserver $datagenTemp.smtpserver -subject $subject
+  if ($portable -eq 0){
+    Send-MailMessage -BodyAsHtml -body $body -to $datagenTemp.supportemail -from $datagenTemp.smtpsender -port $datagenTemp.smtpport -smtpserver $datagenTemp.smtpserver -subject $subject
+  }
 } else {
 
   write-log -message "Validation is $validatedCounter out of $($last10.count), alerting at $threshold"

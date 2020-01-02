@@ -29,7 +29,7 @@ $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TO
 
 #History 
 #$time = (get-date).addhours(-22)
-#$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated <= '$time'" order by DateCreated";
+#$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated <= '$time' order by DateCreated";
 
 #$Datavar      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataVarTableName) WHERE QueueUUID='$QueueUUID';" 
 [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}         

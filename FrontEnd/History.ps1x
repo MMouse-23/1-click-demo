@@ -7,10 +7,11 @@ if ($env:computername -match "dev"){
   $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
   $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
 }
-
 $global:BaseDir               = "C:\1-click-demo\"
-$global:Frontend              = "C:\1-click-demo\FrontEnd"
+$global:Frontend              = "C:\1-click-demo\FrontEnd"   
+
 $global:SQLDatabase           = "1ClickDemo"
+$supportemail                 = "Michell.Grauwmans@nutanix.com"
 $global:SQLQueueTableName     = "Queue"
 $global:SQLDataVarTableName   = "DataVar"
 $global:SQLDataGenTableName   = "DataGen"
@@ -28,7 +29,7 @@ if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
 
 #History 
 $time = (get-date).addhours(-22)
-$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated <= '$time'" order by DateCreated";
+$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated <= '$time' order by DateCreated";
 
 #$Datavar      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataVarTableName) WHERE QueueUUID='$QueueUUID';" 
 [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}         
@@ -39,13 +40,13 @@ $singleusermode   = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -g
 
 if ($Portable -eq 1){
   $user = "Portable 1-click-demo"
-  $content = get-content "$($FrontEnd)\app\functions\header-portable.html"
+  $content = get-content "$($Frontend)\app\functions\header-portable.html"
   $content -replace "---Username---", $user
 } else {
   $user             = (get-aduser $request.ServerVariables["LOGON_USER"]).UserPrincipalName
   $sendername              = $user.split("@")[0]
   $sendername              = $sendername.replace('.', ' ')
-  $content = get-content "$($FrontEnd)\app\functions\header.html"
+  $content = get-content "$($Frontend)\app\functions\header.html"
   $content -replace "---Username---", $user
 }  
 %>
@@ -56,9 +57,36 @@ if ($Portable -eq 1){
 
 
    
+        <br>Welcome! This website will help you show progress on the 1-click-demo`s running.<br>
+        Note! This service is for any block in our Corporate network including Hosted POCs eg. rx.corp.nutanix.com<br><br>
+
+    
+            <br>
+        <div id="refresh"
+
+        <% if ($backstate -match "Ready|Running"){ %> 
+         <b>Queue Processor   &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp   :<img src="images/Green.gif" style="width:50px;height:50px;"></b><br><br>
+        <% } else {%>
+         <b>Queue Processor  &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp   :&nbsp<img src="images/red.gif" style="width:40px;height:50px;"></b><br><br>
+        <% } %>
+
+        <%
+        if ($singleusermode){ 
+        %>
+         Single User Mode: <font color="Orange"> <B> True</B> </font> 
+       <% 
+        } else {
+       %>
+       Single User Mode: <font color="Green"><B>  False</B> </font> 
+       <%
+        }
+       %> 
+       </b> <br><br><br>
+       <b>Nr of daemons running &nbsp : &nbsp&nbsp <% $($Active.count) %></b><br>
 
         <br>
-            <b>History Executions:</b><br>
+        <br>
+            <b>Recent Executions:</b><br>
             <br>
             <br>
           <%   if (!$statobjects){ %>
@@ -68,7 +96,6 @@ if ($Portable -eq 1){
             There are no recent executions
       <br>
       <br>
-
 
          <%    }  else { %>
           <%     $running = $statobjects | sort datecreated -Descending %>
@@ -176,13 +203,45 @@ $($Validation.Objects_Result)
 %> 
                   <td style="text-align: center;" width="125"><img src="./images/preloader.gif" height="30" width="30" align ="center" title="NO Validation Record found, validation may be still pending."/></td>
 <%   
-      }
+    }
 %> 
 <%
 } else {
 %>
-<td style="text-align: center;" width="125"><%= $status %></td>
+
+
+<%
+  if ($User -eq $sender -or $portable -eq 1 -or $Supportemail -eq $user){
+    if ($status -eq "Running" -or $status -eq "Pending"){
+      $KillURL = "KillMe.ps1x?Action=Kill&QueueUUID=$($item.QueueUUID)"
+      if ($status -eq "Pending"){
+%>  
+        <td style="text-align: center;" width="125"><img src="./images/pending.gif" height="75" width="75" align ="center" title="<%= $status %>"/><br> 
 <% 
+      } else {
+%>
+        <td style="text-align: center;" width="125"><img src="./images/tenor.gif" height="75" width="75" align ="center" title="<%= $status %>"/><br> 
+<%
+      }
+%>
+      <input type=submit value="Terminate" onclick="window.location.href = '<%= $KillURL %>'" /></td>
+<% 
+    } elseif ($status -match "Terminated") {
+      $CleanURL = "KillMe.ps1x?Action=Clean&QueueUUID=$($item.QueueUUID)"
+%>  
+      <td style="text-align: center;" width="125"><%= $status %><br>
+      <input type=submit value="Clean" onclick="window.location.href = '<%= $CleanURL %>'" /></td>
+<%   
+    } else {
+%> 
+      <td style="text-align: center;" width="125"><%= $status %></td>
+<% 
+    }
+  } else {
+%> 
+    <td style="text-align: center;" width="125"><%= $status %></td>
+<%   
+  }
 }
 %> 
 

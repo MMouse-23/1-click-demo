@@ -18,7 +18,7 @@ function Wrap-Validate-Build {
   $applications = REST-Query-Calm-Apps -datavar $datavar -datagen $datagen
   if ($datavar.InstallBPPack -eq 1 -and $datavar.hypervisor -notmatch "ESX|VMware"){
     $minbp = 9
-  } elseif ($datavar.DemoIISXPlay -eq 0 -and $datavar.InstallSplunk -eq 0 -and $datavar.InstallBPPack -eq 0 -and $datavar.InstallHashiVault -eq 0 -and $datavar.Install3TierWin -eq 0 -and $datavar.hypervisor -notmatch "ESX|VMware"){
+  } elseif ($datavar.DemoIISXPlay -eq 0 -and $datavar.InstallSplunk -eq 0 -and $datavar.InstallBPPack -eq 0 -and $datavar.InstallHashiVault -eq 0 -and $datavar.Install1CD -eq 0 -and $datavar.hypervisor -notmatch "ESX|VMware"){
     $minbp = 0
   } else {
     $minbp = 3
