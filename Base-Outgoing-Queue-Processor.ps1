@@ -945,7 +945,7 @@ do {
       write-log -message "Running PC Installer Wrapper for Post Install" -sev "CHAPTER" -slacklevel 1
 
       $LauchCommand = 'Wrap-Post-PC -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile'
-      Lib-Spawn-Wrapper -Type "Post-PC" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
+      Lib-Spawn-Wrapper -Type "POSTPC" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
   
       write-log -message "Getting Versions"
 
