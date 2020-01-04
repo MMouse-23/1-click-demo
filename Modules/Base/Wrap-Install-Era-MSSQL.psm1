@@ -167,8 +167,12 @@ Function Wrap-Install-Era-MSSQL {
   
     $operation = REST-ERA-MSSQL-SW-ProfileCreate -datagen $datagen -datavar $datavar -database $database
   
+    write-log -message "Creating Domain MSSQL Profile"
+    
+    $domainprofile = REST-ERA-Create-WindowsDomain-Profile -datagen $datagen -datavar $datavar
+
     write-log -message "Creating Network MSSQL Profile"
-  
+
     $MSSQLProfile = REST-ERA-MSSQL-NW-ProfileCreate -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin -Networkname $datagen.Nw1name
   
     $count = 0
