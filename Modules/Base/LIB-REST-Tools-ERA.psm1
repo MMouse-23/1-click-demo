@@ -174,8 +174,9 @@ Function REST-ERA-ProvisionDatabase {
   "clusterId": "$($ERACluster.id)",
   "dbParameterProfileId": "$($dbParameterProfileId)",
   "useExistingDBserver": true,
+  "newDbServerTimeZone": "Europe/Amsterdam",
   "timeMachineInfo": {
-    "name": "$($Type)_TM",
+    "name": "$($databasename)_TM",
     "description": "",
     "slaId": "$($SLA.ID)",
     "schedule": {
@@ -215,9 +216,6 @@ Function REST-ERA-ProvisionDatabase {
     "name": "application_type",
     "value": "$($Type)"
   }, {
-    "name": "nodes",
-    "value": "$($NodeCount)"
-  }, {
     "name": "listener_port",
     "value": "$($Port)"
   }, {
@@ -229,9 +227,6 @@ Function REST-ERA-ProvisionDatabase {
   }, {
     "name": "auto_tune_staging_drive",
     "value": true
-  }, {
-    "name": "enable_synchronous_mode",
-    "value": false
   }, {
     "name": "host_ip",
     "value": "$($dbserver.ip)"
