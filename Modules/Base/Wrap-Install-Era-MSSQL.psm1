@@ -115,7 +115,7 @@ Function Wrap-Install-Era-MSSQL {
       sleep 10
 
       $slas = REST-ERA-GetSLAs -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
-      $gold = $slas | where {$_.name -eq "Gold"}
+      $gold = $slas | where {$_.name -eq "DEFAULT_OOB_GOLD_SLA"}
     
       write-log -message "Using GOLD SLA SLAs $($gold.id)"
 

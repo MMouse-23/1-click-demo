@@ -148,7 +148,8 @@ Function REST-ERA-ProvisionDatabase {
     [string] $dbParameterProfileId,
     [string] $Type,
     [string] $Port,
-    [string] $Databasename
+    [string] $Databasename,
+    [string] $NodeCount = 1
   )
 
   write-log -message "Debug level is $debug";
@@ -214,6 +215,9 @@ Function REST-ERA-ProvisionDatabase {
     "name": "application_type",
     "value": "$($Type)"
   }, {
+    "name": "nodes",
+    "value": "$($NodeCount)"
+  }, {
     "name": "listener_port",
     "value": "$($Port)"
   }, {
@@ -225,6 +229,9 @@ Function REST-ERA-ProvisionDatabase {
   }, {
     "name": "auto_tune_staging_drive",
     "value": true
+  }, {
+    "name": "enable_synchronous_mode",
+    "value": false
   }, {
     "name": "host_ip",
     "value": "$($dbserver.ip)"
