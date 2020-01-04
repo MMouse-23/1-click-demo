@@ -935,14 +935,17 @@ Function REST-ERA-MSSQL-Clone {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
   $networkprofile = $profiles | where {$_.type -eq "network" -and $_.enginetype -eq "sqlserver_database"}
-  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"} 
+  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"}
+  $domainProfile  = $profiles | where {$_.type -eq "WindowsDomain"}
 
   write-log -message "Building MSSQL Clone JSON"
   write-log -message "Using $($Profiles.count) Profiles"
   write-log -message "Using $($networkprofile.ID) as Network Profile"
   write-log -message "Using $($computeprofile.ID) as Compute Profile"
+  write-log -message "Using $($domainProfile.ID) as Domain Profile"
   write-log -message "Using $($database.timeMachineId) as TimeMachine Source ID"
   write-log -message "Using $($snapshot.id) as Snapshot Source ID"
+
   write-log -message "Creating new database server MSSQL2-$($datavar.pocname)"
 
   $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/tms/$($database.timeMachineId)/clones"
@@ -954,6 +957,7 @@ Function REST-ERA-MSSQL-Clone {
   "snapshotId": "$($snapshot.id)",
   "pitrTimestamp": null,
   "timeZone": "Europe/Amsterdam",
+  "newDbServerTimeZone": "Central European Standard Time",
   "latestSnapshot": false,
   "newImplementation": false,
   "tags": [],
@@ -963,6 +967,12 @@ Function REST-ERA-MSSQL-Clone {
   }, {
     "name": "vm_win_lang_settings",
     "value": "en-US"
+  }, {
+    "name": "sql_user_name",
+    "value": "sa"
+  }, {
+    "name": "authentication_mode",
+    "value": "windows"
   }, {
     "name": "working_dir",
     "value": "C:\\temp"
@@ -979,11 +989,17 @@ Function REST-ERA-MSSQL-Clone {
     "name": "drives_to_mountpoints",
     "value": false
   }, {
-    "name": "database_name",
-    "value": "WideWorldImporters"
-  }, {
     "name": "instance_name",
     "value": "MSSQLSERVER"
+  }, {
+    "name": "database_name",
+    "value": "WideWorldImportersDEV"
+  }, {
+    "name": "cluster_only",
+    "value": false
+  }, {
+    "name": "cluster_db",
+    "value": false
   }, {
     "name": "compute_profile_id",
     "value": "$($computeprofile.ID)"
@@ -991,21 +1007,14 @@ Function REST-ERA-MSSQL-Clone {
     "name": "network_profile_id",
     "value": "$($networkprofile.ID)"
   }, {
-    "name": "vm_win_domain_name",
-    "value": "$($datagen.Domainname)"
-  }, {
-    "name": "vm_win_domain_admin_user",
-    "value": "administrator"
-  }, {
     "name": "vm_dbserver_admin_password",
-    "value": "$($datavar.PEPass)"
-  }, {
-    "name": "vm_win_domain_admin_user_password",
     "value": "$($datavar.PEPass)"
   }, {
     "name": "vm_dbserver_user",
     "value": "$($datagen.Domainname)\\Domain Users"
-  }]
+  }],
+  "applicationType": "sqlserver_database",
+  "windowsDomainProfileId": "$($domainProfile.ID)"
 }
 "@
   if ($debug -ge 2){
@@ -1022,6 +1031,73 @@ Function REST-ERA-MSSQL-Clone {
 
   Return $task
 } 
+
+
+Function REST-ERA-Create-WindowsDomain-Profile {
+  Param (
+    [object] $datagen,
+    [object] $datavar
+  )
+
+  $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Loading Json"
+  $json = @"
+{
+  "type": "WindowsDomain",
+  "topology": "ALL",
+  "dbVersion": "ALL",
+  "systemProfile": false,
+  "properties": [{
+    "name": "DOMAIN_NAME",
+    "value": "$($datagen.Domainname)",
+    "description": "Name of the Windows domain"
+  }, {
+    "name": "DOMAIN_USER_NAME",
+    "value": "$($datagen.Domainname)\\administrator",
+    "description": "Username with permission to join computer to domain"
+  }, {
+    "name": "DOMAIN_USER_PASSWORD",
+    "value": "$($datavar.PEPass)",
+    "description": "Password for the username with permission to join computer to domain"
+  }, {
+    "name": "DB_SERVER_OU_PATH",
+    "value": "",
+    "description": "Custom OU path for database servers"
+  }, {
+    "name": "CLUSTER_OU_PATH",
+    "value": "",
+    "description": "Custom OU path for server clusters"
+  }, {
+    "name": "ADD_PERMISSION_ON_OU",
+    "value": "",
+    "description": "Grant server clusters permission on OU"
+  }],
+  "name": "$($datagen.Domainname)",
+  "description": "Domain Profile"
+}
+"@
+
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+
+  write-log -message "Creating Profile Windows Domain"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+    Return $RespErr
+  }
+
+  Return $task
+} 
+
 
 Function REST-ERA-Oracle-Clone {
   Param (
