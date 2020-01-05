@@ -2,13 +2,13 @@
 
 
 
-**Current Version 1.1.1.3**
+**Current Version 1.1.1.4**
 
 ## Introduction
 
 > The 1-Click-Demo application installs all Nutanix products on a blanc Nutanix cluster.
 > With Demo content, Unattended, repeatable, consistent results. 
->
+
 > This repository contains the complete codebase for 1-Click-Demo.
 > Together with its blueprint it forms one complete install package
 
@@ -24,6 +24,15 @@
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.1.1.4
+
+**Fixes:**
+- ERA 1.2.0 Support, ERA enhanced some parts of their design. This required code changes on 1CD side.
+- Allowing average install time of 2 hours and 45 minutes for Admin control.
+
+**Known Issues:**
+- Karbon LCM meta file is broken, although it works eventually, it causes extra install loops. The initial LCM offering is Karbon 1.0.3, once 1.0.3 is installed LCM offers 1.0.4, this is causing a plus 30 minutes install time. Confirmed by hand. 
 
 ## Release notes 1.1.1.3
 
