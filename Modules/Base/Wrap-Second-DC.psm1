@@ -30,6 +30,10 @@ Function Wrap-Second-DC {
     
     $status = PSR-Add-DomainController -IP $datagen.DC2IP -SysprepPassword $datagen.SysprepPassword -DNSServer $datavar.DNSServer -Domainname $datagen.Domainname
 
+    write-log -message "Installing CA" -sev "CHAPTER" -slacklevel 1
+
+    $CA = PSR-Install-CA -IP $datagen.DC1IP -SysprepPassword $datagen.SysprepPassword -Domainname $datagen.Domainname
+
     write-log -message "Datavar $($datavar.POCName) POCName"
     
     sleep 180

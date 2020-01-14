@@ -2642,6 +2642,40 @@ Function PSR-Add-DomainController {
   return $resultobject
 };
 
+Function PSR-Install-CA {
+  param (
+    [string]$SysprepPassword,
+    [string]$IP,
+    [string]$Domainname
+  )
+  write-log -message "Debug level is $debug";
+  write-log -message "Building credential objects (2).";
+
+  $password = $SysprepPassword | ConvertTo-SecureString -asplaintext -force;
+  $LocalCreds = New-Object System.Management.Automation.PsCredential("administrator",$password);
+  $DomainCreds = New-Object System.Management.Automation.PsCredential("$($Domainname)\administrator",$password);
+
+  write-log -message "Installing CA on a DC in the domain.";
+ 
+  try {
+    $connect = invoke-command -computername $ip -credential $DomainCreds {
+      
+      Install-WindowsFeature ADCS-Cert-Authority
+           
+      Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" -KeyLength 2048 -HashAlgorithmName SHA256 -ValidityPeriod Years -ValidityPeriodUnits 5 -CACommonName $env:userdomain
+             
+      Install-WindowsFeature ADCS-Web-Enrollment
+           
+      Install-AdcsWebEnrollment
+
+    } -ea:0
+  }  catch {  
+
+    write-log -message "I dont want to be here."
+
+  }
+  
+};
 
 Export-ModuleMember *
 
