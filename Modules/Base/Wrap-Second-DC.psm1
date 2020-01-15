@@ -34,11 +34,11 @@ Function Wrap-Second-DC {
 
     $CA = PSR-Install-CA -IP $datagen.DC1IP -SysprepPassword $datagen.SysprepPassword -Domainname $datagen.Domainname
 
-    write-log -message "Datavar $($datavar.POCName) POCName"
+    #write-log -message "Datavar $($datavar.POCName) POCName"
     
-    sleep 180
+    #sleep 180
 
-    $test = PSR-Generate-DomainContent -datavar $datavar -datagen $datagen -SysprepPassword $datagen.SysprepPassword -IP $datagen.DC2IP -Domainname $datagen.Domainname -sename $datagen.sename -hosts $hosts
+    #$test = PSR-Generate-DomainContent -datavar $datavar -datagen $datagen -SysprepPassword $datagen.SysprepPassword -IP $datagen.DC2IP -Domainname $datagen.Domainname -sename $datagen.sename -hosts $hosts
     
   } until ($status.result -eq "Success" -or $counter -ge 5)
 
