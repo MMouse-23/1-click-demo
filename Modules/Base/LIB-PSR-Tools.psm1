@@ -2660,13 +2660,13 @@ Function PSR-Install-CA {
   try {
     $connect = invoke-command -computername $ip -credential $DomainCreds {
       
-      Install-WindowsFeature ADCS-Cert-Authority
+      Install-WindowsFeature ADCS-Cert-Authority -confirm:0
            
-      Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" -KeyLength 2048 -HashAlgorithmName SHA256 -ValidityPeriod Years -ValidityPeriodUnits 5 -CACommonName $env:userdomain
+      Install-AdcsCertificationAuthority -CAType EnterpriseRootCA -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" -KeyLength 2048 -HashAlgorithmName SHA256 -ValidityPeriod Years -ValidityPeriodUnits 5 -CACommonName $env:userdomain -confirm:0
              
-      Install-WindowsFeature ADCS-Web-Enrollment
+      Install-WindowsFeature ADCS-Web-Enrollment -confirm:0
            
-      Install-AdcsWebEnrollment
+      Install-AdcsWebEnrollment -confirm:0
 
     } -ea:0
   }  catch {  
