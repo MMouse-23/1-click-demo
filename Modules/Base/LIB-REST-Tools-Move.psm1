@@ -14,8 +14,10 @@ Function REST-Move-Login {
   write-log -message "Replacing JSON String Variables"
 $Json = @"
 {
-    "username":"nutanix",
-    "password":"nutanix/4u"
+  "Spec": {
+    "username": "nutanix",
+    "password": "nutanix/4u"
+  }
 }
 "@ 
 
@@ -24,15 +26,17 @@ $Json = @"
     
 $Json = @"
 {
+  "Spec": {
     "username":"nutanix",
     "password":"$($datavar.PEPass)"
+  }
 }
 "@ 
     if ($debug -ge 2 ){
       $json | out-file c:\temp\movelogin.json
     } 
   }
-  $URL = "https://$($datagen.MoveIP)/v1/users/login"
+  $URL = "https://$($datagen.MoveIP)/move/v2/users/login"
 
   write-log -message "Using URL $URL"
 
