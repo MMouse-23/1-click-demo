@@ -66,13 +66,14 @@ Function  LIB-Config-ISOurlData {
     write-log "We added $ERAAutoUrl to the download list."
 
   }
-
+https://www.dropbox.com/s/0b90x6p2igvg4hj/Citrix_Virtual_Apps_and_Desktops_7_1912.iso?dl=0
+$Citrix1912    =
   # VMWARE URLS First
   if ($datavar.Hypervisor -match "ESX") {
     if ($region -match "www|Backup" ){
-
+ 
       $SQL2014ISO    = "https://dl.dropboxusercontent.com/s/f7eju77487nsp1a/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
-      $XENDESKTOP    = "https://dl.dropboxusercontent.com/s/2vnz7zvwln0zj6c/Citrix_Virtual_Apps_and_Desktops_7_1808_2.iso";
+      $XENDESKTOP    = "https://dl.dropboxusercontent.com/s/0b90x6p2igvg4hj/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "https://dl.dropboxusercontent.com/s/vkr8kcsnhx4ubgd/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.ISO";
       $Windows2016ISO= "https://dl.dropboxusercontent.com/s/0fafvu4c7rev1x5/Windows2016.iso";
       $Centos_1CD    = "https://dl.dropboxusercontent.com/s/4bi8xtwqmcq7e1m/Centos8x64V6.vmdk"
@@ -95,7 +96,7 @@ Function  LIB-Config-ISOurlData {
     } elseif ($region -eq "Local"){
 
       $SQL2014ISO    = "http://$($ip)/data/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
-      $XENDESKTOP    = "http://$($ip)/data/XenApp_and_XenDesktop_7_15_3000.iso";
+      $XENDESKTOP    = "http://$($ip)/data/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "http://$($ip)/data/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.iso";
       $Windows2016ISO= "http://$($ip)/data/Windows2016.iso";
       $Centos_1CD    = "http://$($ip)/data/Centos8x64V6.vmdk"
@@ -127,7 +128,7 @@ Function  LIB-Config-ISOurlData {
       }
       Write-log -message "Using Nutanix HPOC in VMware mode, this is a $Site build, IP is $IP"
       $SQL2014ISO    = "http://$($ip)/images/1-Click-Demo/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
-      $XENDESKTOP    = "http://$($ip)/images/1-Click-Demo/XenApp_and_XenDesktop_7_15_3000.iso";
+      $XENDESKTOP    = "http://$($ip)/images/1-Click-Demo/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "http://$($ip)/images/1-Click-Demo/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.ISO";
       $Windows2016ISO= "http://$($ip)/images/1-Click-Demo/Windows2016.iso";
       $Centos_1CD    = "http://$($ip)/images/1-Click-Demo/Centos8x64V6.vmdk"
@@ -153,7 +154,7 @@ Function  LIB-Config-ISOurlData {
   ## AHV URLS
     if ($region -match "www|Backup" ){
       $SQL2014ISO    = "https://dl.dropboxusercontent.com/s/f7eju77487nsp1a/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
-      $XENDESKTOP    = "https://dl.dropboxusercontent.com/s/vr8vq34r5mvybsv/Citrix_Virtual_Apps_and_Desktops_7_1808_2.iso";
+      $XENDESKTOP    = "https://dl.dropboxusercontent.com//s/0b90x6p2igvg4hj/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "https://dl.dropboxusercontent.com/s/vkr8kcsnhx4ubgd/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.ISO";
       $Windows2016ISO= "https://dl.dropboxusercontent.com/s/0fafvu4c7rev1x5/Windows2016.iso";
       $Centos_1CD    = "https://dl.dropboxusercontent.com/s/eh5kx8sh5fr0b9x/CentOS-7-x86_64-GenericCloud.qcow2"
@@ -175,7 +176,7 @@ Function  LIB-Config-ISOurlData {
 
     } elseif ($region -eq "Local"){
       $SQL2014ISO    = "http://$($ip)/data/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
-      $XENDESKTOP    = "http://$($ip)/data/XenApp_and_XenDesktop_7_15_3000.iso";
+      $XENDESKTOP    = "http://$($ip)/data/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "http://$($ip)/data/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.iso";
       $Windows2016ISO= "http://$($ip)/data/Windows2016.iso";
       $Centos_1CD    = "http://$($ip)/data/CentOS-7-x86_64-GenericCloud.qcow2"
@@ -208,7 +209,7 @@ Function  LIB-Config-ISOurlData {
       Write-log -message "Using Nutanix HPOC mode, this is a $Site build, IP is $IP"
 
       $SQL2014ISO    = "http://$($ip)/images/1-Click-Demo/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
-      $XENDESKTOP    = "http://$($ip)/images/1-Click-Demo/XenApp_and_XenDesktop_7_15_3000.iso";
+      $XENDESKTOP    = "http://$($ip)/images/1-Click-Demo/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "http://$($ip)/images/1-Click-Demo/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.ISO";
       $Windows2016ISO= "http://$($ip)/images/1-Click-Demo/Windows2016.iso";
       $Centos_1CD    = "http://$($ip)/images/1-Click-Demo/CentOS-7-x86_64-GenericCloud.qcow2"
@@ -236,7 +237,7 @@ Function  LIB-Config-ISOurlData {
   $Object | add-member Noteproperty 'Windows 10_1CD'    $Windows10_1CD;     
   $Object | add-member Noteproperty VirtIO1_1_4ISO      $VirtIO1_1_4ISO;
   $Object | add-member Noteproperty SQL2014ISO          $SQL2014ISO;
-  $Object | add-member Noteproperty XENDESKTOPISO       $XENDESKTOP;
+  $Object | add-member Noteproperty 'Citrix 1912'       $XENDESKTOP;
   $Object | add-member Noteproperty office2016ISO       $office2016;
   $Object | add-member Noteproperty MoveAuto            $MoveAutoUrl;
   $Object | add-member Noteproperty CentOS_1CD          $CentOs_1CD;
