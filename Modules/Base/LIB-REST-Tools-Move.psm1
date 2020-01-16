@@ -60,7 +60,7 @@ Function REST-Move-EULA {
     [object] $datavar
   )
 
-  $headers = @{ Authorization = $token.token }
+  $headers = @{ Authorization = $token.status.token }
 
   write-log -message "Replacing JSON String Variables"
 $Json = @"
@@ -94,7 +94,7 @@ Function REST-Move-SetProvider {
     [object] $datavar
   )
 
-  $headers = @{ Authorization = $token.token }
+  $headers = @{ Authorization = $token.status.token }
 
   write-log -message "Replacing JSON String Variables"
 $Json = @"
@@ -137,7 +137,7 @@ Function REST-Move-GetProvider {
     [object] $datavar
   )
 
-  $headers = @{ Authorization = $token.token }
+  $headers = @{ Authorization = $token.status.token }
 
   $URL = "https://$($datagen.MoveIP)/move/v2/providers/list"
 

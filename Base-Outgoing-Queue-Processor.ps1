@@ -126,6 +126,7 @@ Import-Module "$($ModuleDir)\Wrap-Install-Move.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Wrap-AOS-Fubar-Test.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Wrap-Second-DC.psm1" -DisableNameChecking;
 import-Module "$($ModuleDir)\Wrap-ESX-Finalize.psm1" -DisableNameChecking;
+#import-Module "$($ModuleDir)\Wrap-Install-XenDesktop.psm1" -DisableNameChecking;
 
 
 
@@ -863,21 +864,12 @@ do {
 
       }  
       
-      if ($datavar.DemoXenDeskT -eq 1 -or $datavar.InstallFiles -eq 1){
-        if ($datavar.SystemModel -notmatch "^SX"){
+      if ($datavar.DemoXenDeskT -eq 1 ){
 
-          write-log -message "Spawning Files Plus Analytics Install" -sev "CHAPTER" -slacklevel 1
-          $UrlBase = $ISOurlData1."$($datagen.files1_Imagename)"
-          $UrlAnalytics = $ISOurlData1."$($datagen.files2_Imagename)"
+        write-log -message "Installing XenDesktop" -sev "CHAPTER" -slacklevel 1
+        $LauchCommand =' Wrap-Install-XRay -datavar $datavar -datagen $datagen'
+        Lib-Spawn-Wrapper -Type "X-Ray" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
 
-          $LauchCommand = 'Wrap-Create-FS -datavar $datavar -datagen $datagen'
-          Lib-Spawn-Wrapper -Type "Files" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
-
-        } else {
-
-          write-log -message "Files is not supported on SX models."
-
-        }
       }
 
       write-log -message "Spanwing Second DC" -sev "CHAPTER"

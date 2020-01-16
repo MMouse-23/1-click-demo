@@ -411,16 +411,26 @@ Function Wait-TaskAnalytics{
       } catch {}
     }
   }
-  try {
-    sleep 60
-    PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc1ip
-    sleep 10
-    PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc2ip
-  } catch {
-    sleep 500
-    PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc1ip
-    sleep 10
-    PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc2ip
+  if ($datavar.DemoXenDeskT -eq 0) {
+
+    write-log -message "XenDesktop is not enabled, generating content" -slacklevel 1
+
+    try{
+      sleep 60
+      PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc1ip
+      sleep 10
+      PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc2ip
+    } catch {
+      sleep 500
+      PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc1ip
+      sleep 10
+      PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc2ip
+    }
+    
+  } else {
+
+    write-log -message "We rely on the BP to do its work, files content generation is disabled." -slacklevel 1
+
   }
   write-log -message "Files Installation Finished" -slacklevel 1
   get-sshsession -ea:0 | remove-sshsession -ea:0

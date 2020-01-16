@@ -1,4 +1,4 @@
-  Function Wrap-Install-1CD {
+  Function Wrap-Install-XenDesktop {
   param (
     [object] $datavar,
     [object] $datagen,
@@ -36,7 +36,7 @@
 
   write-log -message "Creating BluePrint"
 
-  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\XenDesktopV1103.json" -Project $project
+  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\XenDesktopV1106.json" -Project $project
 
   write-log -message "Created BluePrint with $($blueprint.metadata.uuid)"
   write-log -message "Getting newly created blueprint"
@@ -49,7 +49,7 @@
 
   REST-Update-XenDesktopBP -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet
 
-  write-log -message "Launching the XD BP for Customer D"
+  write-log -message "Launching the XD BP for Customer C"
   $adminaccounts = $($datagen.SENAME.replace(" ", '.'))
 
   $varlist = @"

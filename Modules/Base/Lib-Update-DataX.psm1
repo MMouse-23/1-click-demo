@@ -69,6 +69,7 @@ function Lib-Update-DataX {
       $InstallHashiVault = 0
       $Install1CD = 0
       $InstallEra = $datavar.InstallERA
+      $InstallXenDesktop = 0
     } else {
       $flow = $datavar.EnableFlow
       $InstallEra = $datavar.InstallERA
@@ -78,18 +79,23 @@ function Lib-Update-DataX {
       } else {
         $InstallObjects = 0
       }
+      $InstallXenDesktop = $datavar.DemoXenDeskT
       
       $InstallHashiVault = $datavar.InstallHashiVault
       $Install1CD = $datavar.Install1CD
     }
     if ($ramcap -ge 1 -or $datagen.hostcount -eq 1){
       $InstallObjects = 0
+      $InstallXenDesktop = 0
     } 
     if ($ramcap -ge 2){
       $InstallHashiVault = 0
     } 
     if ($ramcap -ge 3){
       $InstallEra = 2
+    }
+    if ($InstallXenDesktop -eq 1 ){
+      $InstallHashiVault = 0
     }
     write-log -message "DataVar Mode Updating:"
     write-log -message "AOS Version      : $AOSVersion"
@@ -101,6 +107,7 @@ function Lib-Update-DataX {
     write-log -message "InstallHashiVault: $InstallHashiVault"
     write-log -message "Install1CD       : $Install1CD"
     write-log -message "InstallERA       : $InstallEra"
+    write-log -message "InstallXenDestkop: $InstallXenDesktop"
 
     $query ="UPDATE [$($SQLDatabase)].[dbo].[$($SQLDataVarTableName)] 
      SET PCVersion = '$($PCVersion)', 
@@ -112,7 +119,8 @@ function Lib-Update-DataX {
      InstallObjects = '$($InstallObjects)',
      InstallHashiVault = '$($InstallHashiVault)',
      InstallEra = '$($InstallERA)',
-     Install1CD = '$($Install1CD)'
+     Install1CD = '$($Install1CD)',
+     DemoXenDeskT = '$($InstallXenDesktop)'
      WHERE QueueUUID='$($QueueUUID)';"
     if ($debug -ge 2){ 
       write-host $query

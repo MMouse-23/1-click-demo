@@ -512,6 +512,7 @@ Function PSR-Generate-DomainContent {
     $users = "User-1","User-2","User-3","User-4","User-5";
     $ServiceAccounts = "ntnx-sql-svc","ntnx-xda-svc","ntnx-exc-svc","ntnx-bck-svc","ntnx-psr-svc","ntnx-ntx-svc";
     $adminaccounts = "adm-User-1","adm-User-2","adm-User-3","adm-User-4","adm-User-5";
+    $xen = $args[6]
     try {
       New-ADOrganizationalUnit -Name "Customers" -Path "DC=$($($DomainParts)[0]),DC=$($($DomainParts)[1]),DC=$($($DomainParts)[2])";
     } catch {
@@ -549,21 +550,24 @@ Function PSR-Generate-DomainContent {
       new-adgroup -groupscope 1 -name "$($customer)-Admin-Accounts-Group" -path "OU=Groups,OU=$($customer),OU=Customers,DC=$($($DomainParts)[0]),DC=$($($DomainParts)[1]),DC=$($($DomainParts)[2])" -ea:0 | out-null;
       new-adgroup -groupscope 1 -name "$($customer)-User-Accounts-Group" -path "OU=Groups,OU=$($customer),OU=Customers,DC=$($($DomainParts)[0]),DC=$($($DomainParts)[1]),DC=$($($DomainParts)[2])" -ea:0 | out-null;
 
+      
       foreach ($user in $users){;
         new-aduser -name "$($user)-$($cusshort)" -AccountPassword $args[1] -PasswordNeverExpires $true -userPrincipalName "$($Customer)-$($user)@$($args[0])" -EmailAddress "$($Customer)-$($user)@$($args[0])" -Office "Hoofddorp" -path "OU=User-Accounts,OU=$($customer),OU=Customers,DC=$($($DomainParts)[0]),DC=$($($DomainParts)[1]),DC=$($($DomainParts)[2])" -ea:0 | out-null;
         add-ADGroupMember  "$($customer)-User-Accounts-Group" "$($user)-$($cusshort)" -ea:0 | out-null;
       };
-      foreach ($user in $names){;
-        $first = $user.split(".")[0];
-        $last = $user.split(".")[1];
-        try {;
-          if ($count2 -le 100){;
-            new-aduser -name "$user" -Surname $last -givenname $first -AccountPassword $args[1] -PasswordNeverExpires $true -userPrincipalName "$($user)@$($args[0])" -displayname "$first $last" -Office "Hoofddorp" -EmailAddress "$($user)@$($args[0])" -path "OU=User-Accounts,OU=$($customer),OU=Customers,DC=$($($DomainParts)[0]),DC=$($($DomainParts)[1]),DC=$($($DomainParts)[2])";
-            add-ADGroupMember  "$($customer)-User-Accounts-Group" "$user" -ea:0 | out-null;
-            $count2 = $count2 + 1;
+      if ($xen -eq 0){
+        foreach ($user in $names){;
+          $first = $user.split(".")[0];
+          $last = $user.split(".")[1];
+          try {;
+            if ($count2 -le 100){;
+              new-aduser -name "$user" -Surname $last -givenname $first -AccountPassword $args[1] -PasswordNeverExpires $true -userPrincipalName "$($user)@$($args[0])" -displayname "$first $last" -Office "Hoofddorp" -EmailAddress "$($user)@$($args[0])" -path "OU=User-Accounts,OU=$($customer),OU=Customers,DC=$($($DomainParts)[0]),DC=$($($DomainParts)[1]),DC=$($($DomainParts)[2])";
+              add-ADGroupMember  "$($customer)-User-Accounts-Group" "$user" -ea:0 | out-null;
+              $count2 = $count2 + 1;
+            };
+          } catch {;
+            $count2 = $count2 - 1;
           };
-        } catch {;
-          $count2 = $count2 - 1;
         };
       };
       foreach ($serviceaccount in $ServiceAccounts){;
@@ -578,7 +582,7 @@ Function PSR-Generate-DomainContent {
     };
     Get-ADUser -filter * | Enable-ADAccount -ea:0
     sleep 15
-  } -args $domainname,$password,$sesplit,$DNSEntries,$seupn,$dcname
+  } -args $domainname,$password,$sesplit,$DNSEntries,$seupn,$dcname,$datavar.DemoXenDeskT
   sleep 15
 
   $Test = invoke-command -computername $ip -credential $credential { 

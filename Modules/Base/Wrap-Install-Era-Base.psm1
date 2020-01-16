@@ -15,7 +15,7 @@ Function Wrap-Install-Era-Base {
     $networkname = $datagen.nw1name
   }
   
-  if ($datavar.Hypervisor -match "AHV|Nutanix" -and $datavar.InstallEra -eq 1){
+  if ($datavar.Hypervisor -match "AHV|Nutanix" -and  $datavar.InstallEra -eq 1 ){
 
     write-log -message "Forking ERA MSSQL" -slacklevel 1
 
