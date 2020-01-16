@@ -864,13 +864,6 @@ do {
 
       }  
       
-      if ($datavar.DemoXenDeskT -eq 1 ){
-
-        write-log -message "Installing XenDesktop" -sev "CHAPTER" -slacklevel 1
-        $LauchCommand =' Wrap-Install-XRay -datavar $datavar -datagen $datagen'
-        Lib-Spawn-Wrapper -Type "X-Ray" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
-
-      }
 
       write-log -message "Spanwing Second DC" -sev "CHAPTER"
     
@@ -1008,13 +1001,6 @@ do {
 
       } 
 
-      if ($datavar.DemoXenDeskT -eq 1){
-
-        write-log -message "Installing XenDesktop Demo" -sev "CHAPTER" -slacklevel 1
-        write-log -message "Not implemented"    
-      
-      }
-
       if ($datavar.InstallFrame -eq 1 -and $debug -ge 2 -and $datavar.hypervisor -notmatch "ESX|VMware"){
 
         write-log -message "Installing Frame Golden Image" -sev "CHAPTER" -slacklevel 1
@@ -1030,6 +1016,14 @@ do {
         write-log -message "Installing XPlay IIS CPU Scaling" -sev "CHAPTER" -slacklevel 1
         
         $demo = Wrap-Install-XPlay-Demo -datagen $datagen -datavar $datavar -BlueprintsPath $BlueprintsPath -basedir $basedir 
+
+      }
+
+      if ($datavar.DemoXenDeskT -eq 1 ){
+
+        write-log -message "Installing XenDesktop" -sev "CHAPTER" -slacklevel 1
+        $LauchCommand ='Wrap-Install-XenDesktop -datavar $datavar -datagen $datagen -BlueprintsPath ' + $BlueprintsPath
+        Lib-Spawn-Wrapper -Type "XenDesktop" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
 
       }
       if ($datavar.InstallSplunk -eq 1){
