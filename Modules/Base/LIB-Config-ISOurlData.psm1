@@ -66,8 +66,7 @@ Function  LIB-Config-ISOurlData {
     write-log "We added $ERAAutoUrl to the download list."
 
   }
-https://www.dropbox.com/s/0b90x6p2igvg4hj/Citrix_Virtual_Apps_and_Desktops_7_1912.iso?dl=0
-$Citrix1912    =
+
   # VMWARE URLS First
   if ($datavar.Hypervisor -match "ESX") {
     if ($region -match "www|Backup" ){
