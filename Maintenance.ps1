@@ -196,8 +196,8 @@ foreach ($stat in $Statobjects){
 
     sleep 2
 
-    if ($log.date -lt (get-date).addminutes(-400) -or !$log){
-      write-log -message "Stat $($stat.QueueUUID) is marked as running, created on $($stat.DateCreated) but its master log has not been touched in the last 45 minutes."
+    if ($log.date -lt (get-date).addminutes(-800) -or !$log){
+      write-log -message "Stat $($stat.QueueUUID) is marked as running, created on $($stat.DateCreated) but its master log has not been touched in the last 800 minutes."
       if ($log){
         write-log -message "Last Log was $($log.date)"
       } else {
