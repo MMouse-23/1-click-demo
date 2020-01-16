@@ -2178,8 +2178,16 @@ Function REST-Update-XenDesktopBP {
   write-log -message "PE IP"
   ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "PEIP" }).value = $datavar.PEClusterIP
 
+  write-log -message "UserPass"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }) | add-member noteproperty value $datavar.pepass
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }).attrs.is_secret_modified = $true
+
+  write-log -message "AdminPass"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }) | add-member noteproperty value $datavar.pepass
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }).attrs.is_secret_modified = $true
+
   write-log -message "Setting up nic and IP"
-  $bpobject.spec.resources.substrate_definition_list  | % {$_.create_spec.resources.nic_list.subnet_reference.uuid = $subnet.uuid}
+  $bpobject.spec.resources.substrate_definition_list  | where {$_.Type -eq "AHV_VM"} | % {$_.create_spec.resources.nic_list.subnet_reference.uuid = $subnet.uuid}
 
   write-log -message "Passing the ball to Calm"
 
@@ -2711,6 +2719,109 @@ $Json = @"
 
   Return $task
 } 
+
+
+Function REST-BluePrint-Launch-XenDesktop {
+  Param (
+    [object] $datagen,
+    [object] $BPobject,
+    [object] $datavar
+  )
+
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Working with BP UUID $($BPobject.metadata.uuid)"
+
+  write-log -message "Replacing Object Variables"
+
+  write-log -message "Admin Accounts"
+  $adminaccounts = $($datagen.SENAME.replace(" ", '.'))
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminAccounts" }).value = $adminaccounts
+
+  write-log -message "WindowsDomain"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "WindowsDomain" }).value = $datagen.Domainname
+
+  write-log -message "FileServer"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "FileServer" }).value = $datagen.FS1_IntName
+
+  write-log -message "StorageContainerName"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "StorageContainerName" }).value = $datagen.DisksContainerName
+
+  write-log -message "VLanName"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "VLanName" }).value = $datagen.Nw1name 
+
+  write-log -message "UserPass"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }) | add-member noteproperty value $datavar.pepass
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }).attrs.is_secret_modified = $true
+
+  write-log -message "AdminPass"
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }) | add-member noteproperty value $datavar.pepass
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }).attrs.is_secret_modified = $true
+
+  write-log -message "App Name"
+  $bpobject.spec  | add-member noteproperty application_name "XenDeskTop"
+$appprofile = @"
+{
+    "app_profile_reference": {
+      "kind": "app_profile",
+      "uuid": "deca2577-5d53-4f35-88d5-37fd484cfe58"
+    }
+}
+"@
+  $bpobject.spec  | add-member noteproperty app_profile_reference "temp"
+  $appprofileobj = $appprofile | convertfrom-json
+  $bpobject.spec.app_profile_reference = $appprofileobj.app_profile_reference
+
+  write-log -message "Stripping Object properties from Detailed object"
+
+  if ($bpobject.psobject.members.name -contains "contains_secrets"){
+    $bpobject.psobject.members.Remove("contains_secrets")
+
+    write-log -message "Removing contains_secrets"
+
+  } 
+  if ($bpobject.psobject.members.name -contains "status"){
+    $bpobject.psobject.members.Remove("status")
+
+    write-log -message "Removing Status"
+
+  } 
+  if ($bpobject.psobject.members.name -contains "product_version"){
+    $bpobject.psobject.members.Remove("product_version")
+
+    write-log -message "Removing Product Version"
+
+  }
+  $bpobject.spec.psobject.members.Remove("name")
+  
+  write-log -message "Converting Object back to Json Payload"
+
+  $Json = $bpobject | convertto-json -depth 100
+
+
+  $URL = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($BPobject.metadata.uuid)/launch"
+  if ($debug -ge 2){
+    $Json | out-file c:\temp\GenbplaunchFull.json
+  }
+
+  write-log -message "Executing Launch for $BPuuid"
+  write-log -message "Using URL $URL"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $Json -ContentType 'application/json' -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $Json -ContentType 'application/json' -headers $headers;
+  }
+
+  Return $task
+} 
+
 
 Function REST-Maria-SSP-BluePrint-Launch {
   Param (

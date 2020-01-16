@@ -48,57 +48,10 @@
   write-log -message "Updating the BP"
 
   REST-Update-XenDesktopBP -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet
+  
+  write-log -message "Launching the BP"
 
-  write-log -message "Launching the XD BP for Customer C"
-  $adminaccounts = $($datagen.SENAME.replace(" ", '.'))
-
-  $varlist = @"
-{
-  "name": "AdminAccounts",
-  "value": "$adminaccounts"
-},
-{
-  "name": "WindowsDomain",
-  "value": "$($datagen.Domainname)"
-},
-{
-  "name": "AdminPassword",
-  "value": "$($datavar.pepass)",
-  "attrs": {
-    "is_secret_modified":  true,
-    "secret_reference":  "",
-    "type":  ""
-  },
-},
-{
-  "name": "UserPasswordPassword",
-  "value": "$($datavar.pepass)",
-  "attrs": {
-    "is_secret_modified":  true,
-    "secret_reference":  "",
-    "type":  ""
-  },
-},
-{
-  "name": "FileServer",
-  "value": "$($datagen.FS1_IntName)"
-},
-{
-  "name": "StorageContainerName",
-  "value": "$($datagen.DisksContainerName)"
-},
-{
-  "name": "VLanName",
-  "value": "$($datagen.Nw1name)"
-},
-{
-  "name": "VLanName",
-  "value": "$($datagen.Nw1name)"
-},
-"@
-
-  $Launch = REST-Generic-BluePrint-Launch -datagen $datagen -datavar $datavar -BPUUID $($blueprint.metadata.uuid) -TaskObject ($blueprintdetail.spec.resources.app_profile_list | where {$_.name -eq "HiX Deployment"}) -appname "XenDestkop" -varlist $varlist
-
+  REST-BluePrint-Launch-XenDesktop -datagen $datagen -datavar $datavar -BPobject $blueprintdetail
   write-log -message "XD BluePrint Installation Finished"
 }
 

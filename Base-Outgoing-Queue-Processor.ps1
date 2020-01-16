@@ -126,7 +126,7 @@ Import-Module "$($ModuleDir)\Wrap-Install-Move.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Wrap-AOS-Fubar-Test.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Wrap-Second-DC.psm1" -DisableNameChecking;
 import-Module "$($ModuleDir)\Wrap-ESX-Finalize.psm1" -DisableNameChecking;
-#import-Module "$($ModuleDir)\Wrap-Install-XenDesktop.psm1" -DisableNameChecking;
+import-Module "$($ModuleDir)\Wrap-Install-XenDesktop.psm1" -DisableNameChecking;
 
 
 
