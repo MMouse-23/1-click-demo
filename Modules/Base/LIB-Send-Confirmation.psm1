@@ -105,7 +105,7 @@ Function LIB-Send-Confirmation{
         $body += "<br>The Prism Element IP address has an active lock file. You cannot run 2 builds on the same active IP.";
         $body += "<br>Please open the <a href=$($URL)>Website to</a> to terminate and clean your active build.<br>";
         [array]$slackmessage += (("$($datavar.pocname) 1 Click Demo Provisioning Failed") + "\n")
-        [array]$slackmessage += (("No login possible to the Virtual Center, HPOC VMWare only, please refoundation block."))
+        [array]$slackmessage += (("The Prism Element IP address has an active lock file. You cannot run 2 builds on the same active IP."))
       }elseif($mode -eq "FailedHV" ) {
         $emaillevel = 0
         $MailSubject = "1 Click Demo Provisioning Failed for $($datavar.pocname): Only AHV HyperVisor is officialy supported.";
