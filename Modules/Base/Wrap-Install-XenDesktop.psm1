@@ -6,7 +6,11 @@
     [string] $BlueprintsPath,
     $ServerSysprepfile
   )
-  
+
+  $images = REST-Query-Images -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+  $image = $images.entities | where {$_.spec.name -eq "Citrix 1912" }
+  sleep 10
+
   $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount
 
   $subnet = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq $datagen.nw1name}
