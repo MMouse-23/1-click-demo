@@ -48,9 +48,11 @@ Function Wrap-Install-Move {
     
   $register = REST-Move-EULA -datagen $datagen -datavar $datavar -token $token
     
-  write-log -message "Configuring Provider"  -slacklevel 1
+  write-log -message "Configuring Providers"  -slacklevel 1
   
-  REST-Move-SetProvider -datagen $datagen -datavar $datavar -Token $token
+  REST-Move-SetProvider -datagen $datagen -datavar $datavar -Token $token -mode "Target"
+
+  REST-Move-SetProvider -datagen $datagen -datavar $datavar -Token $token -mode "Source"
 
   write-log -message "Move Installation and Configuration Finished" -slacklevel 1
 }

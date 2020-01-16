@@ -2438,6 +2438,12 @@ Function REST-Import-Generic-Blueprint-Object {
 
   write-log -message "Stripping Object properties from Detailed object"
 
+  if ($object.psobject.members.name -contains "contains_secrets"){
+    $object.psobject.members.Remove("contains_secrets")
+
+    write-log -message "Removing contains_secrets"
+
+  } 
   if ($object.psobject.members.name -contains "status"){
     $object.psobject.members.Remove("status")
 

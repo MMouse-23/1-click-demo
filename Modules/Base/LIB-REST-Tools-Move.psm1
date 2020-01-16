@@ -91,23 +91,31 @@ Function REST-Move-SetProvider {
   Param (
     [object] $Token,
     [object] $datagen,
-    [object] $datavar
+    [object] $datavar,
+    [string] $mode
   )
 
   $headers = @{ Authorization = $token.status.token }
 
+  if ($mode -eq "Target"){
+    $mo = 2
+    $name = "Target $($datavar.pocname)"
+  } else {
+    $mo = 1
+    $name = "Source $($datavar.pocname)"
+  }
   write-log -message "Replacing JSON String Variables"
 $Json = @"
 {
   "Spec": {
-    "Name": "poc",
-    "AhvAccessInfo": {
+    "Name": "$name",
+    "AOSAccessInfo": {
       "IPorFQDN": "$($datavar.PEClusterIP)",
       "Username": "$($datagen.MoveAPIAccount)",
       "Password": "$($datavar.pepass)"
     },
-    "Type": "AHV",
-    "Role": 2
+    "Type": "AOS",
+    "Role":  $mo 
   }
 }
 "@ 
