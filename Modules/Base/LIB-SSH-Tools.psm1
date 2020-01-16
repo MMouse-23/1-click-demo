@@ -1040,7 +1040,7 @@ Function SSH-Networking-Pe {
 
         write-log -message "IPconfig value should be: $ipconfig"
         write-log -message "DHCP Start should be: $nw2dhcpstart"
-        write-log -message "Network 0 VLAN will be $nw2vlan"
+        write-log -message "Network 2 VLAN will be $nw2vlan"
         write-log -message "Last IP will be $lastIP"
         write-log -message "Netbios Domain is $netbios"
 
