@@ -411,7 +411,7 @@ Function Wait-TaskAnalytics{
       } catch {}
     }
   }
-  if ($datavar.DemoXenDeskT -eq 0) {
+  #if ($datavar.DemoXenDeskT -eq 0) {
 
     write-log -message "XenDesktop is not enabled, generating content" -slacklevel 1
 
@@ -427,11 +427,11 @@ Function Wait-TaskAnalytics{
       PSR-Generate-FilesContent -datavar $datavar -datagen $datagen -dc $datagen.dc2ip
     }
     
-  } else {
+  #} else {
 
     write-log -message "We rely on the BP to do its work, files content generation is disabled." -slacklevel 1
 
-  }
+  #}
   write-log -message "Files Installation Finished" -slacklevel 1
   get-sshsession -ea:0 | remove-sshsession -ea:0
 }

@@ -23,6 +23,34 @@ function Wrap-Validate-Build {
   } else {
     $minbp = 3
   }
+  If ($datavar.XenDeskTop -eq 1){
+    $count = 0
+    do{
+      write-log -message "Waiting for XenDesktop Blueprint" 
+      $count ++
+      $state = ($applications.entities | where {$_.status.name -eq "XenDeskTop"}).status.state
+      if (!$state){
+        write-log -message "XenDesktop App is not present yet..." -SEV "WARN"
+        $count + 5
+        sleep 119
+      } elseif ($state -eq "provisioning") {
+        write-log -message "Waiting for XenDesktop Blueprint $state" 
+        sleep 119
+      } elseif ($state -eq "Running"){
+        $exit = 1
+      }  
+    } until ( $exit -eq 1 -or $count -ge 15)
+    write-log -message "XenDesktop is in state $state"
+    $XenDesktopResult = "XenDestop App is in state $state"
+    if ($state -eq "running"){
+      $xdvalidated = 1 
+    } else {
+      $xdvalidated = 0
+    }
+  } else {
+    $XenDesktopResult = "Only the XenDesktop BP is installed"
+  }
+  
   $marketplace = REST-Get-Calm-PublishedMarketPlaceItems -datavar $datavar -datagen $datagen
   
   if ($blueprints.entities.count -ge $minbp){
@@ -42,8 +70,10 @@ function Wrap-Validate-Build {
     } elseif ($projectcount -le 2){
       $calmresult = "Calm is not healthy. $projectcount Marketplace Projects detected"
       $calmvalidated = 0
+    } elseif ($datavar.DemoXenDeskT -eq 1 -and $xdvalidated -eq 0){
+      $calmresult = "Calm is not healthy. XenDesktop Blueprint failed, $XenDesktopResult"
     } else {
-      $calmresult = "Calm is healthy. There are $($applications.entities.count) running apps, $($blueprints.entities.count) imported blueprints and $($marketplace.group_results.entity_results.count) Marketplace items spread over $projectcount Projects."
+      $calmresult = "Calm is healthy. There are $($applications.entities.count) running apps, $($blueprints.entities.count) imported blueprints and $($marketplace.group_results.entity_results.count) Marketplace items spread over $projectcount Projects, $XenDesktopResult"
       $calmvalidated = 1
     }
   } else {
