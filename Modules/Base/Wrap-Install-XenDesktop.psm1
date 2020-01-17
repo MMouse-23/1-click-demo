@@ -53,10 +53,16 @@
 
   REST-Update-XenDesktopBP -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet
   
-  write-log -message "Launching the BP"
+ 
+  if ($datavar.DemoXenDeskT -eq 1 ){
 
-  REST-BluePrint-Launch-XenDesktop -datagen $datagen -datavar $datavar -BPobject $blueprintdetail
+    write-log -message "Launching the BP"
+
+    REST-BluePrint-Launch-XenDesktop -datagen $datagen -datavar $datavar -BPobject $blueprintdetail
+  }
+   
   write-log -message "XD BluePrint Installation Finished"
+  
 }
 
 Export-ModuleMember *

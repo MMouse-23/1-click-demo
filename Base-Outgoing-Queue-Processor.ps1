@@ -1019,13 +1019,12 @@ do {
 
       }
 
-      if ($datavar.DemoXenDeskT -eq 1 ){
+      write-log -message "Installing XenDesktop" -sev "CHAPTER" -slacklevel 1
+      
+      $LauchCommand ='Wrap-Install-XenDesktop -datavar $datavar -datagen $datagen -BlueprintsPath ' + $BlueprintsPath
+      Lib-Spawn-Wrapper -Type "XenDesktop" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
 
-        write-log -message "Installing XenDesktop" -sev "CHAPTER" -slacklevel 1
-        $LauchCommand ='Wrap-Install-XenDesktop -datavar $datavar -datagen $datagen -BlueprintsPath ' + $BlueprintsPath
-        Lib-Spawn-Wrapper -Type "XenDesktop" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
-
-      }
+      
       if ($datavar.InstallSplunk -eq 1){
 
         write-log -message "Spawning Splunk Install" -sev "CHAPTER" -slacklevel 1
