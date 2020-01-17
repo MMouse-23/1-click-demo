@@ -96,6 +96,7 @@ function Lib-Update-DataX {
     }
     if ($InstallXenDesktop -eq 1 ){
       $InstallHashiVault = 0
+      $intstallFiles = 1
     }
     write-log -message "DataVar Mode Updating:"
     write-log -message "AOS Version      : $AOSVersion"
@@ -108,6 +109,7 @@ function Lib-Update-DataX {
     write-log -message "Install1CD       : $Install1CD"
     write-log -message "InstallERA       : $InstallEra"
     write-log -message "InstallXenDestkop: $InstallXenDesktop"
+    write-log -message "InstallFiles     : $intstallFiles"
 
     $query ="UPDATE [$($SQLDatabase)].[dbo].[$($SQLDataVarTableName)] 
      SET PCVersion = '$($PCVersion)', 
@@ -120,7 +122,8 @@ function Lib-Update-DataX {
      InstallHashiVault = '$($InstallHashiVault)',
      InstallEra = '$($InstallERA)',
      Install1CD = '$($Install1CD)',
-     DemoXenDeskT = '$($InstallXenDesktop)'
+     DemoXenDeskT = '$($InstallXenDesktop)',
+     IntstallFiles = '$($intstallFiles)'
      WHERE QueueUUID='$($QueueUUID)';"
     if ($debug -ge 2){ 
       write-host $query

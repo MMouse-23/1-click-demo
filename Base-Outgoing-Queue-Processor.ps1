@@ -464,7 +464,7 @@ do {
 
         $UrlBase = $ISOurlData1."$($datagen.PCSideLoadImage)"
 
-        Wrap-SideLoad-PC -datavar $datavar -datagen $datagen -AOSVersion $autodetect.AOSVersion -UrlBase $UrlBase -jsonbase "$($basedir)\binaries\PC\euphrates-5.11-stable-prism_central-metadata.json"
+        #Wrap-SideLoad-PC -datavar $datavar -datagen $datagen -AOSVersion $autodetect.AOSVersion -UrlBase $UrlBase -jsonbase "$($basedir)\binaries\PC\euphrates-5.11-stable-prism_central-metadata.json"
 
       }
 
@@ -856,6 +856,16 @@ do {
  
       }
 
+      if ($datavar.InstallFiles -eq 1){
+        
+        write-log -message "Spawning Files Plus Analytics Install" -sev "CHAPTER" -slacklevel 1
+
+        $UrlBase = $ISOurlData1."$($datagen.files1_Imagename)"
+        $UrlAnalytics = $ISOurlData1."$($datagen.files2_Imagename)"
+        $LauchCommand = 'Wrap-Create-FS -datavar $datavar -datagen $datagen'
+        Lib-Spawn-Wrapper -Type "Files" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
+
+      }
       if ($datavar.InstallXRay -eq 1){
  
         write-log -message "Installing XRay" -sev "CHAPTER" -slacklevel 1

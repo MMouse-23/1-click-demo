@@ -40,7 +40,7 @@
 
   write-log -message "Creating BluePrint"
 
-  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\XenDesktopV1106.json" -Project $project
+  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\XenDesktopV1107.json" -Project $project
 
   write-log -message "Created BluePrint with $($blueprint.metadata.uuid)"
   write-log -message "Getting newly created blueprint"
