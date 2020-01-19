@@ -52,7 +52,8 @@
   write-log -message "Updating the BP"
 
   REST-Update-XenDesktopBP -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet
-  
+
+  Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
  
   if ($datavar.DemoXenDeskT -eq 1 ){
 

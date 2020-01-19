@@ -2753,24 +2753,24 @@ Function REST-BluePrint-Launch-XenDesktop {
   ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "VLanName" }).value = $datagen.Nw1name 
 
   write-log -message "UserPass"
-  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }) | add-member noteproperty value $datavar.pepass
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }) | add-member noteproperty value $datavar.pepass -force
   ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "UserPassword" }).attrs.is_secret_modified = $true
 
   write-log -message "AdminPass"
-  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }) | add-member noteproperty value $datavar.pepass
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }) | add-member noteproperty value $datavar.pepass -force
   ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminPassword" }).attrs.is_secret_modified = $true
 
   write-log -message "App Name"
-  $bpobject.spec  | add-member noteproperty application_name "XenDeskTop"
+  $bpobject.spec  | add-member noteproperty application_name "XenDeskTop" -force
 $appprofile = @"
 {
     "app_profile_reference": {
       "kind": "app_profile",
-      "uuid": "deca2577-5d53-4f35-88d5-37fd484cfe58"
+      "uuid": "$($BPobject.spec.resources.app_profile_list.uuid)"
     }
 }
 "@
-  $bpobject.spec  | add-member noteproperty app_profile_reference "temp"
+  $bpobject.spec  | add-member noteproperty app_profile_reference "temp" -force
   $appprofileobj = $appprofile | convertfrom-json
   $bpobject.spec.app_profile_reference = $appprofileobj.app_profile_reference
 
@@ -2806,7 +2806,7 @@ $appprofile = @"
     $Json | out-file c:\temp\GenbplaunchFull.json
   }
 
-  write-log -message "Executing Launch for $BPuuid"
+  write-log -message "Executing Launch for $($BPobject.metadata.uuid)"
   write-log -message "Using URL $URL"
 
   try{

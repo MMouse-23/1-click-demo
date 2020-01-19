@@ -23,7 +23,7 @@ function Wrap-Validate-Build {
   } else {
     $minbp = 3
   }
-  If ($datavar.XenDeskTop -eq 1){
+  If ($datavar.DemoXenDeskT -eq 1){
     $count = 0
     do{
       write-log -message "Waiting for XenDesktop Blueprint" 
@@ -34,7 +34,7 @@ function Wrap-Validate-Build {
         $count + 5
         sleep 119
       } elseif ($state -eq "provisioning") {
-        write-log -message "Waiting for XenDesktop Blueprint $state" 
+        write-log -message "Waiting for XenDesktop Blueprint currently in state: $state" 
         sleep 119
       } elseif ($state -eq "Running"){
         $exit = 1
