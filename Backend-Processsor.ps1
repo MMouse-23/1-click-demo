@@ -113,9 +113,10 @@ do {
     if ($object.QueueStatus -eq "Manual"){
       write-log -message "Sending Manual Queue EMAIL"
       $global:EnableEmail = 0
-      $datagen = LIB-Config-DetailedDataSet -datavar $object -mode "BackEnd"
-      Lib-Send-Confirmation -reciever $object.SenderEMail -datavar $object -mode "Queued" -datagen $datagen
-
+      try {
+        $datagen = LIB-Config-DetailedDataSet -datavar $object -mode "BackEnd"
+        Lib-Send-Confirmation -reciever $object.SenderEMail -datavar $object -mode "Queued" -datagen $datagen
+      } catch {}
     }
   }
   write-log -message "Validating Ready Queue"

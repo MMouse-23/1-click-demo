@@ -121,9 +121,9 @@ Function Validate-QueueItem {
         write "$(get-date -format "hh:mm:ss") | Error | The Cluster Element Gateway is not a valid IPaddress $($object.InfraGateway)"
       };
     };
-
-    $checksubnet = Test-SameSubnet -ip1 "$($object.PEClusterIP)" -ip2 "$($object.InfraGateway)" -mask "$($object.InfraSubnetmask)"
-    
+    try {
+      $checksubnet = Test-SameSubnet -ip1 "$($object.PEClusterIP)" -ip2 "$($object.InfraGateway)" -mask "$($object.InfraSubnetmask)"
+    } catch {}
     if ($checksubnet -eq $true){
       if ($debug -ge 1){
         write "$(get-date -format "hh:mm:ss") | INFO  | The Cluster Element Gateway $($object.InfraGateway) is in the same network as the Cluster $($object.PEClusterIP)"
