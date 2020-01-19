@@ -20,7 +20,7 @@
 - Blueprints
 - Website(s) (API / FrontEnd)
 - 1CD Blueprint
-
+.
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
