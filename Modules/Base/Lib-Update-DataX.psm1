@@ -123,7 +123,7 @@ function Lib-Update-DataX {
      InstallEra = '$($InstallERA)',
      Install1CD = '$($Install1CD)',
      DemoXenDeskT = '$($InstallXenDesktop)',
-     IntstallFiles = '$($intstallFiles)'
+     InstallFiles = '$($intstallFiles)'
      WHERE QueueUUID='$($QueueUUID)';"
     if ($debug -ge 2){ 
       write-host $query
