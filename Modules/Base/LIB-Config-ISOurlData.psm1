@@ -236,7 +236,7 @@ Function  LIB-Config-ISOurlData {
   $Object | add-member Noteproperty 'Windows 10_1CD'    $Windows10_1CD;     
   $Object | add-member Noteproperty VirtIO1_1_4ISO      $VirtIO1_1_4ISO;
   $Object | add-member Noteproperty SQL2014ISO          $SQL2014ISO;
-  $Object | add-member Noteproperty 'Citrix 1912'       $XENDESKTOP;
+  $Object | add-member Noteproperty 'Citrix_1912_ISO'   $XENDESKTOP;
   $Object | add-member Noteproperty office2016ISO       $office2016;
   $Object | add-member Noteproperty MoveAuto            $MoveAutoUrl;
   $Object | add-member Noteproperty CentOS_1CD          $CentOs_1CD;
