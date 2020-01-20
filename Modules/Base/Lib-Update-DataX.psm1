@@ -61,7 +61,8 @@ function Lib-Update-DataX {
     }
 
     $flow = $datavar.EnableFlow
-
+    $intstallFiles = $datavar.InstallFiles
+    
     if ($HyperVisor -match "ESX"){
       $flow = 0
       $karbon = 0
