@@ -38,7 +38,9 @@ function Wrap-Validate-Build {
         sleep 119
       } elseif ($state -eq "Running"){
         $exit = 1
-      }  
+      } elseif ($state -match "Error"){
+        $exit = 1
+      } 
     } until ( $exit -eq 1 -or $count -ge 40)
     write-log -message "XenDesktop is in state $state"
     $XenDesktopResult = "XenDestop App is in state $state"
