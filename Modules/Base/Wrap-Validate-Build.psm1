@@ -26,8 +26,8 @@ function Wrap-Validate-Build {
   If ($datavar.DemoXenDeskT -eq 1){
     $count = 0
     do{
-      write-log -message "Waiting for XenDesktop Blueprint" 
       $count ++
+      $applications = REST-Query-Calm-Apps -datavar $datavar -datagen $datagen
       $state = ($applications.entities | where {$_.status.name -eq "XenDeskTop"}).status.state
       if (!$state){
         write-log -message "XenDesktop App is not present yet..." -SEV "WARN"
