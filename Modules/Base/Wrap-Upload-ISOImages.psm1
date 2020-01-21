@@ -326,7 +326,7 @@ Function Wrap-Upload-ISOImages {
     ## Only if we havnt failed alot, we proceed with the non wait list.
 
 
-    if ($mode -eq "Base" -and ($Failcount -le $maxFails -or $backupmode -eq 1 -and $ISOurlData.$($image) -ne "NA-AHV") -and $datavar.Hypervisor -match "Nutanix"){
+    if ($mode -eq "Base" -and ($Failcount -le $maxFails -or $backupmode -eq 1 -and $ISOurlData.$($image) -ne "NA-AHV") -and $datavar.Hypervisor -match "Nutanix|AHV"){
       $exclude = $null
       [array]$Exclude += $Priowaitlist
       [array]$Exclude += $namelist | where {$_ -match "MSSQL|Oracle"}

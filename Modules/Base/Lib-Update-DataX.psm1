@@ -61,7 +61,8 @@ function Lib-Update-DataX {
     }
 
     $flow = $datavar.EnableFlow
-
+    $intstallFiles = $datavar.InstallFiles
+    
     if ($HyperVisor -match "ESX"){
       $flow = 0
       $karbon = 0
@@ -123,7 +124,7 @@ function Lib-Update-DataX {
      InstallEra = '$($InstallERA)',
      Install1CD = '$($Install1CD)',
      DemoXenDeskT = '$($InstallXenDesktop)',
-     IntstallFiles = '$($intstallFiles)'
+     InstallFiles = '$($intstallFiles)'
      WHERE QueueUUID='$($QueueUUID)';"
     if ($debug -ge 2){ 
       write-host $query

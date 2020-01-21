@@ -8,7 +8,7 @@
   )
 
   $images = REST-Query-Images -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-  $image = $images.entities | where {$_.spec.name -eq "Citrix 1912" }
+  $image = $images.entities | where {$_.spec.name -eq "Citrix_1912_ISO" }
   sleep 10
 
   $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount
@@ -40,7 +40,7 @@
 
   write-log -message "Creating BluePrint"
 
-  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\XenDesktopV1107.json" -Project $project
+  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\XenDesktopV1109.json" -Project $project
 
   write-log -message "Created BluePrint with $($blueprint.metadata.uuid)"
   write-log -message "Getting newly created blueprint"
@@ -52,7 +52,8 @@
   write-log -message "Updating the BP"
 
   REST-Update-XenDesktopBP -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet
-  
+
+  Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
  
   if ($datavar.DemoXenDeskT -eq 1 ){
 
