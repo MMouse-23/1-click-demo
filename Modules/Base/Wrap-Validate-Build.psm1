@@ -23,23 +23,26 @@ function Wrap-Validate-Build {
   } else {
     $minbp = 3
   }
-  If ($datavar.XenDeskTop -eq 1){
+  If ($datavar.DemoXenDeskT -eq 1){
     $count = 0
     do{
-      write-log -message "Waiting for XenDesktop Blueprint" 
       $count ++
+      $applications = REST-Query-Calm-Apps -datavar $datavar -datagen $datagen
       $state = ($applications.entities | where {$_.status.name -eq "XenDeskTop"}).status.state
       if (!$state){
         write-log -message "XenDesktop App is not present yet..." -SEV "WARN"
         $count + 5
         sleep 119
       } elseif ($state -eq "provisioning") {
-        write-log -message "Waiting for XenDesktop Blueprint $state" 
+        write-log -message "Waiting for XenDesktop Blueprint currently in state: $state Sleeping 2 minutes for $count out of 75"
+
         sleep 119
       } elseif ($state -eq "Running"){
         $exit = 1
-      }  
-    } until ( $exit -eq 1 -or $count -ge 15)
+      } elseif ($state -match "Error"){
+        $exit = 1
+      } 
+    } until ( $exit -eq 1 -or $count -ge 75)
     write-log -message "XenDesktop is in state $state"
     $XenDesktopResult = "XenDestop App is in state $state"
     if ($state -eq "running"){

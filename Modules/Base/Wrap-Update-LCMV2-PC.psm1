@@ -125,10 +125,10 @@ Function Wrap-Update-LCMV2-PC {
 
     ## Last Control
     ## Control below makes sure that the loop exits only when cycle has been completed.
-    ## No remediating actions below, just validation
+    ## No remediating actions below, just validation Temp karbon fix
 
-    $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName)"
-    $Statobjects      = $Statobjects | where {$_.PCVersion -eq $datavar.PCVersion}
+    $StatobjectsKarbon      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName)"
+    $Statobjects      = $StatobjectsKarbon | where {$_.PCVersion -eq $datavar.PCVersion}
 
     $output = PSR-LCM-ListUpdates-PC -datagen $datagen -datavar $datavar -minimalupdates 0
     $Installedcalmversion = ($output.InstalledSoftwareList | where {$_.Name -match "Calm"}).version
@@ -139,7 +139,7 @@ Function Wrap-Update-LCMV2-PC {
     write-log -message "Installed Calm Version is: $Installedcalmversion"
 
     $InstalledKarbonversion = ($output.InstalledSoftwareList | where {$_.Name -match "karbon"}).version
-    $LastknownkarbonVersion = [string]($statobjects.KarbonVersion | % {try{[version]$_}catch{} } | sort | select -last 1)
+    $LastknownkarbonVersion = [string]($StatobjectsKarbon.KarbonVersion | % {try{[version]$_}catch{} } | sort | select -last 1)
 
     write-log -message "Last Known Karbon Version is: $LastknownkarbonVersion"
     write-log -message "Installed Karbon Version is: $InstalledKarbonversion"
