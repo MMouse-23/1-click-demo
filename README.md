@@ -2,7 +2,7 @@
 
 
 
-**Current Version 1.1.1.4**
+**Current Version 1.1.2.0**
 
 ## Introduction
 
@@ -24,6 +24,19 @@
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.1.2.0
+
+**Fixes:**
+- New Move API fixed
+- LCM Karbon Fix (multiple loops disapeared on new PC version but still required to get to the latest Karbon.)
+- More places with missing dots in HPOC emails
+
+**Features:**
+- 15 VM Double 3 Tier XenApp Blueprint, only launched on blocks with more than 768 GB ram, installed and configured on lower RAM blocks.
+
+**Known Issues:**
+- XenAPP BP is rather complex, we will update confluence and setup a recorded zoom meeting on how to use / demo / show features in CALM soon.
 
 ## Release notes 1.1.1.4
 
