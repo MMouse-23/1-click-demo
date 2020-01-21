@@ -37,6 +37,7 @@
 
 **Known Issues:**
 - XenAPP BP is rather complex, we will update confluence and setup a recorded zoom meeting on how to use / demo / show features in CALM soon.
+- XenAPP BP has a 2 hour runtime, The finish time has not changed, however, the validation will wait as long as the BP stops provisioning or errors out.
 
 ## Release notes 1.1.1.4
 
