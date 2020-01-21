@@ -34,14 +34,15 @@ function Wrap-Validate-Build {
         $count + 5
         sleep 119
       } elseif ($state -eq "provisioning") {
-        write-log -message "Waiting for XenDesktop Blueprint currently in state: $state" 
+        write-log -message "Waiting for XenDesktop Blueprint currently in state: $state Sleeping 2 minutes for $count out of 75"
+
         sleep 119
       } elseif ($state -eq "Running"){
         $exit = 1
       } elseif ($state -match "Error"){
         $exit = 1
       } 
-    } until ( $exit -eq 1 -or $count -ge 40)
+    } until ( $exit -eq 1 -or $count -ge 75)
     write-log -message "XenDesktop is in state $state"
     $XenDesktopResult = "XenDestop App is in state $state"
     if ($state -eq "running"){
