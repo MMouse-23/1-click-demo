@@ -2,7 +2,7 @@
 
 
 
-**Current Version 1.1.2.0**
+**Current Version 1.1.2.1**
 
 ## Introduction
 
@@ -24,6 +24,12 @@
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.1.2.1
+
+**Fixes:**
+- XenDesktop BP with special chars in admin name
+
 
 ## Release notes 1.1.2.0
 
