@@ -2737,7 +2737,7 @@ Function REST-BluePrint-Launch-XenDesktop {
   write-log -message "Replacing Object Variables"
 
   write-log -message "Admin Accounts"
-  $adminaccounts = $($datagen.SENAME.replace(" ", '.'))
+  $adminaccounts = "Ray.Donovan"
   ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "AdminAccounts" }).value = $adminaccounts
 
   write-log -message "WindowsDomain"
