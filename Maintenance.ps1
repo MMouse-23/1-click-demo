@@ -248,6 +248,17 @@ if ($deleteQueuefiles){
   }
 }
 
+write-log -message "Cleaning Outlook Temp Logging Files"
+$systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
+$deletetempfiles = $systemtempfiles | where { (get-date).addhours(-12) -ge $_.lastwritetime}
+if ($deletetempfiles){
+  write-log -message "We found $($deletetempfiles.count) to clean out of $($systemtempfiles.count) Temp files."
+  foreach ($item in $deletetempfiles){
+    remove-item $item.fullname -force -ea:0
+  }
+}
+
+
 write-log -message "Checking Uptime"
 $uptime = (gcim Win32_OperatingSystem).LastBootUpTime
 if ((get-date).adddays(-5) -ge $uptime ){
