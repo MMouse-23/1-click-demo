@@ -250,11 +250,14 @@ if ($deleteQueuefiles){
 
 write-log -message "Cleaning Outlook Temp Logging Files"
 $systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
+$systemtempfiles += get-childitem "C:\Windows\Temp\*.dat"
+$systemtempfiles += get-childitem "C:\Windows\Temp\*.log"
+$systemtempfiles += Get-ChildItem "C:\Windows\Temp\" | ?{ $_.PSIsContainer }
 $deletetempfiles = $systemtempfiles | where { (get-date).addhours(-12) -ge $_.lastwritetime}
 if ($deletetempfiles){
   write-log -message "We found $($deletetempfiles.count) to clean out of $($systemtempfiles.count) Temp files."
   foreach ($item in $deletetempfiles){
-    remove-item $item.fullname -force -ea:0
+    remove-item $item.fullname -force -ea:0 -recurse
   }
 }
 
