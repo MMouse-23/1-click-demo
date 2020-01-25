@@ -1085,17 +1085,17 @@ do {
       $basestatus = Lib-Update-Stats -datavar $datavar -datagen $datagen -ParentLogfile $logfile -basedir $basedir
       
       LIB-Send-Confirmation -reciever $datavar.SenderEMail -datagen $datagen -datavar $datavar -mode "end"  -logfile $logfile
-      if ($datavar.EnableBlueprintBackup -eq 1 -and $portable -ne 1){
+      #if ($datavar.EnableBlueprintBackup -eq 1 -and $portable -ne 1){
 
-        write-log -message "Enable BluePrintBackup" -sev "CHAPTER" -slacklevel 1
-        Wrap-BluePrintBackup-Scheduler -datavar $datavar -datagen $datagen -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir
+       # write-log -message "Enable BluePrintBackup" -sev "CHAPTER" -slacklevel 1
+        #Wrap-BluePrintBackup-Scheduler -datavar $datavar -datagen $datagen -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir
 
-      } 
-      if ($datavar.EnableBlueprintBackup -ne 2 -and $portable -ne 1){
+      #} 
+      #if ($datavar.EnableBlueprintBackup -ne 2 -and $portable -ne 1){
 
-        write-log -message "Enable BluePrint Restore" -sev "CHAPTER" -slacklevel 1
-        Wrap-BluePrintBackup-Restore -datavar $datavar -datagen $datagen   
-      }
+       # write-log -message "Enable BluePrint Restore" -sev "CHAPTER" -slacklevel 1
+       # Wrap-BluePrintBackup-Restore -datavar $datavar -datagen $datagen   
+      #}
       ## Cleanup section, no chapter logging.
       if ($datavar.debug -ge 0){
         $count = 0

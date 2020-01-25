@@ -23,7 +23,7 @@ $ready                      = "Ready"
 $AutoQueueTimer             = 15
 $datequeue                  = (get-date).adddays(-3)
 $datelogs                   = (get-date).adddays(-30)
-$dateBackups                = (get-date).adddays(-30)
+$dateBackups                = (get-date).adddays(-15)
 $datetasks                  = (get-date).adddays(-3) ## Dont go lower then 2 or risk deleting running tasks over midnight.
 $SingleModelck              = "$($Lockdir)\Single.lck"
 if ($env:computername -match "dev"){
