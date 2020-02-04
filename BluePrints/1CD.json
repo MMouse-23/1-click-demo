@@ -1,6 +1,7 @@
 {
 	"status": {},
-	"product_version": "2.7.1.2",
+	"contains_secrets": false,
+	"product_version": "2.9.7",
 	"spec": {
 		"description": "Builds the 1-Click-Demo VM, portable. Uses the Public GIT repo to pull the build specs, icw this blueprint you have the full package to rebuild 1CD.\nwith the exception of 2 secret files, Slackbot and ERA auto versioning\nThere is no AHV dependency other the downloaded image, just a plain Windows 2016 will do.\n1) Import BluePrint and setup Creds, choose your own password if you like.\n2) Set a static IP for the VM in the BP\n3) Set the secret download URLs, ask MGrauwmans\n4) Start the nutanix CMDlets in the console and hit a key...\n5) Start the 1CD services through the managed blueprint App\n6) check C:\\1-CLick-Demo\\System\\Logging (Maintenance)\n6) use the website or IP on port 80 \/ 81 to build your request.\n7) Multi user version is manual work, join domain and enable forms based auth",
 		"resources": {
@@ -342,10 +343,11 @@
 				"readiness_probe": {
 					"connection_type": "POWERSHELL",
 					"retries": "5",
-					"disable_readiness_probe": false,
+					"connection_protocol": "",
+					"connection_port": 5985,
 					"address": "@@{platform.status.resources.nic_list[0].ip_endpoint_list[0].ip}@@",
 					"delay_secs": "120",
-					"connection_port": 5985,
+					"disable_readiness_probe": false,
 					"login_credential_local_reference": {
 						"kind": "app_credential",
 						"name": "administrator"
@@ -366,7 +368,7 @@
 						"nic_list": [{
 							"nic_type": "NORMAL_NIC",
 							"ip_endpoint_list": [{
-								"ip": "10.10.0.55",
+								"ip": "10.42.47.61",
 								"type": "ASSIGNED"
 							}],
 							"network_function_chain_reference": null,
@@ -376,7 +378,7 @@
 								"kind": "subnet",
 								"type": "",
 								"name": "",
-								"uuid": "456ef542-dbd9-4437-bca2-de350c826d1b"
+								"uuid": "2a887062-8071-462e-b0af-4e331245daf7"
 							},
 							"type": ""
 						}],
@@ -392,13 +394,19 @@
 							"cloud_init": null,
 							"type": "",
 							"sysprep": {
+								"is_domain": false,
 								"install_type": "PREPARED",
+								"domain_credential_reference": null,
+								"domain": "",
+								"dns_ip": "",
+								"dns_search_path": "",
 								"unattend_xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<unattend xmlns=\"urn:schemas-microsoft-com:unattend\">\n    <settings pass=\"oobeSystem\">\n        <component name=\"Microsoft-Windows-International-Core\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n            <InputLocale>0413:00020409<\/InputLocale>\n            <SystemLocale>en-US<\/SystemLocale>\n            <UILanguageFallback>en-US<\/UILanguageFallback>\n            <UserLocale>nl-NL<\/UserLocale>\n        <\/component>\n        <component name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n            <AutoLogon>\n                <Enabled>true<\/Enabled>\n                <LogonCount>9999999<\/LogonCount>\n                <Username>Administrator<\/Username>\n                <Password>\n                    <PlainText>true<\/PlainText>\n                    <Value>@@{administrator.secret}@@<\/Value>\n                <\/Password>\n            <\/AutoLogon>\n            <OOBE>\n                <HideEULAPage>true<\/HideEULAPage>\n                <HideWirelessSetupInOOBE>true<\/HideWirelessSetupInOOBE>\n                <NetworkLocation>Home<\/NetworkLocation>\n                <ProtectYourPC>2<\/ProtectYourPC>\n            <\/OOBE>\n            <UserAccounts>\n                <AdministratorPassword>\n                    <PlainText>true<\/PlainText>\n                    <Value>@@{administrator.secret}@@<\/Value>\n                <\/AdministratorPassword>\n            <\/UserAccounts>\n            <FirstLogonCommands>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm quickconfig -q<\/CommandLine>\n                    <Description>Win RM quickconfig -q<\/Description>\n                    <Order>20<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm quickconfig -transport:http<\/CommandLine>\n                    <Description>Win RM quickconfig -transport:http<\/Description>\n                    <Order>21<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm set winrm\/config @{MaxTimeoutms=\"1800000\"}<\/CommandLine>\n                    <Description>Win RM MaxTimoutms<\/Description>\n                    <Order>22<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm set winrm\/config\/winrs @{MaxMemoryPerShellMB=\"300\"}<\/CommandLine>\n                    <Description>Win RM MaxMemoryPerShellMB<\/Description>\n                    <Order>23<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm set winrm\/config\/service @{AllowUnencrypted=\"true\"}<\/CommandLine>\n                    <Description>Win RM AllowUnencrypted<\/Description>\n                    <Order>24<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm set winrm\/config\/service\/auth @{Basic=\"true\"}<\/CommandLine>\n                    <Description>Win RM auth Basic<\/Description>\n                    <Order>25<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm set winrm\/config\/client\/auth @{Basic=\"true\"}<\/CommandLine>\n                    <Description>Win RM auth Basic<\/Description>\n                    <Order>26<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c winrm set winrm\/config\/listener?Address=*+Transport=HTTP @{Port=\"5985\"} <\/CommandLine>\n                    <Description>Win RM listener Address\/Port<\/Description>\n                    <Order>27<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c netsh advfirewall firewall set rule group=\"remote administration\" new enable=yes <\/CommandLine>\n                    <Description>Win RM adv firewall enable<\/Description>\n                    <Order>29<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c net stop winrm <\/CommandLine>\n                    <Description>Stop Win RM Service <\/Description>\n                    <Order>28<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>cmd.exe \/c net start winrm <\/CommandLine>\n                    <Description>Start Win RM Service<\/Description>\n                    <Order>32<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <CommandLine>powershell -Command &quot;Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force&quot;<\/CommandLine>\n                    <Description>Set PowerShell ExecutionPolicy<\/Description>\n                    <Order>1<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>2<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <CommandLine>powershell -Command &quot;Enable-PSRemoting -Force&quot;<\/CommandLine>\n                    <Description>Enable PowerShell Remoting<\/Description>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>61<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <CommandLine>powershell -Command &quot;Enable-NetFirewallRule -DisplayGroup \"Remote Desktop\"&quot;<\/CommandLine>\n                    <Description>Rule RDP Filewall<\/Description>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>62<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <CommandLine>powershell -Command &quot;Set-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp\\' -Name \"UserAuthentication\" -Value 1&quot;<\/CommandLine>\n                    <Description>Enable RDP2016<\/Description>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>63<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <CommandLine>powershell -Command &quot;Set-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\' -Name \"fDenyTSConnections\" -Value 0&quot;<\/CommandLine>\n                    <Description>Enable RDP2016p2<\/Description>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>5<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <Description>RDP adv firewall enable<\/Description>\n                    <CommandLine>cmd.exe \/c netsh advfirewall firewall set rule group=&quot;Remote Desktop&quot; new enable=yes <\/CommandLine>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>31<\/Order>\n                    <CommandLine>cmd.exe \/c sc config winrm start= auto<\/CommandLine>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <Description>No-Delay Auto start WinRM on boot<\/Description>\n                <\/SynchronousCommand>\n                <SynchronousCommand wcm:action=\"add\">\n                    <Order>30<\/Order>\n                    <RequiresUserInput>true<\/RequiresUserInput>\n                    <CommandLine>cmd.exe \/c netsh advfirewall set allprofiles state off<\/CommandLine>\n                    <Description>Disable Windows Firewall<\/Description>\n                <\/SynchronousCommand>\n            <\/FirstLogonCommands>\n<ShowWindowsLive>false<\/ShowWindowsLive>\n        <\/component>\n    <\/settings>\n    <settings pass=\"specialize\">\n        <component name=\"Microsoft-Windows-Deployment\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n            <RunSynchronous>\n                <RunSynchronousCommand wcm:action=\"add\">\n                    <Order>1<\/Order>\n                    <Path>net user administrator \/active:Yes<\/Path>\n                    <WillReboot>Never<\/WillReboot>\n                <\/RunSynchronousCommand>\n            <\/RunSynchronous>\n        <\/component>\n        <component name=\"Microsoft-Windows-Security-SPP-UX\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n            <SkipAutoActivation>true<\/SkipAutoActivation>\n        <\/component>\n        <component name=\"Microsoft-Windows-Shell-Setup\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n            <ComputerName>1-click-demo<\/ComputerName>\n        <\/component>\n    <\/settings>\n    <settings pass=\"windowsPE\">\n        <component name=\"Microsoft-Windows-International-Core-WinPE\" processorArchitecture=\"amd64\" publicKeyToken=\"31bf3856ad364e35\" language=\"neutral\" versionScope=\"nonSxS\" xmlns:wcm=\"http:\/\/schemas.microsoft.com\/WMIConfig\/2002\/State\" xmlns:xsi=\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\">\n            <SetupUILanguage>\n            <UILanguage>en-US <\/UILanguage>\n            <\/SetupUILanguage>\n            <InputLocale>en-US <\/InputLocale>\n            <SystemLocale>en-US <\/SystemLocale>\n            <UILanguage>en-US <\/UILanguage>\n            <UILanguageFallback>en-US <\/UILanguageFallback>\n            <UserLocale>en-US <\/UserLocale>\n        <\/component>\n    <\/settings>\n<\/unattend>",
 								"type": ""
 							}
 						},
 						"power_state": "ON",
 						"type": "",
+						"account_uuid": "5094f916-0572-4239-818b-0d767e6d05c6",
 						"boot_config": {
 							"boot_device": {
 								"type": "",
@@ -417,7 +425,7 @@
 								"kind": "app_package",
 								"type": "",
 								"name": "Windows2016",
-								"uuid": "6646fa85-eb47-46f4-b7af-92840076380b"
+								"uuid": "77b41820-e09a-4060-a8a9-ce630692963b"
 							},
 							"type": "",
 							"disk_size_mib": 0,
@@ -889,7 +897,7 @@
 							"state": "ACTIVE",
 							"attrs": {
 								"exit_status": [],
-								"script": "try{\n  Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1'))\n} catch {\n   sleep 180\n   Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1'))\n}",
+								"script": "try{\n  @\"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \" [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\\bin\"\n} catch {\n  sleep 180\n  @\"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \" [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\\bin\"\n}",
 								"script_type": "npsscript",
 								"type": "",
 								"command_line_args": "",
@@ -1279,7 +1287,7 @@
 							"name": "Install Updates",
 							"state": "ACTIVE",
 							"attrs": {
-								"script": "\n\nInstall-Module -Name PSWindowsUpdate -confirm:0 -Force\nGet-WUinstall -MicrosoftUpdate\nAdd-WUServiceManager -ServiceID \"7971f918-a847-4430-9279-4a52d1efe18d\" -AddServiceFlag 7 -confirm:0 \nGet-WUInstall -AcceptAll \u2013IgnoreReboot\n\nshutdown -r -t 10",
+								"script": "\n\nInstall-Module -Name PSWindowsUpdate -confirm:0 -Force\nGet-WUinstall -MicrosoftUpdate\nAdd-WUServiceManager -ServiceID \"7971f918-a847-4430-9279-4a52d1efe18d\" -AddServiceFlag 7 -confirm:0 \nGet-WUInstall -AcceptAll -IgnoreReboot\n\nshutdown -r -t 10",
 								"type": "",
 								"command_line_args": "",
 								"exit_status": [],
@@ -1424,7 +1432,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "ec4bd4b6-e20a-441d-9dc1-e936efd90381"
+							"uuid": "823f34ef-29b5-471b-b51c-c806ddafeda9"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1449,7 +1457,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "01b995a2-b1a9-428c-a990-cd290c2014ad"
+							"uuid": "b70c8439-f91f-4f54-ae26-a3919ceb4cb4"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1474,7 +1482,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "a31ee4d4-5d4b-4c7b-b9f2-4b7b6302c862"
+							"uuid": "2e895c6a-4f93-4b9e-9adb-da04d62e618d"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1499,7 +1507,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "84b49b8d-c71b-4cca-b3a0-be8755c669ee"
+							"uuid": "02d246aa-eb2a-450e-800e-1a3310c1a446"
 						}]
 					},
 					"type": "",
@@ -1569,8 +1577,10 @@
 				"deployment_create_list": [{
 					"type": "GREENFIELD",
 					"action_list": [],
-					"depends_on_list": [],
 					"name": "306b8456_deployment",
+					"min_replicas": "1",
+					"default_replicas": "1",
+					"depends_on_list": [],
 					"published_service_local_reference_list": [],
 					"max_replicas": "1",
 					"package_local_reference_list": [{
@@ -1581,7 +1591,6 @@
 						"kind": "app_substrate",
 						"name": "1CD App Node"
 					},
-					"min_replicas": "1",
 					"variable_list": [],
 					"description": ""
 				}],
@@ -2110,10 +2119,10 @@
 	},
 	"api_version": "3.0",
 	"metadata": {
-		"last_update_time": "1573934217513551",
+		"last_update_time": "1580810041097773",
 		"kind": "blueprint",
-		"spec_version": 27,
-		"creation_time": "1571478889558992",
+		"spec_version": 2,
+		"creation_time": "1580798298158086",
 		"name": "1_Click_Demo"
 	}
 }
