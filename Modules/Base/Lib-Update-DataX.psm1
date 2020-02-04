@@ -90,6 +90,7 @@ function Lib-Update-DataX {
       $InstallXenDesktop = 0
     } 
     if ($ramcap -ge 2 -and $datavar.InstallERA -eq 0 -and $datavar.InstallObjects -eq 1){
+      write-log -message "Objects will be enabled as ERA is disabled in this block"
       $InstallObjects = 1
     }  
     if ($ramcap -ge 2){
