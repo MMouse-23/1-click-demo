@@ -11,8 +11,8 @@
 					"x": 820.0532500022
 				},
 				"306b8456_deployment": {
-					"y": -17523.1854110849,
-					"x": 465.8085246101
+					"y": -17857.1854110849,
+					"x": 348.8085246101
 				}
 			},
 			"service_definition_list": [{
@@ -368,7 +368,7 @@
 						"nic_list": [{
 							"nic_type": "NORMAL_NIC",
 							"ip_endpoint_list": [{
-								"ip": "10.42.47.61",
+								"ip": "10.42.112.61",
 								"type": "ASSIGNED"
 							}],
 							"network_function_chain_reference": null,
@@ -378,7 +378,7 @@
 								"kind": "subnet",
 								"type": "",
 								"name": "",
-								"uuid": "2a887062-8071-462e-b0af-4e331245daf7"
+								"uuid": "bdd7ea99-ac88-417d-a9bd-775777766b62"
 							},
 							"type": ""
 						}],
@@ -406,7 +406,7 @@
 						},
 						"power_state": "ON",
 						"type": "",
-						"account_uuid": "5094f916-0572-4239-818b-0d767e6d05c6",
+						"account_uuid": "b40be38c-20f3-4332-bfca-aeaff67680b0",
 						"boot_config": {
 							"boot_device": {
 								"type": "",
@@ -425,7 +425,7 @@
 								"kind": "app_package",
 								"type": "",
 								"name": "Windows2016",
-								"uuid": "77b41820-e09a-4060-a8a9-ce630692963b"
+								"uuid": "ea1de22f-bb84-43c7-ab8e-c4d8616ca250"
 							},
 							"type": "",
 							"disk_size_mib": 0,
@@ -897,7 +897,7 @@
 							"state": "ACTIVE",
 							"attrs": {
 								"exit_status": [],
-								"script": "try{\n  @\"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \" [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\\bin\"\n} catch {\n  sleep 180\n  @\"%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \" [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\\bin\"\n}",
+								"script": "try {\n\n  [System.Net.ServicePointManager]::SecurityProtocol = 3072;\n  iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1')) \n  SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\\bin\"\n  \n} catch {\n\n  [System.Net.ServicePointManager]::SecurityProtocol = 3072;\n  iex ((New-Object System.Net.WebClient).DownloadString('https:\/\/chocolatey.org\/install.ps1')) \n  SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\\bin\"\n    \n}",
 								"script_type": "npsscript",
 								"type": "",
 								"command_line_args": "",
@@ -1432,7 +1432,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "823f34ef-29b5-471b-b51c-c806ddafeda9"
+							"uuid": "8f744ef5-829d-4d37-b4bc-234881962b76"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1457,7 +1457,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "b70c8439-f91f-4f54-ae26-a3919ceb4cb4"
+							"uuid": "08ca2645-bc90-495f-a514-339ccd18ecfd"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1482,7 +1482,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "2e895c6a-4f93-4b9e-9adb-da04d62e618d"
+							"uuid": "1b4368e4-4ff5-4ce8-b699-03afb49aabae"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1507,7 +1507,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "02d246aa-eb2a-450e-800e-1a3310c1a446"
+							"uuid": "8537d135-7266-436e-9199-b50cf00dcb38"
 						}]
 					},
 					"type": "",
@@ -2119,10 +2119,10 @@
 	},
 	"api_version": "3.0",
 	"metadata": {
-		"last_update_time": "1580810041097773",
+		"last_update_time": "1580924120321791",
 		"kind": "blueprint",
-		"spec_version": 2,
-		"creation_time": "1580798298158086",
+		"spec_version": 3,
+		"creation_time": "1580903791079711",
 		"name": "1_Click_Demo"
 	}
 }

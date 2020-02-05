@@ -31,6 +31,47 @@ Function REST-Karbon-Get-Images-Local {
   Return $task
 } 
 
+
+Function REST-Karbon-Login {
+  Param (
+    [object] $datagen,
+    [object] $datavar
+  )
+
+  write-log -message "Debug level is $($debug)";
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Building PC Batch Login query to get me a token"
+
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/prism/api/nutanix/v3/batch"
+  $JSON = @"
+{
+  "action_on_failure": "CONTINUE",
+  "execution_order": "SEQUENTIAL",
+  "api_request_list": [{
+    "operation": "GET",
+    "path_and_params": "/api/nutanix/v3/users/me"
+  }, {
+    "operation": "GET",
+    "path_and_params": "/api/nutanix/v3/users/info"
+  }],
+  "api_version": "3.0"
+}
+"@
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers -SessionVariable websession;
+  } catch {
+    sleep 10
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers -SessionVariable websession;
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+  }
+  $cookies = $websession.Cookies.GetCookies($url) 
+  Return $cookies
+} 
+
 Function REST-Karbon-Create-Files-StorageCloss {
   Param (
     [object] $datagen,
