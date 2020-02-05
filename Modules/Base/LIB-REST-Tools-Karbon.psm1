@@ -6,7 +6,7 @@ Function REST-Karbon-Get-Images-Local {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/image/list"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/image/list"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -39,7 +39,7 @@ Function REST-Karbon-Create-Files-StorageCloss {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/storage_class"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/storage_class"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -91,7 +91,7 @@ Function REST-Karbon-Add-Node {
     [string] $nodecount
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/workers"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/workers"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -136,7 +136,7 @@ Function REST-Karbon-List-StorageCloss {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/storage_class/list"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/storage_class/list"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -176,7 +176,7 @@ Function REST-Karbon-ClaimFilesVolume {
     [object] $class
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/volume"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster/$($cluster.cluster_metadata.uuid)/volume"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -222,7 +222,7 @@ Function REST-Karbon-Get-Images-Portal {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/image/portal/list"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/image/portal/list"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -250,7 +250,7 @@ Function REST-Karbon-Get-Versions {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8sversion/list"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8sversion/list"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" 
   $Cookie.Value = "$($token.value)" 
@@ -282,7 +282,7 @@ Function REST-Karbon-Download-Images {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/image/download"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/image/download"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -319,7 +319,7 @@ Function REST-Karbon-Get-Clusters {
     [object] $token
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster/list"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster/list"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -356,7 +356,7 @@ Function REST-Karbon-Create-Cluster {
     [object] $subnet
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -506,7 +506,7 @@ Function REST-Karbon-Create-Cluster-Dev {
     [object] $subnet
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
@@ -619,7 +619,7 @@ Function REST-Karbon-Delete-Cluster {
     [object] $K8cluster
   )
 
-  $URL = "https://$($datagen.PCClusterIP):7050/acs/k8s/cluster/$($K8cluster.cluster_metadata.uuid)"
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8s/cluster/$($K8cluster.cluster_metadata.uuid)"
   $Cookie = New-Object System.Net.Cookie
   $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
   $Cookie.Value = "$($token.value)" # Add the value of the cookie
