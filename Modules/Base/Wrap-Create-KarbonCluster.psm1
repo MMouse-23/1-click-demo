@@ -67,7 +67,7 @@ Function Wrap-Create-KarbonCluster {
   $subnet = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq $datagen.nw1name}
   $clusters = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
 
-  $cluster = $cluster.entities | where { $_.spec.Resources.network -match "192.168.5"}
+  $cluster = $cluster.entities | where { $_.spec.Resources.network -notmatch "192.168.5"}
   
   $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
   $image = $imagesL | where {$_.image_description -match "Centos" } | sort release_date | select -last 1
