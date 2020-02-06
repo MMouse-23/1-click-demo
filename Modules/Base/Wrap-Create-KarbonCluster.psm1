@@ -74,9 +74,9 @@ Function Wrap-Create-KarbonCluster {
   $array  = $null
   $versions = REST-Karbon-Get-Versions -datagen $datagen -datavar $datavar -token $token
   foreach ($line in $versions.k8sversion) { 
-    [array]$array += [version]($line -replace "v",'')
+    [array]$array += [version]($line -replace "-0",'')
   }
-  $lastversion = "v$(($array | SORT | select -LAST 1).tostring())"
+  $lastversion = "$(($array | SORT | select -LAST 1).tostring())-0"
 
   write-log -message "Using K8 Version $lastversion + Lame pause to impove Karon Create stability."
 
