@@ -284,7 +284,7 @@ Function REST-Karbon-Get-Images-Portal {
   Return $task
 } 
 
-Function REST-Karbon-Get-Versions {
+Function REST-Karbon-Get-Versions-Local {
   Param (
     [object] $datagen,
     [object] $datavar,
@@ -314,6 +314,39 @@ Function REST-Karbon-Get-Versions {
 
   Return $task
 } 
+
+Function REST-Karbon-Get-Versions-Portal {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [object] $token
+  )
+
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/acs/k8srelease/portal/list"
+  $Cookie = New-Object System.Net.Cookie
+  $Cookie.Name = "NTNX_IGW_SESSION" 
+  $Cookie.Value = "$($token.value)" 
+  [System.Uri]$uri = $url 
+  $Cookie.Domain = $uri.DnsSafeHost
+  $WebSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+  $WebSession.Cookies.Add($Cookie)
+
+  write-log -message "Getting OS Images for Karbon"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -websession $websession
+  } catch {
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    sleep 10
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -websession $websession
+  }
+
+  Return $task
+} 
+
+
 
 Function REST-Karbon-Download-Images {
   Param (

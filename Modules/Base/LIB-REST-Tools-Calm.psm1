@@ -3624,7 +3624,7 @@ function REST-update-project-ACP {
 
   write-log -message "Updating Project $($projectdetail.metadata.uuid)"
   write-log -message "Building child object to be inserted"
-  write $json2
+
 
   
 $json2 = @"
@@ -3786,7 +3786,7 @@ $json2 = @"
             },
             "user_group_reference_list": [{
               "kind": "user_group",
-              "name": "$($admingroup.status.resources.directory_service_user_group.distinguished_name)",
+              "name": "$($admingroup.spec.resources.directory_service_user_group.distinguished_name)",
               "uuid": "$($admingroup.metadata.uuid)"
             }]
           },
@@ -3799,7 +3799,7 @@ $json2 = @"
       },
       {
         "acp": {
-          "name": "ACP PAdmin for $customer",
+          "name": "ACP Admin for $customer",
           "resources": {
             "role_reference": {
               "kind": "role",
@@ -3877,7 +3877,7 @@ $json2 = @"
             },
             "user_group_reference_list": [{
               "kind": "user_group",
-              "name": "$($usergroup.status.resources.directory_service_user_group.distinguished_name)",
+              "name": "$($usergroup.spec.resources.directory_service_user_group.distinguished_name)",
               "uuid": "$($usergroup.metadata.uuid)"
             }]
           },
@@ -3894,13 +3894,29 @@ $json2 = @"
 
   $child = $json2 | convertfrom-json
 
+  try {
+    write-log -message "Terminating childs"
+
+    $projectdetail.spec.psobject.properties.Remove('access_control_policy_list')
+  } catch {
+    write-log -message "Parent does not have childs yet."
+  }
+  if (!$projectdetail.spec.access_control_policy_list){
+    $projectdetail.spec | Add-Member -notepropertyname "access_control_policy_list" $child -force
+
+    write-log -message "So the external user group reference list does not exist yet for this project. Adding a construct."
+  }
+
   write-log -message "Injecting Child into Parent"
 
-  $projectdetail.spec.access_control_policy_list += $child
+  $projectdetail.spec.access_control_policy_list = [array]$child
 
   write-log -message "Updating Project $($projectdetail.metadata.uuid)"
 
   $json1 = $projectdetail | ConvertTo-Json -depth 100
+  if ($debug -ge 2 ){
+    $json1 | out-file c:\temp\acp.json
+  }
 
   $URL1 = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/projects_internal/$($projectdetail.metadata.uuid)"
 
@@ -3917,6 +3933,93 @@ $json2 = @"
   Return $task
 } 
 
+function REST-update-project-RBAC {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [object] $projectdetail,
+    [object] $admingroup,
+    [object] $usergroup
+  )
+
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Prepping object"
+  $projectdetail.psobject.properties.Remove('status')
+
+
+  write-log -message "Updating Project UUID $($projectdetail.metadata.uuid)"
+  write-log -message "Updating Project Name $($projectdetail.spec.project_detail.name)"
+  write-log -message "Adding $($admingroup.metadata.uuid) For Admin group"
+  write-log -message "Adding $($usergroup.metadata.uuid) For User group"
+  write-log -message "Building child object to be inserted"
+  
+   
+      $json1 = @"
+          {
+            "kind": "user_group",
+            "name": "$($admingroup.spec.resources.directory_service_user_group.distinguished_name)",
+            "uuid": "$($admingroup.metadata.uuid)"
+          }
+"@
+      $json2 = @"
+          {
+            "kind": "user_group",
+            "name": "$($usergroup.spec.resources.directory_service_user_group.distinguished_name)",
+            "uuid": "$($usergroup.metadata.uuid)"
+          }
+"@
+
+
+  
+      write-log -message "Converting Child"
+      [array]$childs = $json2 | convertfrom-json
+      [array]$childs += $json1 | convertfrom-json
+
+  
+  
+  write-log -message "Injecting Child into Parent"
+  try {
+    write-log -message "Terminating childs"
+
+    $projectdetail.spec.project_detail.resources.psobject.properties.Remove('external_user_group_reference_list')
+  } catch {
+    write-log -message "Parent does not have childs yet."
+  }
+  if (!$projectdetail.spec.project_detail.resources.external_user_group_reference_list){
+    $projectdetail.spec.project_detail.resources | Add-Member -notepropertyname "external_user_group_reference_list" $childs -force
+
+    write-log -message "So the external user group reference list does not exist yet for this project. Adding a construct."
+  }
+
+  $projectdetail.spec.project_detail.resources.external_user_group_reference_list += [array]$childs
+
+  write-log -message "Updating Project $($projectdetail.metadata.uuid)"
+
+  $json1 = $projectdetail | ConvertTo-Json -depth 100
+
+  if ($debug -ge 2){
+    $json1 | out-file c:\temp\projectUser.json
+  }
+
+  $URL1 = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/calm_projects/$($projectdetail.metadata.uuid)"
+  $counter = 0
+  do{
+    $counter ++
+    try{
+      $task = Invoke-RestMethod -Uri $URL1 -method "put" -body $json1 -ContentType 'application/json' -headers $headers;
+      $exit = 1
+    } catch {
+      sleep 10
+      $exit = 0
+      $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+      $task = Invoke-RestMethod -Uri $URL1 -method "put" -body $json1 -ContentType 'application/json' -headers $headers;
+    }
+  } until ($exit -eq 1 -or $counter -ge 5)
+  Return $task
+} 
 
 function REST-update-project-Account {
   Param (

@@ -69,10 +69,16 @@ Function Wrap-Create-KarbonCluster {
   $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
   $image = $imagesL | where {$_.image_description -match "Centos" } | sort release_date | select -last 1
   
-  write-log -message "Getting K8 Versions" 
+  write-log -message "Getting K8 Versions Portal" 
+
+  
+  $versions = REST-Karbon-Get-Versions-Portal -datagen $datagen -datavar $datavar -token $token
+  Sleep 5
+
+  write-log -message "Getting K8 Versions Local" 
 
   $array  = $null
-  $versions = REST-Karbon-Get-Versions -datagen $datagen -datavar $datavar -token $token
+  $versions = REST-Karbon-Get-Versions-Local -datagen $datagen -datavar $datavar -token $token
   foreach ($line in $versions.k8sversion) { 
     [array]$array += [version]($line -replace "-0",'')
   }
