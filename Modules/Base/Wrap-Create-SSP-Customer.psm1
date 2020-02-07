@@ -26,7 +26,7 @@ Function Wrap-Create-SSP-Customer{
   sleep 10
   $clusters = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
 
-  $cluster = $cluster.entities | where { $_.spec.Resources.network -match "192.168.5"}
+  $cluster = $clusters.entities | where { $_.spec.Resources.network -match "192.168.5"}
 
   write-log -message "Using Cluster $($cluster.metadata.uuid)"
   write-log -message "Using Subnet $($subnet.uuid)"
