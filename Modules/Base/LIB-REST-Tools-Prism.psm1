@@ -4631,7 +4631,7 @@ $Json = @"
             "name": "alert_trigger"
           },
           "input_parameter_values": {
-            "alert_uid": "A$($AlertTypeObject.group_results.entity_results.entity_id),
+            "alert_uid": "A$($AlertTypeObject.group_results.entity_results.entity_id)",
             "severity": "[\"critical\"]",
             "source_entity_info_list": "[]"
           }
