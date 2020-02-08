@@ -2,7 +2,7 @@
 
 
 
-**Current Version 1.1.2.1**
+**Current Version 1.1.2.2**
 
 ## Introduction
 
@@ -24,6 +24,21 @@
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.1.2.2
+
+**Fixes:**
+- Karbon 2.0 New Version Scheme Fix.
+- Karbon 2.0 PC API Port changed. (not required.) 
+- Objects PE Cluster UUID fix
+- CALM Projects Fixed ACP - Role Mapping
+- XPlay fixed Alert Policy Mapping.
+- 1CD BP updated for public Chocolatry changes
+- Timer Fix in XenApp BP
+
+**Features:**
+- era:0 on 768GB RAM blocks will enable objects. (all is on by default)
+- 1CD Auto Partial Extract.
 
 ## Release notes 1.1.2.1
 
