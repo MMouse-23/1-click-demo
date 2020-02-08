@@ -242,7 +242,7 @@ Function LIB-Send-Confirmation{
           $body += "<a href=https://$($datagen.ERA1IP)>ERA</a><br>";
         } 
         if ($datavar.InstallKarbon -eq 1){  
-          $body += "<a href=https://$($datagen.pcclusterip):7050>Karbon</a><br>";
+          $body += "<a href=https://$($datagen.pcclusterip):9440/console/#page/karbon>Karbon</a><br>";
         }
         if ($datavar.InstallMove -eq 1){  
           $body += "<a href=http://$($datagen.MoveIP)>Move</a><br>";

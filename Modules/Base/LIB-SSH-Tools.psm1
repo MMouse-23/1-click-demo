@@ -76,6 +76,25 @@ Function SSH-PC-InsertHotfix {
   return $resultobject
 };
 
+Function SSH-1CD-VMDK {
+  Param (
+    [object] $datavar,
+    [object] $datagen,
+    [string] $NDFSFilepath
+  )
+  #This module is tot repair an Objects 1.0 bug.
+  $hide = Get-SSHTrustedHost | Remove-SSHTrustedHost
+  $Resetpasscount = 0 
+  $passreset = $false
+  $Securepass = ConvertTo-SecureString $datavar.pepass -AsPlainText -Force; 
+  $credential = New-Object System.Management.Automation.PSCredential ("nutanix", $Securepass);
+  $session = New-SSHSession -ComputerName $datavar.peclusterip -Credential $credential -AcceptKey -connectiontimeout 120 -operationtimeout 100 -ea:0
+    write "please open an ssh session to $($datavar.peclusterip)"
+    write "Enter qemu-img convert -c nfs://127.0.0.1/$($NDFSFilepath) -O vmdk nfs://127.0.0.1/SelfServiceContainer/1-Click-Demo.vmdk &"
+
+    #Invoke-SSHCommand -SSHSession $session -command "qemu-img convert -c nfs://127.0.0.1/$($NDFSFilepath) -O vmdk nfs://127.0.0.1/SelfServiceContainer/1-Click-Demo.vmdk &" -EnsureConnection
+
+};
 
 Function SSH-Restart-KeepAlived {
   Param (

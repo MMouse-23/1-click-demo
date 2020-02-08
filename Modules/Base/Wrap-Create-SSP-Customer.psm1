@@ -24,11 +24,9 @@ Function Wrap-Create-SSP-Customer{
   $subnet = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq $networkname}
 
   sleep 10
-  $cluster = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount -targetIP $datagen.PCClusterIP
-  sleep 10
-  if ($cluster.count -ge 2){
-    $cluster = $cluster | where {!$_.spec.resources.network.external_data_services_ip}
-  }
+  $clusters = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+
+  $cluster = $clusters.entities | where { $_.spec.Resources.network -match "192.168.5"}
 
   write-log -message "Using Cluster $($cluster.metadata.uuid)"
   write-log -message "Using Subnet $($subnet.uuid)"
@@ -155,6 +153,12 @@ Function Wrap-Create-SSP-Customer{
       sleep 60
     }
   } until ($upenvcount -ge 5 -or $exit1 -eq 1)
+
+  write-log -message "Updating Project with RBAC"
+  
+  $projectdetail = REST-Get-ProjectDetail -datavar $datavar -datagen $datagen -project $project
+  REST-update-project-RBAC -datavar $datavar -datagen $datagen -environment $environment -projectdetail $projectdetail -usergroup $usergroup -admingroup $admingroup
+  Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
 
   ## ACP Has to go last
     
