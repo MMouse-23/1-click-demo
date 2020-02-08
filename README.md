@@ -215,14 +215,15 @@ Hence progress indicator is not time relative. (edited)
 > This blueprint will be released on the 1.1.0 version of 1CD.
 
 
-## Version 1.1.1.3
+## Version 1.1.1.5
 
 **Fixes:**
-- Queue Manual sending finished emails, missing manual mail message.
-- Missing 3 Node PC IPs.
-- XRay 3.6.1 new URL structure.
-- Better LCM Status messages. 
+- Karbon 2.0 Code fix. 
+- Objects PE Cluster UUID fix
+- CALM Projects Fixed APC - Role Mapping
+- XPlay fixed Alert Policy Mapping.
+- 1CD BP updated for public Chocolatry changes
 
 **Features:**
-- ERA Low RAM, ERA Supports 384GB ram blocks, only Maria, PostGres and MySQL will be installed, including blueprint. Oracle, MSSQL and PostgresHA are disabled.
+- era:0 on 768GB RAM blocks will enable objects. (all is on by default)
 

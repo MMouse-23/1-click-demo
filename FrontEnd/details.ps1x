@@ -71,7 +71,7 @@ if ($datavar.hypervisor -match "ESX|VMware"){
 <%
 if ($datavar.InstallKarbon -eq 1){ 
 %>
-        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.pcclusterip):7050"%>>Karbon</a><br>
+        <a target="_blank" rel="noopener noreferrer" href=https://<%"$($datagen.pcclusterip):9440/console/#page/karbon"%>>Karbon</a><br>
 <%
 }
 %>

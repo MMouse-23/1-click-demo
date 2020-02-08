@@ -15,7 +15,9 @@ Function Wrap-Install-Objects {
   
   write-log -message "Getting PE cluster object"
   
-  $cluster = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount -targetIP $datagen.PCClusterIP
+  $clusters = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+
+  $cluster = $clusters.entities | where { $_.spec.Resources.network -match "192.168.5"}
   
   write-log -message "Building Objects store"
 
