@@ -50,6 +50,7 @@ Import-Module "$($ModuleDir)\Queue\Lib-PortableMode.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Base\Lib-Send-Confirmation.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Base\LIB-Config-DetailedDataSet.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Base\LIB-Write-Log.psm1" -DisableNameChecking;
+Import-Module "$($ModuleDir)\Base\LIB-PSR-Tools.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Backend\Lib-REST-Portal.psm1" -DisableNameChecking;
 $global:type = "Backend"
 $Guid = [guid]::newguid()
@@ -94,158 +95,193 @@ if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
 
 # Program is on a one minute loop
 
-write-log -message "Backend Process active"
 
-write-log -message "Doing SQL Maintenance."
-write-log -message "Purging Queue with date older $datequeue"
-write-log -message "Purging Logs with date older $datelogs"
-write-log -message "Purging Backups with date older $dateBackups"
-write-log -message "Purging Queue History first"
+## Testing Load
+write-log -message "Getting Host RAM"
+$ram = Test-MemoryUsage
+$inuse = $ram.totalgb - $ram.freegb
 
-$objects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName)" 
-$objects = $objects | where {[datetime]$_.datecreated -lt [datetime]$datequeue}
+write-log -message "Getting Host CPU Load"
+    
+$totalav = Test-CPUUsage
+    
+write-log -message "Average CPU load is $totalav"
+write-log -message "Checking Running builds"
+$time = (get-date).addhours(-48)
+$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
+#$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE Status = 'Running' order by DateCreated";
+[array]$active    = $Statobjects | where {$_.Percentage -le 65 -and $_.status -eq "Running"}
+$ramfree = 30
+$totalCPUPerc = 70
+if ($env:computername -match "DEv"){
+  $concurrent = 4
+} else {
+  $concurrent = 6     
+}
+if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -gt $concurrent){
+        
+  write-log -message "1CD Server load is full ATM, not executing log maintenance"
 
-write-log -message "We found $($objects.count) records to delete."
+} else {
 
-$reccount = 0
-Foreach ($record in $objects){
-  $reccount++
-  if ($reccount % 4 -eq 0){
-
-    write-log -message "Object count $reccount; object date is $($record.datecreated)"
-
-  }
-  Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE QueueUUID='$($record.queueuuid)'"
+  write-log -message "Backend Process active"
   
-}
-write-log -message "Purging Log History second"
-
-$objects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName)" 
-$objects = $objects | where {[datetime]$_.date -lt [datetime]$datelogs}
-
-write-log -message "We found $($objects.count) records to delete."
-
-$reccount = 0
-Foreach ($record in $objects){
-  $reccount++
-  if ($reccount % 4 -eq 0){
-
-    write-log -message "Object count $reccount; object date is $($record.date)"
-
-  }
-  Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName) WHERE QueueUUID='$($record.queueuuid)'"
-}
-
-write-log -message "Purging User Backups Last"
-
-$objects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT datecreated, queueuuid FROM [$($SQLDatabase)].[dbo].$($SQLDataUserTableName)" 
-$objects = $objects | where {[datetime]$_.datecreated -lt [datetime]$dateBackups}
-
-write-log -message "We found $($objects.count) records to delete."
-
-$reccount = 0
-Foreach ($record in $objects){
-  $reccount++
-  if ($reccount % 4 -eq 0){
-
-    write-log -message "Object count $reccount; object date is $($record.datecreated)"
+  write-log -message "Doing SQL Maintenance."
+  write-log -message "Purging Queue with date older $datequeue"
+  write-log -message "Purging Logs with date older $datelogs"
+  write-log -message "Purging Backups with date older $dateBackups"
+  write-log -message "Purging Queue History first"
+  
+  $objects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName)" 
+  $objects = $objects | where {[datetime]$_.datecreated -lt [datetime]$datequeue}
+  
+  write-log -message "We found $($objects.count) records to delete."
+  
+  $reccount = 0
+  Foreach ($record in $objects){
+    $reccount++
+    if ($reccount % 4 -eq 0){
+  
+      write-log -message "Object count $reccount; object date is $($record.datecreated)"
+  
+    }
+    Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE QueueUUID='$($record.queueuuid)'"
     
   }
-  Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLDataUserTableName) WHERE QueueUUID='$($record.queueuuid)' AND BackupIndex='$($record.BackupIndex)'"
-}
-
-write-log -message "Cleaning Tasks"
-
-$tasks = get-scheduledtask | where {$_.taskpath -notmatch "Microsoft|Scripting|Backup"}
-
-write-log -message "We found $($tasks.count) Total tasks"
-$killme = $null
-
-foreach ($task in $tasks){
-  [string]$stringtime = $task.Triggers.startboundary
-  if ([datetime]$stringtime -lt $datetasks){
-    [array]$killme += $task
-  }
-}
-
-write-log -message "We found $($tasks.count) old tasks"
-
-foreach ($task in $killme){
-  sleep 30
+  write-log -message "Purging Log History second"
   
-  write-log -message "Checking task state after 30 seconds $($task.name)"
-
-  $task = $task | get-scheduledtask 
-  if ($task.state -ne "Running"){
-    $task | Unregister-ScheduledTask -confirm:0 -ea:0
-  } 
-
-  write-log -message "$($task.Triggers.startboundary)"
-}
-## Purging DataStats
-[array]$Statobjects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE Status='Running' OR Status='Pending'"
-
-$date = get-date
-
-foreach ($stat in $Statobjects){
-  $Logging = Invoke-Sqlcmd -ServerInstance $SQLInstLog -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName) WHERE QueueUUID='$($stat.queueuuid)'"
-  if ($Logging){
-    write-log -message "Logging Found on $($stat.queueuuid)"
-    $log = $logging | sort date | select -last 1
-    $task = get-scheduledtask | where {$_.taskname -match "$($stat.queueuuid)"} -ea:0
-
-    sleep 2
-
-    if ($log.date -lt (get-date).addminutes(-800) -or !$log){
-      write-log -message "Stat $($stat.QueueUUID) is marked as running, created on $($stat.DateCreated) but its master log has not been touched in the last 800 minutes."
-      if ($log){
-        write-log -message "Last Log was $($log.date)"
-      } else {
-        write-log -message "Stat is so old logs have been cleaned already"
-      }
-      write-log -message "Marking stat as cleaned."
-      $query ="UPDATE [$($SQLDatabase)].[dbo].[$($SQLDataStatsTableName)] 
-        SET Status = 'Cleaned', 
-        DateStopped = '$date'
-        WHERE QueueUUID='$($stat.QueueUUID)';" 
-      write-host $query
-      $Update = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query $query 
-      $task | stop-ScheduledTask -ea:0
-      $task | Unregister-ScheduledTask -ea:0 -confirm:0
-    } else {
-      write-log -message "Stat $($stat.QueueUUID) is actually running, cant touch this...."
+  $objects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName)" 
+  $objects = $objects | where {[datetime]$_.date -lt [datetime]$datelogs}
+  
+  write-log -message "We found $($objects.count) records to delete."
+  
+  $reccount = 0
+  Foreach ($record in $objects){
+    $reccount++
+    if ($reccount % 4 -eq 0){
+  
+      write-log -message "Object count $reccount; object date is $($record.date)"
+  
+    }
+    Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName) WHERE QueueUUID='$($record.queueuuid)'"
+  }
+  
+  write-log -message "Purging User Backups Last"
+  
+  $objects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT datecreated, queueuuid FROM [$($SQLDatabase)].[dbo].$($SQLDataUserTableName)" 
+  $objects = $objects | where {[datetime]$_.datecreated -lt [datetime]$dateBackups}
+  
+  write-log -message "We found $($objects.count) records to delete."
+  
+  $reccount = 0
+  Foreach ($record in $objects){
+    $reccount++
+    if ($reccount % 4 -eq 0){
+  
+      write-log -message "Object count $reccount; object date is $($record.datecreated)"
+      
+    }
+    Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "DELETE FROM [$($SQLDatabase)].[dbo].$($SQLDataUserTableName) WHERE QueueUUID='$($record.queueuuid)' AND BackupIndex='$($record.BackupIndex)'"
+  }
+  
+  write-log -message "Cleaning Tasks"
+  
+  $tasks = get-scheduledtask | where {$_.taskpath -notmatch "Microsoft|Scripting|Backup"}
+  
+  write-log -message "We found $($tasks.count) Total tasks"
+  $killme = $null
+  
+  foreach ($task in $tasks){
+    [string]$stringtime = $task.Triggers.startboundary
+    if ([datetime]$stringtime -lt $datetasks){
+      [array]$killme += $task
     }
   }
-}     
-
-write-log -message "Cleaning Logs"
-$systemlogfiles = get-childitem $logingdir
-$deletelogfiles = $systemlogfiles | where { (get-date).addhours(-172) -ge $_.lastwritetime}
-if ($deletelogfiles){
-  write-log -message "We found $($deletelogfiles.count) to clean out of $($systemlogfiles.count) Logfiles."
-  foreach ($item in $deletelogfiles){
-    remove-item $item.fullname -force -ea:0
+  
+  write-log -message "We found $($tasks.count) old tasks"
+  
+  foreach ($task in $killme){
+    sleep 30
+    
+    write-log -message "Checking task state after 30 seconds $($task.name)"
+  
+    $task = $task | get-scheduledtask 
+    if ($task.state -ne "Running"){
+      $task | Unregister-ScheduledTask -confirm:0 -ea:0
+    } 
+  
+    write-log -message "$($task.Triggers.startboundary)"
   }
-}
-
-write-log -message "Cleaning Spawn Logs"
-$spawnlogfiles = get-childitem $JobsLogs
-$deletelogfiles = $spawnlogfiles | where { (get-date).addhours(-172) -ge $_.lastwritetime}
-if ($deletelogfiles){
-  write-log -message "We found $($deletelogfiles.count) to clean out of $($spawnlogfiles.count) spawn Logfiles."
-  foreach ($item in $deletelogfiles){
-    remove-item $item.fullname -force -ea:0
+  
+  
+  
+  ## Purging DataStats
+  [array]$Statobjects = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE Status='Running' OR Status='Pending'"
+  
+  $date = get-date
+  
+  
+  foreach ($stat in $Statobjects){
+    $Logging = Invoke-Sqlcmd -ServerInstance $SQLInstLog -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLLoggingTableName) WHERE QueueUUID='$($stat.queueuuid)'"
+    if ($Logging){
+      write-log -message "Logging Found on $($stat.queueuuid)"
+      $log = $logging | sort date | select -last 1
+      $task = get-scheduledtask | where {$_.taskname -match "$($stat.queueuuid)"} -ea:0
+  
+      sleep 2
+  
+      if ($log.date -lt (get-date).addminutes(-800) -or !$log){
+        write-log -message "Stat $($stat.QueueUUID) is marked as running, created on $($stat.DateCreated) but its master log has not been touched in the last 800 minutes."
+        if ($log){
+          write-log -message "Last Log was $($log.date)"
+        } else {
+          write-log -message "Stat is so old logs have been cleaned already"
+        }
+        write-log -message "Marking stat as cleaned."
+        $query ="UPDATE [$($SQLDatabase)].[dbo].[$($SQLDataStatsTableName)] 
+          SET Status = 'Cleaned', 
+          DateStopped = '$date'
+          WHERE QueueUUID='$($stat.QueueUUID)';" 
+        write-host $query
+        $Update = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query $query 
+        $task | stop-ScheduledTask -ea:0
+        $task | Unregister-ScheduledTask -ea:0 -confirm:0
+      } else {
+        write-log -message "Stat $($stat.QueueUUID) is actually running, cant touch this...."
+      }
+    }
+  }     
+  
+  write-log -message "Cleaning Logs"
+  $systemlogfiles = get-childitem $logingdir
+  $deletelogfiles = $systemlogfiles | where { (get-date).addhours(-172) -ge $_.lastwritetime}
+  if ($deletelogfiles){
+    write-log -message "We found $($deletelogfiles.count) to clean out of $($systemlogfiles.count) Logfiles."
+    foreach ($item in $deletelogfiles){
+      remove-item $item.fullname -force -ea:0
+    }
   }
-}
-
-write-log -message "Cleaning Queue Files"
-$systemQueuefiles = get-childitem "$($queuepath)"
-$deleteQueuefiles = $systemQueuefiles | where { (get-date).addhours(-172) -ge $_.lastwritetime}
-if ($deleteQueuefiles){
-  write-log -message "We found $($deleteQueuefiles.count) to clean out of $($systemQueuefiles.count) Queuefiles."
-  foreach ($item in $deleteQueuefiles){
-    remove-item $item.fullname -force -ea:0
+  
+  write-log -message "Cleaning Spawn Logs"
+  $spawnlogfiles = get-childitem $JobsLogs
+  $deletelogfiles = $spawnlogfiles | where { (get-date).addhours(-172) -ge $_.lastwritetime}
+  if ($deletelogfiles){
+    write-log -message "We found $($deletelogfiles.count) to clean out of $($spawnlogfiles.count) spawn Logfiles."
+    foreach ($item in $deletelogfiles){
+      remove-item $item.fullname -force -ea:0
+    }
   }
+  
+  write-log -message "Cleaning Queue Files"
+  $systemQueuefiles = get-childitem "$($queuepath)"
+  $deleteQueuefiles = $systemQueuefiles | where { (get-date).addhours(-172) -ge $_.lastwritetime}
+  if ($deleteQueuefiles){
+    write-log -message "We found $($deleteQueuefiles.count) to clean out of $($systemQueuefiles.count) Queuefiles."
+    foreach ($item in $deleteQueuefiles){
+      remove-item $item.fullname -force -ea:0
+    }
+  }
+<<<<<<< Updated upstream
 }
 
 write-log -message "Checking Uptime"
@@ -263,24 +299,58 @@ if ((get-date).adddays(-5) -ge $uptime ){
     get-scheduledtask "BackEndProcessor" | Disable-ScheduledTask
     write-log -message "Email Doors Closed now, lets see"
     sleep 120
+=======
+  
+  write-log -message "Cleaning Outlook Temp Logging Files"
+  $systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
+  $systemtempfiles += get-childitem "C:\Windows\Temp\*.dat"
+  $systemtempfiles += get-childitem "C:\Windows\Temp\*.log"
+  $systemtempfiles += Get-ChildItem "C:\Windows\Temp\" | ?{ $_.PSIsContainer }
+  $deletetempfiles = $systemtempfiles | where { (get-date).addhours(-12) -ge $_.lastwritetime}
+  if ($deletetempfiles){
+    write-log -message "We found $($deletetempfiles.count) to clean out of $($systemtempfiles.count) Temp files."
+    foreach ($item in $deletetempfiles){
+      remove-item $item.fullname -force -ea:0 -recurse
+    }
+  }
+  
+  
+  write-log -message "Checking Uptime"
+  $uptime = (gcim Win32_OperatingSystem).LastBootUpTime
+  if ((get-date).adddays(-5) -ge $uptime ){
+    write-log -message "We require a reboot, last reboot $uptime"
+>>>>>>> Stashed changes
     $time = (get-date).addhours(-24)
     $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
     [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}
     if ($active.count -ge 1){
-      write-log -message "Shit, someone slipped through."
+      write-log -message "We cannot reboot on running threads."
     } else {
-      write-log -message "All Clear Lets reboot."
-      shutdown -r -t 5
+      write-log -message "Lets go down! there are $($active.count) active tasks"
+      get-scheduledtask "BackEndProcessor" | Stop-ScheduledTask
+      get-scheduledtask "BackEndProcessor" | Disable-ScheduledTask
+      write-log -message "Email Doors Closed now, lets see"
+      sleep 120
+      $time = (get-date).addhours(-24)
+      $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
+      [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}
+      if ($active.count -ge 1){
+        write-log -message "Shit, someone slipped through."
+      } else {
+        write-log -message "All Clear Lets reboot."
+        shutdown -r -t 5
+      }
     }
+  } else {
+    write-log -message "No reboot required, making sure we are running, last reboot $uptime"
+  
+    get-scheduledtask "BackEndProcessor" | Enable-ScheduledTask
+    get-scheduledtask "BackEndProcessor" | Start-ScheduledTask
   }
-} else {
-  write-log -message "No reboot required, making sure we are running, last reboot $uptime"
+  
+} #End of Server load not full
 
-  get-scheduledtask "BackEndProcessor" | Enable-ScheduledTask
-  get-scheduledtask "BackEndProcessor" | Start-ScheduledTask
-}
-
-
+  
 ### Admin monitoring
 
 $total4time = 0
