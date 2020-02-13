@@ -261,10 +261,10 @@ function Wrap-Install-PC {
       $pcstatuscheck++
       $credential = New-Object System.Management.Automation.PSCredential ("admin", $Securepass);
       $session = New-SSHSession -ComputerName $datavar.peclusterip -Credential $credential -AcceptKey;
-      #$PCDownloadStatus = (Invoke-SSHCommand -SSHSession $session -command "/home/nutanix/prism/cli/ncli software list software-type=PRISM_CENTRAL_DEPLOY name='$($datavar.PCVersion)'" -EnsureConnection).output
+      $PCDownloadStatus = (Invoke-SSHCommand -SSHSession $session -command "/home/nutanix/prism/cli/ncli software list software-type=PRISM_CENTRAL_DEPLOY name='$($datavar.PCVersion)'" -EnsureConnection).output
       get-sshsession | remove-sshsession -ea:0
       sleep 30
-      $PCDownloadStatus = "Bypass"
+      #$PCDownloadStatus = "Bypass"
       if ($debug -ge 2){
         $PCDownloadStatus
       }

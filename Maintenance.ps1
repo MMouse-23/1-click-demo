@@ -281,7 +281,7 @@ if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -
       remove-item $item.fullname -force -ea:0
     }
   }
-<<<<<<< Updated upstream
+
 }
 
 write-log -message "Checking Uptime"
@@ -299,7 +299,7 @@ if ((get-date).adddays(-5) -ge $uptime ){
     get-scheduledtask "BackEndProcessor" | Disable-ScheduledTask
     write-log -message "Email Doors Closed now, lets see"
     sleep 120
-=======
+
   
   write-log -message "Cleaning Outlook Temp Logging Files"
   $systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
@@ -319,7 +319,7 @@ if ((get-date).adddays(-5) -ge $uptime ){
   $uptime = (gcim Win32_OperatingSystem).LastBootUpTime
   if ((get-date).adddays(-5) -ge $uptime ){
     write-log -message "We require a reboot, last reboot $uptime"
->>>>>>> Stashed changes
+
     $time = (get-date).addhours(-24)
     $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
     [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}
