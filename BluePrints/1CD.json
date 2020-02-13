@@ -1,7 +1,7 @@
 {
 	"status": {},
 	"contains_secrets": false,
-	"product_version": "2.9.7",
+	"product_version": "2.9.7.1",
 	"spec": {
 		"description": "Builds the 1-Click-Demo VM, portable. Uses the Public GIT repo to pull the build specs, icw this blueprint you have the full package to rebuild 1CD.\nwith the exception of 2 secret files, Slackbot and ERA auto versioning\nThere is no AHV dependency other the downloaded image, just a plain Windows 2016 will do.\n1) Import BluePrint and setup Creds, choose your own password if you like.\n2) Set a static IP for the VM in the BP\n3) Set the secret download URLs, ask MGrauwmans\n4) Start the nutanix CMDlets in the console and hit a key...\n5) Start the 1CD services through the managed blueprint App\n6) check C:\\1-CLick-Demo\\System\\Logging (Maintenance)\n6) use the website or IP on port 80 \/ 81 to build your request.\n7) Multi user version is manual work, join domain and enable forms based auth",
 		"resources": {
@@ -11,8 +11,8 @@
 					"x": 820.0532500022
 				},
 				"306b8456_deployment": {
-					"y": -17857.1854110849,
-					"x": 348.8085246101
+					"y": -18332.1854110849,
+					"x": 274.8085246101
 				}
 			},
 			"service_definition_list": [{
@@ -368,7 +368,7 @@
 						"nic_list": [{
 							"nic_type": "NORMAL_NIC",
 							"ip_endpoint_list": [{
-								"ip": "10.42.112.61",
+								"ip": "10.42.65.61",
 								"type": "ASSIGNED"
 							}],
 							"network_function_chain_reference": null,
@@ -378,7 +378,7 @@
 								"kind": "subnet",
 								"type": "",
 								"name": "",
-								"uuid": "bdd7ea99-ac88-417d-a9bd-775777766b62"
+								"uuid": "3a8f526f-ebe2-44b6-969c-ee69217281e1"
 							},
 							"type": ""
 						}],
@@ -406,7 +406,7 @@
 						},
 						"power_state": "ON",
 						"type": "",
-						"account_uuid": "b40be38c-20f3-4332-bfca-aeaff67680b0",
+						"account_uuid": "9c0fe4b7-2215-4759-a7a8-e0967a590aba",
 						"boot_config": {
 							"boot_device": {
 								"type": "",
@@ -425,7 +425,7 @@
 								"kind": "app_package",
 								"type": "",
 								"name": "Windows2016",
-								"uuid": "ea1de22f-bb84-43c7-ab8e-c4d8616ca250"
+								"uuid": "e987ae95-c14f-4c04-aa96-9fed8c066f0d"
 							},
 							"type": "",
 							"disk_size_mib": 0,
@@ -1099,7 +1099,7 @@
 							"name": "Install Office 365",
 							"state": "ACTIVE",
 							"attrs": {
-								"script": "choco install office365proplus -y --ignore-checksums",
+								"script": "\ntry {\n  choco install office365proplus -y --ignore-checksums\n} catch {\n  sleep (get-random 0,45)\n  choco install office365proplus -y --ignore-checksums\n}",
 								"type": "",
 								"command_line_args": "",
 								"exit_status": [],
@@ -1120,7 +1120,7 @@
 							"name": "Install DropBox",
 							"state": "ACTIVE",
 							"attrs": {
-								"script": "choco install dropbox -y",
+								"script": "try {\n  choco install dropbox -y --ignore-checksums\n} catch {\n  sleep (get-random 0,45)\n  choco install dropbox -y --ignore-checksums\n}",
 								"type": "",
 								"command_line_args": "",
 								"exit_status": [],
@@ -1142,7 +1142,7 @@
 							"state": "ACTIVE",
 							"attrs": {
 								"exit_status": [],
-								"script": "choco install googlechrome -y",
+								"script": "\ntry {\n  choco install googlechrome -y --ignore-checksums\n} catch {\n  sleep (get-random 0,45)\n  choco install googlechrome -y --ignore-checksums\n}",
 								"script_type": "npsscript",
 								"type": "",
 								"command_line_args": "",
@@ -1432,7 +1432,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "8f744ef5-829d-4d37-b4bc-234881962b76"
+							"uuid": "5b45442d-fec4-42fb-9895-96c0923a11d6"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1457,7 +1457,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "08ca2645-bc90-495f-a514-339ccd18ecfd"
+							"uuid": "28e4e366-1b7f-4f39-a622-17ec1b80972f"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1482,7 +1482,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "1b4368e4-4ff5-4ce8-b699-03afb49aabae"
+							"uuid": "a427992f-49f3-4d48-a510-2071c435883a"
 						}, {
 							"regex": {
 								"should_validate": true,
@@ -1507,7 +1507,7 @@
 								"type": "PREDEFINED",
 								"choices": []
 							},
-							"uuid": "8537d135-7266-436e-9199-b50cf00dcb38"
+							"uuid": "a7a800a9-9646-4b61-b011-710938b86391"
 						}]
 					},
 					"type": "",
@@ -2119,10 +2119,10 @@
 	},
 	"api_version": "3.0",
 	"metadata": {
-		"last_update_time": "1580924120321791",
+		"last_update_time": "1581631252836207",
 		"kind": "blueprint",
-		"spec_version": 3,
-		"creation_time": "1580903791079711",
+		"spec_version": 2,
+		"creation_time": "1581625631414621",
 		"name": "1_Click_Demo"
 	}
 }
