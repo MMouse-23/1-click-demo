@@ -264,11 +264,10 @@ function Wrap-Install-PC {
       $PCDownloadStatus = (Invoke-SSHCommand -SSHSession $session -command "/home/nutanix/prism/cli/ncli software list software-type=PRISM_CENTRAL_DEPLOY name='$($datavar.PCVersion)'" -EnsureConnection).output
       get-sshsession | remove-sshsession -ea:0
       sleep 30
-      #$PCDownloadStatus = "Bypass"
       if ($debug -ge 2){
         $PCDownloadStatus
       }
-      if ($PCDownloadStatus -match "failed|error"){
+      if ($PCDownloadStatus -match "failed"){
 
         write-log -message "PC Download failed, restarting download" 
         $credential = New-Object System.Management.Automation.PSCredential ("admin", $Securepass);
