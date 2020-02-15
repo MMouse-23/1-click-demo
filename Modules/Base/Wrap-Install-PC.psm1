@@ -267,7 +267,7 @@ function Wrap-Install-PC {
       if ($debug -ge 2){
         $PCDownloadStatus
       }
-      if ($PCDownloadStatus -match "failed"){
+      if ($PCDownloadStatus -match "failed|error"){
 
         write-log -message "PC Download failed, restarting download" 
         $credential = New-Object System.Management.Automation.PSCredential ("admin", $Securepass);
