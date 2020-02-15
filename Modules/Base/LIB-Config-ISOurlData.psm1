@@ -253,8 +253,8 @@ Function  LIB-Config-ISOurlData {
   $Object | add-member Noteproperty Oracle_1_7          $oracle1_7;
   $Object | add-member Noteproperty Oracle_1_8          $oracle1_8;
   $Object | add-member Noteproperty Oracle_1_9          $oracle1_9;
-  $Object | add-member Noteproperty Frame_CCAISO2_0     $FrameConnectorAutoUrl;
-  $Object | add-member Noteproperty Frame_AgentISO2_0   $FrameAgentAutoUrl;
+  $Object | add-member Noteproperty Frame_CCAISOAuto    $FrameConnectorAutoUrl;
+  $Object | add-member Noteproperty Frame_AgentISOAuto  $FrameAgentAutoUrl;
 
   return $object;
 };
