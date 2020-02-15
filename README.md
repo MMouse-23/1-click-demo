@@ -1,12 +1,10 @@
 # 1-Click-Demo
 
 
-<<<<<<< Updated upstream
+
 
 **Current Version 1.1.2.1**
-=======
-**Current Version 1.1.1.5**
->>>>>>> Stashed changes
+
 
 ## Introduction
 
@@ -29,7 +27,7 @@
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
 
-<<<<<<< Updated upstream
+
 ## Release notes 1.1.2.1
 
 **Fixes:**
@@ -49,8 +47,9 @@
 **Known Issues:**
 - XenAPP BP is rather complex, we will update confluence and setup a recorded zoom meeting on how to use / demo / show features in CALM soon.
 - XenAPP BP has a 2 hour runtime, The finish time has not changed, however, the validation will wait as long as the BP stops provisioning or errors out.
-=======
-## Release notes 1.1.1.5
+
+
+## Release notes 1.1.2.1
 
 **Fixes:**
 - Karbon 2.0 New Version Scheme Fix.
@@ -63,7 +62,7 @@
 **Features:**
 - era:0 on 768GB RAM blocks will enable objects. (all is on by default)
 - 1CD Auto Partial Extract.
->>>>>>> Stashed changes
+
 
 ## Release notes 1.1.1.4
 
