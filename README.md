@@ -3,7 +3,7 @@
 
 
 
-**Current Version 1.1.2.2**
+**Current Version 1.1.2.3*
 
 
 ## Introduction
@@ -27,6 +27,11 @@
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
 
+## Release notes 1.1.2.3
+
+**Fixes:**
+- Resilliency 1CD BP
+- Error PC Download support.
 
 ## Release notes 1.1.2.2
 
