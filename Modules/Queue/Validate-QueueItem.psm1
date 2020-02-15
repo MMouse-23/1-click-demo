@@ -52,6 +52,8 @@ Function Validate-QueueItem {
       $object.DNSServer = $object.DNSServer -replace "1042(.*)", '10.42$1'
     } elseif ($object.DNSServer -match "10.42.19610"){
       $object.DNSServer = $object.DNSServer = "10.42.196.10"
+    } elseif ($object.DNSServer -match "10.42.19410"){
+      $object.DNSServer = $object.DNSServer = "10.42.196.10"
     }
     
     if ($object.InfraSubnetmask -match "255.*128$"){;
