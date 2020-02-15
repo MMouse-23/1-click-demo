@@ -23,7 +23,7 @@ $ready                      = "Ready"
 $AutoQueueTimer             = 15
 $datequeue                  = (get-date).adddays(-3)
 $datelogs                   = (get-date).adddays(-30)
-$dateBackups                = (get-date).adddays(-30)
+$dateBackups                = (get-date).adddays(-15)
 $datetasks                  = (get-date).adddays(-3) ## Dont go lower then 2 or risk deleting running tasks over midnight.
 $SingleModelck              = "$($Lockdir)\Single.lck"
 if ($env:computername -match "dev"){
@@ -283,6 +283,20 @@ if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -
   }
 
 }
+
+write-log -message "Cleaning Outlook Temp Logging Files"
+$systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
+$systemtempfiles += get-childitem "C:\Windows\Temp\*.dat"
+$systemtempfiles += get-childitem "C:\Windows\Temp\*.log"
+$systemtempfiles += Get-ChildItem "C:\Windows\Temp\" | ?{ $_.PSIsContainer }
+$deletetempfiles = $systemtempfiles | where { (get-date).addhours(-12) -ge $_.lastwritetime}
+if ($deletetempfiles){
+  write-log -message "We found $($deletetempfiles.count) to clean out of $($systemtempfiles.count) Temp files."
+  foreach ($item in $deletetempfiles){
+    remove-item $item.fullname -force -ea:0 -recurse
+  }
+}
+
 
 write-log -message "Checking Uptime"
 $uptime = (gcim Win32_OperatingSystem).LastBootUpTime
