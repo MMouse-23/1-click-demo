@@ -282,7 +282,7 @@ if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -
     }
   }
 
-}
+} #End of Server load not full
 
 write-log -message "Cleaning Outlook Temp Logging Files"
 $systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
@@ -297,72 +297,51 @@ if ($deletetempfiles){
   }
 }
 
-
+  
 write-log -message "Checking Uptime"
 $uptime = (gcim Win32_OperatingSystem).LastBootUpTime
 if ((get-date).adddays(-5) -ge $uptime ){
+
   write-log -message "We require a reboot, last reboot $uptime"
+
   $time = (get-date).addhours(-24)
   $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
   [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}
   if ($active.count -ge 1){
+
     write-log -message "We cannot reboot on running threads."
+
   } else {
     write-log -message "Lets go down! there are $($active.count) active tasks"
+
     get-scheduledtask "BackEndProcessor" | Stop-ScheduledTask
     get-scheduledtask "BackEndProcessor" | Disable-ScheduledTask
+
     write-log -message "Email Doors Closed now, lets see"
+
     sleep 120
-
-  
-  write-log -message "Cleaning Outlook Temp Logging Files"
-  $systemtempfiles = get-childitem "C:\Windows\Temp\Outlook Logging\*.etl"
-  $systemtempfiles += get-childitem "C:\Windows\Temp\*.dat"
-  $systemtempfiles += get-childitem "C:\Windows\Temp\*.log"
-  $systemtempfiles += Get-ChildItem "C:\Windows\Temp\" | ?{ $_.PSIsContainer }
-  $deletetempfiles = $systemtempfiles | where { (get-date).addhours(-12) -ge $_.lastwritetime}
-  if ($deletetempfiles){
-    write-log -message "We found $($deletetempfiles.count) to clean out of $($systemtempfiles.count) Temp files."
-    foreach ($item in $deletetempfiles){
-      remove-item $item.fullname -force -ea:0 -recurse
-    }
-  }
-  
-  
-  write-log -message "Checking Uptime"
-  $uptime = (gcim Win32_OperatingSystem).LastBootUpTime
-  if ((get-date).adddays(-5) -ge $uptime ){
-    write-log -message "We require a reboot, last reboot $uptime"
-
     $time = (get-date).addhours(-24)
     $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
     [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}
     if ($active.count -ge 1){
-      write-log -message "We cannot reboot on running threads."
+
+      write-log -message "Shit, someone slipped through."
+
     } else {
-      write-log -message "Lets go down! there are $($active.count) active tasks"
-      get-scheduledtask "BackEndProcessor" | Stop-ScheduledTask
-      get-scheduledtask "BackEndProcessor" | Disable-ScheduledTask
-      write-log -message "Email Doors Closed now, lets see"
-      sleep 120
-      $time = (get-date).addhours(-24)
-      $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
-      [array]$active           = $Statobjects | where {$_.STatus -eq "Running"}
-      if ($active.count -ge 1){
-        write-log -message "Shit, someone slipped through."
-      } else {
-        write-log -message "All Clear Lets reboot."
-        shutdown -r -t 5
-      }
+
+      write-log -message "All Clear Lets reboot."
+
+      shutdown -r -t 5
     }
-  } else {
-    write-log -message "No reboot required, making sure we are running, last reboot $uptime"
-  
-    get-scheduledtask "BackEndProcessor" | Enable-ScheduledTask
-    get-scheduledtask "BackEndProcessor" | Start-ScheduledTask
   }
+} else {
   
-} #End of Server load not full
+  write-log -message "No reboot required, making sure we are running, last reboot $uptime"
+
+  get-scheduledtask "BackEndProcessor" | Enable-ScheduledTask
+  get-scheduledtask "BackEndProcessor" | Start-ScheduledTask
+}
+
 
   
 ### Admin monitoring
