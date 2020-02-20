@@ -78,6 +78,9 @@ function Lib-Update-DataX {
       if ([version]$AOSVersion -le [version]"5.11"){
         $InstallObjects = $datavar.InstallObjects
       } else {
+
+        write-log -message "AOS version too low, disabling objects."
+
         $InstallObjects = 0
       }
       $InstallXenDesktop = $datavar.DemoXenDeskT
@@ -90,6 +93,7 @@ function Lib-Update-DataX {
       $InstallXenDesktop = 0
     } 
     if ($ramcap -ge 2 -and $datavar.InstallERA -eq 0 -and $datavar.InstallObjects -eq 1){
+
       write-log -message "Objects will be enabled as ERA is disabled in this block"
       $InstallObjects = 1
     }  
@@ -102,6 +106,8 @@ function Lib-Update-DataX {
     if ($InstallXenDesktop -eq 1 ){
       $InstallHashiVault = 0
       $intstallFiles = 1
+       write-log -message "Forcing files on and disabling HashiCorpVault as XenDesktop will be deployed."
+
     }
     write-log -message "DataVar Mode Updating:"
     write-log -message "AOS Version      : $AOSVersion"
