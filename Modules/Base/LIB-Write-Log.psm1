@@ -7,11 +7,11 @@ Function write-log {
   if ($sev -eq "INFO"){
     write-host "$(get-date -format "hh:mm:ss") | INFO  | $message"
   } elseif ($sev -eq "WARN"){
-    write-host "$(get-date -format "hh:mm:ss") | WARN  | $message"
+    write-host "$(get-date -format "hh:mm:ss") | WARN  | $message" -ForegroundColor "Yellow"
   } elseif ($sev -eq "ERROR"){
-    write-host "$(get-date -format "hh:mm:ss") | ERROR | $message"
+    write-host "$(get-date -format "hh:mm:ss") | ERROR | $message" -ForegroundColor "red"
   } elseif ($sev -eq "CHAPTER"){
-    write-host "`n`n### $message`n`n"
+    write-host "`n`n### $message`n`n" -ForegroundColor "DarkGreen"
   }
   if ($Type -match "Backend|WatchDog" -or $QueueUUID -eq $null){
          if ($debug -ge 3){

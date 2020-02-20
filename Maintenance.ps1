@@ -186,7 +186,7 @@ if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -
   
   write-log -message "Cleaning Tasks"
   
-  $tasks = get-scheduledtask | where {$_.taskpath -notmatch "Microsoft|Scripting|Backup"}
+  $tasks = get-scheduledtask | where {$_.taskpath -notmatch "Microsoft|Scripting|Backup|1CDBackend"}
   
   write-log -message "We found $($tasks.count) Total tasks"
   $killme = $null
@@ -206,9 +206,11 @@ if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -
     write-log -message "Checking task state after 30 seconds $($task.name)"
   
     $task = $task | get-scheduledtask 
-    if ($task.state -ne "Running"){
+    if ($task.state -ne "Running" -or $task.taskname -notmatch "Backend|Maintenance"){
       $task | Unregister-ScheduledTask -confirm:0 -ea:0
-    } 
+    } else {
+      write-log -message "Cant touch $($task.taskname) ... "
+    }
   
     write-log -message "$($task.Triggers.startboundary)"
   }
