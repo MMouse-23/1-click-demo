@@ -23,12 +23,12 @@ function Lib-Get-OutgoingQueueItem{
 
       $object.SetupSSP = 1
     }   
-    if ($object.InstallKarbon -eq 1){
+    #if ($object.InstallKarbon -eq 1){
 
       write-log -Message "Forcing PC Scale out to 1 node."
 
       $object.pcmode = 1
-    }
+    #}
 
     if ($object.DemoXenDeskT -eq 1 -and $object.InstallFiles -eq 0){
 

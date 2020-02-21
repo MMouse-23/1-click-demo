@@ -75,7 +75,7 @@ function Lib-Update-DataX {
       $flow = $datavar.EnableFlow
       $InstallEra = $datavar.InstallERA
       $karbon = $datavar.InstallKarbon
-      if ([version]$AOSVersion -le [version]"5.11"){
+      if ([version]$AOSVersion -ge [version]"5.11"){
         $InstallObjects = $datavar.InstallObjects
       } else {
 
@@ -84,23 +84,23 @@ function Lib-Update-DataX {
         $InstallObjects = 0
       }
       $InstallXenDesktop = $datavar.DemoXenDeskT
-      
       $InstallHashiVault = $datavar.InstallHashiVault
       $Install1CD = $datavar.Install1CD
     }
-    if ($ramcap -ge 1 -or $datagen.hostcount -eq 1){
-      $InstallObjects = 0
+    if ($ramcap -ge 1 -or $datagen.hostcount -eq 1 -and $datavar.InstallObjects -eq 1){
+      $InstallObjects = 2
       $InstallXenDesktop = 0
     } 
-    if ($ramcap -ge 2 -and $datavar.InstallERA -eq 0 -and $datavar.InstallObjects -eq 1){
+    if ($ramcap -ge 2 -and $datavar.InstallERA -eq 0 -and $datavar.InstallObjects -eq 1 -and $InstallObjects -ne 0){
 
       write-log -message "Objects will be enabled as ERA is disabled in this block"
       $InstallObjects = 1
+
     }  
     if ($ramcap -ge 2){
       $InstallHashiVault = 0
     } 
-    if ($ramcap -ge 3){
+    if ($ramcap -ge 3 -and $datavar.InstallERA -ne 0){
       $InstallEra = 2
     }
     if ($InstallXenDesktop -eq 1 ){
