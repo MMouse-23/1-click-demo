@@ -118,33 +118,45 @@ function Wrap-Install-PC {
 
           write-log -message "Prism Central needs help, cleaning" -slacklevel 1
           write-log -message "This causes a 30 minute delay" -slacklevel 2
-
-
-            LIB-Send-Confirmation -reciever $datavar.SenderEMail -datagen $datagen -datavar $datavar -mode "PCFailed" -logfile $logfile
-      
-            $hide = LIB-Connect-PSNutanix -ClusterName $datavar.PEClusterIP -NutanixClusterUsername $datagen.buildaccount -NutanixClusterPassword $datavar.PEPass
-            $hide = get-ntnxvm | where {$_.vmname -match "^PC"} | Set-NTNXVMPowerOff -ea:0
-            if ($debug -ge 3){
-              $hide = get-ntnxvm | where {$_.vmname -match "^PC"} | set-NTNXVirtualMachine -name "DeadPC0$($MasterLoopCounter)"
-            } else {
-              $hide = get-ntnxvm | where {$_.vmname -match "^PC"} | Remove-NTNXVirtualMachine -ea:0
+            $installtasks = $null
+            $installtask  = $null
+            $tasks = REST-PE-ProgressMonitor -datavar $datavar -datagen $datagen
+            $installtasks = $tasks.entities | where {$_.operation -eq "PrismCentralDeploymentRequest"}
+            foreach ($item in $installtasks){
+              if ($item.status -eq "Running"){
+                $installtask = $item
+              }
             }
-            
-            sleep 40
-            $status = REST-Install-PC -DisksContainerName $datagen.DisksContainerName -AOSVersion $datavar.AOSVersion -clusername $datagen.buildaccount -clpassword $datavar.PEPass -ClusterPE_IP $datavar.PEClusterIP -PCClusterIP $datagen.PCClusterIP -InfraSubnetmask $datavar.InfraSubnetmask -InfraGateway $datavar.InfraGateway -DNSServer $datavar.DNSServer -PC1_Name $datagen.PCNode1Name -PC2_Name $datagen.PCNode2Name -PC3_Name $datagen.PCNode3Name -PC1_IP $datagen.PCNode1IP -PC2_IP $datagen.PCNode2IP -PC3_IP $datagen.PCNode3IP -Networkname $datagen.Nw1Name -PCVersion $($datavar.PCVersion) -PCmode $datavar.PCmode 
-            sleep 119
-            write-log -message "Sleeping 30 minutes for install, 8 minutes fixed, the rest dynamic."
-            sleep 119
-            write-log -message "Prism Central deleted and is reinstalling." -slacklevel 2
-            sleep 119
-            write-log -message "We have to wait for PC Installer now"
-            sleep 119
-            write-log -message "Prism Central installer......" 
-            sleep 119
-            write-log -message "Waiting....." 
-            sleep 119
-            write-log -message "About to proceed....." -slacklevel 2
-            sleep 119
+            if (!$installtask){
+              LIB-Send-Confirmation -reciever $datavar.SenderEMail -datagen $datagen -datavar $datavar -mode "PCFailed" -logfile $logfile
+      
+              $hide = LIB-Connect-PSNutanix -ClusterName $datavar.PEClusterIP -NutanixClusterUsername $datagen.buildaccount -NutanixClusterPassword $datavar.PEPass
+              $hide = get-ntnxvm | where {$_.vmname -match "^PC"} | Set-NTNXVMPowerOff -ea:0
+              if ($debug -ge 3){
+                $hide = get-ntnxvm | where {$_.vmname -match "^PC"} | set-NTNXVirtualMachine -name "DeadPC0$($MasterLoopCounter)"
+              } else {
+                $hide = get-ntnxvm | where {$_.vmname -match "^PC"} | Remove-NTNXVirtualMachine -ea:0
+              }
+              sleep 40
+              $status = REST-Install-PC -DisksContainerName $datagen.DisksContainerName -AOSVersion $datavar.AOSVersion -clusername $datagen.buildaccount -clpassword $datavar.PEPass -ClusterPE_IP $datavar.PEClusterIP -PCClusterIP $datagen.PCClusterIP -InfraSubnetmask $datavar.InfraSubnetmask -InfraGateway $datavar.InfraGateway -DNSServer $datavar.DNSServer -PC1_Name $datagen.PCNode1Name -PC2_Name $datagen.PCNode2Name -PC3_Name $datagen.PCNode3Name -PC1_IP $datagen.PCNode1IP -PC2_IP $datagen.PCNode2IP -PC3_IP $datagen.PCNode3IP -Networkname $datagen.Nw1Name -PCVersion $($datavar.PCVersion) -PCmode $datavar.PCmode 
+              sleep 119
+              write-log -message "Sleeping 30 minutes for install, 8 minutes fixed, the rest dynamic."
+              sleep 119
+              write-log -message "Prism Central deleted and is reinstalling." -slacklevel 2
+              sleep 119
+              write-log -message "We have to wait for PC Installer now"
+              sleep 119
+              write-log -message "Prism Central installer......" 
+              sleep 119
+              write-log -message "Waiting....." 
+              sleep 119
+              write-log -message "About to proceed....." -slacklevel 2
+              sleep 119
+            } else {
+
+              write-log -message "There is an install task $($item.status), we cannot delete and reinstall"
+              
+            }
             $counter = 0
             $count = 0
             do {
