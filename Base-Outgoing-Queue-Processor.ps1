@@ -318,13 +318,13 @@ do {
       $time = (get-date).addhours(-48)
       $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
       #$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE Status = 'Running' order by DateCreated";
-      [array]$active    = $Statobjects | where {$_.Percentage -le 65 -and $_.status -eq "Running"}
+      [array]$active    = $Statobjects | where {$_.Percentage -le 75 -and $_.status -eq "Running"}
       $ramfree = 25
-      $totalCPUPerc = 70
+      $totalCPUPerc = 65
       if ($env:computername -match "DEv"){
         $concurrent = 4
       } else {
-        $concurrent = 6     
+        $concurrent = 5     
       }
       if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -gt $concurrent){
         
