@@ -67,7 +67,7 @@ if ($Portable -eq 1){
 <br>
             <B> Requirements </B><br><br>
             The source should be a blanc Foundation PE cluster, with no logins since its foundation. <br>
-            AOS Version needs to be on or above 5.11<br>
+            AOS Version needs to be on or above 5.11.2<br>
             Both Nutanix and admin user need to be default or as per specified See the <a href='Help.ps1x'> help </a> section for more details.<br>
  <%
             if ($Portable -ne 1){

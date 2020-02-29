@@ -509,9 +509,9 @@ do {
       $AvailableAOSversion = $result.AOSVersion -split ("`n") | select -last 1  
        
       if ($datavar.InstallObjects -eq 1){
-        [version]$minimalversion = "5.11" 
+        [version]$minimalversion = "5.11.2" 
 
-        write-log -message "Objects is enabled, minimal AOS version lifted to 5.11"
+        write-log -message "Objects is enabled, minimal AOS version lifted to 5.11.2"
 
       } elseif ($datavar.InstallFiles -eq 1){
         [version]$minimalversion = "5.10.4" 
