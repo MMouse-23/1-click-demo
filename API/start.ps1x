@@ -29,7 +29,6 @@ Import-Module "$($ModuleDir)\Base\Lib-Send-Confirmation.psm1" -DisableNameChecki
 Import-Module "$($ModuleDir)\Base\Lib-PSR-Tools.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Base\LIB-Config-DetailedDataSet.psm1" -DisableNameChecking;
 Import-Module "$($ModuleDir)\Base\LIB-Write-Log.psm1" -DisableNameChecking;
-
 if ($request.RequestType -eq "GET"){
   #If method is get, API returns the plain json used for POST
   $Options      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLOptionsTableName)";
@@ -68,11 +67,14 @@ if ($request.RequestType -eq "GET"){
   try {
     $SQLQueryOutput = Invoke-Sqlcmd -query $SQLQuery -ServerInstance $SQLInstance -ErrorAction 'Stop'
   } catch {
+    $response.StatusDescription = "SQL Inject Error"
     $response.StatusCode = 400
   }
   $validation = Validate-QueueItem -processingmode "SCAN" -scanuuid $QueueUUID
   if ($validation -ne "OK"){
     $response.StatusCode = 400
+    $response.StatusDescription = "Failed Validation $QueueUUID"
+
     } else {
       $Object       = New-Object PSObject;
       $Object | add-member Noteproperty QueueUUID $QueueUUID

@@ -34,7 +34,34 @@ Function REST-Query-ADGroups {
   Return $task
 }
 
+Function REST-Get-Containers {
+  Param (
+    [string] $PEClusterIP,
+    [string] $clpassword,
+    [string] $clusername
+  )
 
+  $credPair = "$($clusername):$($clpassword)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Executing Container List"
+
+  $URL = "https://$($PEClusterIP):9440/PrismGateway/services/rest/v1/containers"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
+  }
+  write-log -message "We found $($task.entities.count) items."
+
+  Return $task
+} 
 Function REST-PE-Get-MultiCluster {
   Param (
     [object] $datavar,
