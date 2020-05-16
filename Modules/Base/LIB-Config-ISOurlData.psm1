@@ -151,6 +151,10 @@ Function  LIB-Config-ISOurlData {
 
   } else {
   ## AHV URLS
+    $IPsplit = $datavar.PEClusterIP.split(".")
+    if ($IPsplit[1] -eq "138"){
+      $region = "www"
+    }
     if ($region -match "www|Backup" ){
       $SQL2014ISO    = "https://dl.dropboxusercontent.com/s/f7eju77487nsp1a/SQLServer2014SP3-FullSlipstream-x64-ENU.iso";
       $XENDESKTOP    = "https://dl.dropboxusercontent.com//s/0b90x6p2igvg4hj/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
