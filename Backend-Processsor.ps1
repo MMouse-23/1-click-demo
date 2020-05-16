@@ -109,7 +109,9 @@ do {
   if ($portable -eq 0){
     write-log -message "Checking Outlook"
     $singleusermode = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -ge (get-date).addminutes(-90)}
-    $object = Get-IncommingueueItem
+    if ($env:computername -notmatch "dev"){
+      $object = Get-IncommingueueItem
+    }
     if ($object.QueueStatus -eq "Manual"){
       write-log -message "Sending Manual Queue EMAIL"
       $global:EnableEmail = 0
