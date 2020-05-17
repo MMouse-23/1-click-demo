@@ -97,8 +97,8 @@ Function Get-IncommingueueItem{
     $nw2gw = ($Body | where {$_ -match "(^||`t)Secondary Gateway"}).replace('Secondary Gateway: ', '') -replace ("`r",'') -replace ("`t",'')
     $nw2dhcp =  ($Body | where {$_ -match "(^||`t)Secondary IP Range"}).replace('Secondary IP Range: ', '') -replace ("`r",'') -replace ("`t",'')
     $nw2dhcpst = ($nw2dhcp -split ("-"))[0]
-    if ($body -match "cluster (RTP|PHX)-"){
-      $POCname = ($Body | where {$_ -match "(^||`t)Your Reservation Information for"}) -replace ('.*Your Reservation Information for.*(PHX|RTP)-(.*)\s\(.*', '$1-$2')
+    if ($body -match "cluster (RTP|PHX|BLR)-"){
+      $POCname = ($Body | where {$_ -match "(^||`t)Your Reservation Information for"}) -replace ('.*Your Reservation Information for.*(PHX|RTP|BLR)-(.*)\s\(.*', '$1-$2')
       if ($POCname -MATCH "SPOC"){
         $POCname = $POCname -replace "PHX-", ''
       }
