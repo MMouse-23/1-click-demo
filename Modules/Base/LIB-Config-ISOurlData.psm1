@@ -152,7 +152,7 @@ Function  LIB-Config-ISOurlData {
   } else {
   ## AHV URLS
     $IPsplit = $datavar.PEClusterIP.split(".")
-    if ($IPsplit[1] -eq "138"){
+    if ($IPsplit[1] -eq "136"){
       $region = "www"
     }
     if ($region -match "www|Backup" ){
