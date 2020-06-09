@@ -31,7 +31,7 @@ Function REST-ERA-Create-Low-ComputeProfile {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
 
   write-log -message "Creating Profile LOW_OOB_COMPUTE"
 
@@ -83,7 +83,7 @@ Function REST-ERA-Create-UltraLow-ComputeProfile {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
 
   write-log -message "Creating Profile LOW_OOB_COMPUTE"
 
@@ -116,7 +116,7 @@ Function REST-ERA-GetProfiles {
 
   write-log -message "Query All ERA Profiles"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
@@ -166,7 +166,7 @@ Function REST-ERA-ProvisionDatabase {
   write-log -message "Using Type $($Type)"
   write-log -message "Using Port $($Port)"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/databases/provision"
+  $URL = "https://$($EraIP):8443/era/v0.9/databases/provision"
   $JSON = @"
 {
   "databaseType": "$($Type)",
@@ -279,7 +279,7 @@ Function REST-ERA-RegisterOracle-ERA {
   write-log -message "Using Cluster ID $($ERACluster.id)"
   write-log -message "Using SLA ID $($SLA.ID)"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/databases"
+  $URL = "https://$($EraIP):8443/era/v0.9/databases"
   $JSON = @"
 {
   "vmAdd": true,
@@ -422,7 +422,7 @@ Function REST-ERA-ProvisionServer {
   write-log -message "Using SoftwareProfile $($SoftwareProfileID)"
   write-log -message "Using Type $($Type)"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/dbservers/create"
+  $URL = "https://$($EraIP):8443/era/v0.9/dbservers/create"
   $JSON = @"
 {
   "actionArguments": [{
@@ -488,7 +488,7 @@ Function REST-ERA-AcceptEULA {
 
   write-log -message "Building EULA Accept JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/auth/validate"
+  $URL = "https://$($EraIP):8443/era/v0.9/auth/validate"
   $Payload= @{
     eulaAccepted="true"
   } 
@@ -520,7 +520,7 @@ Function REST-ERA-GetDBServers {
 
   write-log -message "Get ERA DB Servers"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/dbservers"
+  $URL = "https://$($EraIP):8443/era/v0.9/dbservers"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
@@ -550,7 +550,7 @@ Function REST-ERA-GetDatabases {
 
   write-log -message "Get ERA DB Servers"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/databases"
+  $URL = "https://$($EraIP):8443/era/v0.9/databases"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
@@ -580,7 +580,7 @@ Function REST-ERA-GetClones {
 
   write-log -message "Get ERA Clones"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/clones"
+  $URL = "https://$($EraIP):8443/era/v0.9/clones"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
@@ -642,7 +642,7 @@ Function REST-ERA-MySQLNWProfileCreate {
 
   write-log -message "Building PostGres Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
   $JSON = @"
 {
   "engineType": "mysql_database",
@@ -687,7 +687,7 @@ Function REST-ERA-PostGresNWProfileCreate {
 
   write-log -message "Building PostGres Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
   $JSON = @"
 {
   "engineType": "postgres_database",
@@ -740,7 +740,7 @@ Function REST-ERA-Oracle-SW-ProfileCreate {
   "name": "Oracle"
 }
 "@
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
 
   write-log -message "Creating Profile Oracle Software"
 
@@ -784,7 +784,7 @@ Function REST-ERA-MSSQL-SW-ProfileCreate {
   "description": "MSSQL"
 }
 "@
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
 
   write-log -message "Creating Profile MSSQL Software"
 
@@ -818,7 +818,7 @@ Function REST-ERA-Oracle-NW-ProfileCreate {
 
   write-log -message "Building Oracle Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
   $JSON = @"
 {
   "engineType": "oracle_database",
@@ -863,7 +863,7 @@ Function REST-ERA-MSSQL-NW-ProfileCreate {
 
   write-log -message "Building MSSQL Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
   $JSON = @"
 {
   "engineType": "sqlserver_database",
@@ -902,7 +902,7 @@ Function REST-ERA-GetLast-SnapShot {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  $URL = "https://$($datagen.Era1IP):8443/era/v0.8/tms/$($database.timeMachineId)/capability"
+  $URL = "https://$($datagen.Era1IP):8443/era/v0.9/tms/$($database.timeMachineId)/capability"
 
   write-log -message "Getting Snapshots for Database"
 
@@ -948,7 +948,7 @@ Function REST-ERA-MSSQL-Clone {
 
   write-log -message "Creating new database server MSSQL2-$($datavar.pocname)"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/tms/$($database.timeMachineId)/clones"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/tms/$($database.timeMachineId)/clones"
   $JSON = @"
 {
   "cloneName": "WideWorldImportersDEV",
@@ -1080,7 +1080,7 @@ Function REST-ERA-Create-WindowsDomain-Profile {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
 
   write-log -message "Creating Profile Windows Domain"
 
@@ -1126,7 +1126,7 @@ Function REST-ERA-Oracle-Clone {
   write-log -message "Creating new Database TESTDB_DEV + Database server Oracle2-$($datavar.pocname)"
   write-log -message "Using ParameterProfileID $($parameterPRofile.ID)"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/tms/$($database.timeMachineId)/clones"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/tms/$($database.timeMachineId)/clones"
   $JSON = @"
 {
   "cloneName": "TESTDB_DEV",
@@ -1215,7 +1215,7 @@ Function REST-ERA-Oracle-Provision {
   write-log -message "Using $($SoftwareProfile.id) as Software Source ID"
   write-log -message "Creating new database server Oracle2-$($datavar.pocname)"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/dbservers/create"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/dbservers/create"
   $JSON = @"
 {
   "actionArguments": [{
@@ -1299,7 +1299,7 @@ Function REST-ERA-Provision-HA-Database {
   write-log -message "Using Type $($Type)"
   write-log -message "Using Port $($Port)"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/databases/provision"
+  $URL = "https://$($EraIP):8443/era/v0.9/databases/provision"
   $JSON = @"
 {
   "databaseType": "$($Type)",
@@ -1446,7 +1446,7 @@ Function REST-ERA-MariaNWProfileCreate {
 
   write-log -message "Building MariaDB Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
   $JSON = @"
 {
   "engineType": "mariadb_database",
@@ -1494,7 +1494,7 @@ Function REST-ERA-RegisterMSSQL-ERA {
   write-log -message "Building MSSQL Server Registration JSON"
   write-log -message "Using databasename $($dbname)"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/databases"
+  $URL = "https://$($EraIP):8443/era/v0.9/databases"
   $JSON = @"
 {
   "vmAdd": true,
@@ -1629,7 +1629,7 @@ Function REST-ERA-GetSLAs {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  $URL = "https://$($EraIP):8443/era/v0.8/slas"
+  $URL = "https://$($EraIP):8443/era/v0.9/slas"
 
   try {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -body $JSON -ContentType 'application/json' -headers $headers;
@@ -1654,7 +1654,7 @@ Function REST-ERA-Operations {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  $URL = "https://$($EraIP):8443/era/v0.8/operations/short-info?user-triggered=true&system-triggered=true"
+  $URL = "https://$($EraIP):8443/era/v0.9/operations/short-info?user-triggered=true&system-triggered=true"
 
   try {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -body $JSON -ContentType 'application/json' -headers $headers;
@@ -1688,7 +1688,7 @@ Function REST-ERA-CreateSnapshot {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/tms/$($DBUUID)/snapshots"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/tms/$($DBUUID)/snapshots"
 
   write-log -message "Creating Snapshot for $DBUUID"
   write-log -message "Using URL $URL"
@@ -1725,7 +1725,7 @@ Function REST-ERA-RegisterClusterStage1 {
 
   write-log -message "Building Cluster Registration JSON"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/clusters"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/clusters"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1778,7 +1778,7 @@ Function REST-ERA-AttachPENetwork {
 
   write-log -message "Building ERA Network Registration JSON"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/resources/networks"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/resources/networks"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1826,7 +1826,7 @@ Function REST-ERA-GetClusters {
 
   write-log -message "Query ERA Clusters"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/clusters"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/clusters"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1856,7 +1856,7 @@ Function REST-ERA-GetNetworks {
 
   write-log -message "Query ERA Networks"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/resources/networks"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/resources/networks"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1887,7 +1887,7 @@ Function REST-ERA-RegisterClusterStage2 {
 
   write-log -message "Building Stage 2 JSON"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/clusters/$($ClusterUUID)/json"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/clusters/$($ClusterUUID)/json"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
