@@ -143,7 +143,7 @@ Function REST-ERA-ProvisionDatabase {
     [string] $debug,
     [string] $publicSSHKey,
     [string] $networkProfileId,
-    [string] $SoftwareProfileID,
+    [object] $SoftwareProfile,
     [string] $computeProfileId,
     [string] $dbParameterProfileId,
     [string] $Type,
@@ -170,15 +170,15 @@ Function REST-ERA-ProvisionDatabase {
   $JSON = @"
 {
   "databaseType": "$($Type)",
-  "databaseName": "$($databasename)",
-  "clusterId": "$($ERACluster.id)",
+  "name": "$($Databasename)",
+  "databaseDescription": "ERA Rules",
   "dbParameterProfileId": "$($dbParameterProfileId)",
-  "useExistingDBserver": true,
+  "createDbserver": false,
   "newDbServerTimeZone": "Europe/Amsterdam",
   "timeMachineInfo": {
-    "name": "$($databasename)_TM",
+    "name": "asd_TM",
     "description": "",
-    "slaId": "$($SLA.ID)",
+    "slaId": "$($SLA.id)",
     "schedule": {
       "snapshotTimeOfDay": {
         "hours": 1,
@@ -192,16 +192,16 @@ Function REST-ERA-ProvisionDatabase {
       },
       "weeklySchedule": {
         "enabled": true,
-        "dayOfWeek": "FRIDAY"
+        "dayOfWeek": "SUNDAY"
       },
       "monthlySchedule": {
         "enabled": true,
-        "dayOfMonth": "8"
+        "dayOfMonth": "14"
       },
       "quartelySchedule": {
         "enabled": true,
         "startMonth": "JANUARY",
-        "dayOfMonth": "8"
+        "dayOfMonth": "14"
       },
       "yearlySchedule": {
         "enabled": false,
@@ -212,29 +212,43 @@ Function REST-ERA-ProvisionDatabase {
     "tags": [],
     "autoTuneLogDrive": true
   },
-  "provisionInfo": [{
-    "name": "application_type",
-    "value": "$($Type)"
-  }, {
-    "name": "listener_port",
-    "value": "$($Port)"
-  }, {
-    "name": "database_size",
-    "value": "200"
-  }, {
-    "name": "working_dir",
-    "value": "/tmp"
-  }, {
-    "name": "auto_tune_staging_drive",
-    "value": true
-  }, {
-    "name": "host_ip",
-    "value": "$($dbserver.ip)"
-  }, {
-    "name": "db_password",
-    "value": "$($Clpassword)"
-  }]
+  "actionArguments": [
+    {
+      "name": "listener_port",
+      "value": "$($Port)"
+    },
+    {
+      "name": "database_size",
+      "value": "200"
+    },
+    {
+      "name": "auto_tune_staging_drive",
+      "value": true
+    },
+    {
+      "name": "host_ip",
+      "value": "$($DBServer.ipAddresses[0])"
+    },
+    {
+      "name": "database_names",
+      "value": "ads"
+    },
+    {
+      "name": "db_password",
+      "value": "$($clpassword)"
+    }
+  ],
+  "dbserverId": "$($DBServer.id)",
+  "clustered": false,
+  "nodes": [
+    {
+      "properties": [],
+      "dbserverId": "$($DBServer.id)"
+    }
+  ],
+  "autoTuneStagingDrive": true
 }
+
 "@
   if ($debug -ge 2){
     $json | out-file c:\temp\ERAMDBcr.json
@@ -389,6 +403,7 @@ Function REST-ERA-RegisterOracle-ERA {
 } 
 
 
+
 Function REST-ERA-ProvisionServer {
   Param (
     [string] $dbservername,
@@ -400,7 +415,7 @@ Function REST-ERA-ProvisionServer {
     [string] $debug,
     [string] $publicSSHKey,
     [string] $networkProfileId,
-    [string] $SoftwareProfileID,
+    [object] $SoftwareProfile,
     [string] $computeProfileId,
     [string] $dbParameterProfileId,
     [string] $Type,
@@ -419,36 +434,34 @@ Function REST-ERA-ProvisionServer {
   write-log -message "Using ComputeID $($computeProfileId)"
   write-log -message "Using DBParamID $($dbParameterProfileId)"
   write-log -message "Using POC Name  $($POCNAME)"  
-  write-log -message "Using SoftwareProfile $($SoftwareProfileID)"
+  write-log -message "Using SoftwareProfile $($SoftwareProfile.id)"
+  write-log -message "Using SoftwareProfile $($SoftwareProfile.id)"
   write-log -message "Using Type $($Type)"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/dbservers/create"
+  $URL = "https://$($EraIP):8443/era/v0.9/dbservers/provision"
   $JSON = @"
 {
-  "actionArguments": [{
-    "name": "vm_name",
-    "value": "$($dbservername)"
-  }, {
-    "name": "working_dir",
-    "value": "/tmp"
-  }, {
-    "name": "era_deploy_base",
-    "value": "/opt/era_base"
-  }, {
-    "name": "compute_profile_id",
-    "value": "$($computeProfileId)"
-  }, {
-    "name": "client_public_key",
-    "value": "$($publicSSHKey)"
-  }, {
-    "name": "network_profile_id",
-    "value": "$($networkProfileId)"
-  }],
-  "description": "Launches the rocket",
-  "clusterId": "$($ERACluster.id)",
-  "softwareProfileId": "$($SoftwareProfileID)"
+  "newDbServerTimeZone": "Europe/Amsterdam",
+  "actionArguments": [
+    {
+      "name": "vm_name",
+      "value": "$($dbservername)"
+    },
+    {
+      "name": "client_public_key",
+      "value": "$($publicSSHKey)"
+    }
+  ],
+  "nxClusterId": "$($ERACluster.id)",
+  "softwareProfileId": "$($SoftwareProfile.id)",
+  "latestSnapshot": true,
+  "databaseType": "$($Type)",
+  "computeProfileId": "$($computeProfileId)",
+  "networkProfileId": "$($networkProfileId)",
+  "description": "Nutanix ERA Rules",
+  "softwareProfileVersionId": "$($SoftwareProfile.latestVersionId)"
 }
-"@
+"@ 
   if ($debug -ge 2){
     $json | out-file c:\temp\ERADB.json
   }
@@ -458,16 +471,13 @@ Function REST-ERA-ProvisionServer {
 
     write-log -message "Going once." -sev "WARN"
 
-    sleep 60
-    try {
-      $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
-    } catch {
-      $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
-    }
+    sleep 10
+    
+    Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+
   }
   Return $task
 } 
-
 
 
 
@@ -1760,7 +1770,35 @@ Function REST-ERA-RegisterClusterStage1 {
   Return $task
 } 
 
+Function REST-ERA-GetPENetworks {
+  Param (
+    [object] $datavar,
+    [object] $datagen
+  )
 
+  write-log -message "Debug level is $($debug)";
+  write-log -message "Building Credential object"
+  $credPair = "$($datavar.peadmin):$($datavar.pepass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Getting Existing ERA networks"
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/resources/networks?detailed=true"
+
+  write-log -message "Using URL $URL"
+  write-log -message "Using IP $($datagen.era1ip)"
+
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
+  } catch {
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    sleep 119
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers; 
+  }  
+  Return $task
+}
 
 Function REST-ERA-AttachPENetwork {
   Param (
@@ -1789,14 +1827,9 @@ Function REST-ERA-AttachPENetwork {
 {
     "name":  "$($NetworkName)",
     "type":  "DHCP",
-    "clusterId":  "$($ClusterUUID)",
-    "managed":  true,
     "properties":  [
 
-                   ],
-    "propertiesMap":  {
-
-                      }
+                   ]
 }
 "@ 
   try {
