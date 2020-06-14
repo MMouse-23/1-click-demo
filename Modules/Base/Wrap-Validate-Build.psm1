@@ -102,7 +102,7 @@ function Wrap-Validate-Build {
     }
     if ($datavar.hypervisor -match "Nutanix|AHV" -and $datavar.InstallEra -eq 1 ){
       
-      if ($databases.count -ge 6 -and $clones.count -ge 3 -and $databaseservers.count -ge $databaseserversthreshold){
+      if ($databases.count -ge 6 -and $clones.count -ge 1 -and $databaseservers.count -ge $databaseserversthreshold){
   
         $eraresult = "ERA is healthy. There are $($databaseservers.count) Servers, $($databases.count) Databases and $($clones.count) Clones"
         $eravalidated = 1
@@ -115,7 +115,7 @@ function Wrap-Validate-Build {
       }
       write-log -message $eraresult   
     } elseif ($datavar.hypervisor -match "Nutanix|AHV" -and $datavar.InstallEra -eq 2 ) {
-       if ($databases.count -ge 3 -and $clones.count -ge 2 -and $databaseservers.count -ge 5){
+       if ($databases.count -ge 3 -and $databaseservers.count -ge 5){
   
          $eraresult = "ERA is healthy. There are $($databaseservers.count) Servers, $($databases.count) Databases and $($clones.count) Clones"
          $eravalidated = 1
@@ -127,7 +127,7 @@ function Wrap-Validate-Build {
   
       }
     } elseif ($datavar.hypervisor -match "ESX|VMware") {
-       if ($databases.count -ge 4 -and $clones.count -ge 2 -and $databaseservers.count -ge 5){
+       if ($databases.count -ge 4 -and $databaseservers.count -ge 5){
   
          $eraresult = "ERA is healthy. There are $($databaseservers.count) Servers, $($databases.count) Databases and $($clones.count) Clones"
          $eravalidated = 1

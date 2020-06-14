@@ -1504,59 +1504,62 @@ Function REST-ERA-RegisterMSSQL-ERA {
   write-log -message "Building MSSQL Server Registration JSON"
   write-log -message "Using databasename $($dbname)"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/databases"
+  $URL = "https://$($EraIP):8443/era/v0.9/databases/register"
   $JSON = @"
 {
-  "vmAdd": true,
-  "applicationInfo": [{
-    "name": "application_type",
-    "value": "sqlserver_database"
-  }, {
-    "name": "era_manage_log",
-    "value": true
-  }, {
-    "name": "sql_login_used",
-    "value": false
-  }, {
-    "name": "same_as_admin",
-    "value": true
-  }, {
-    "name": "create_era_drive",
-    "value": true
-  }, {
-    "name": "recovery_model",
-    "value": "Full-logged"
-  }, {
-    "name": "era_deploy_base",
-    "value": "C:\\NTNX\\ERA_BASE"
-  }, {
-    "name": "vm_ip",
-    "value": "$($MSQLVMIP)"
-  }, {
-    "name": "vm_username",
-    "value": "administrator"
-  }, {
-    "name": "vm_password",
-    "value": "$($sysprepPass)"
-  }, {
-    "name": "instance_name",
-    "value": "MSSQLSERVER"
-  }, {
-    "name": "database_name",
-    "value": "$($dbname)"
-  }, {
-    "name": "sysadmin_username_win",
-    "value": "administrator"
-  }, {
-    "name": "sysadmin_password_win",
-    "value": "$($sysprepPass)"
-  }],
+  "actionArguments": [
+    {
+      "name": "era_manage_log",
+      "value": true
+    },
+    {
+      "name": "sql_login_used",
+      "value": false
+    },
+    {
+      "name": "same_as_admin",
+      "value": true
+    },
+    {
+      "name": "recovery_model",
+      "value": "Full-logged"
+    },
+    {
+      "name": "vmIp",
+      "value": "$($MSQLVMIP)"
+    },
+    {
+      "name": "sysadmin_username_win",
+      "value": "administrator"
+    },
+    {
+      "name": "sysadmin_password_win",
+      "value": "$($sysprepPass)"
+    },
+    {
+      "name": "instance_name",
+      "value": "MSSQLSERVER"
+    },
+    {
+      "name": "database_name",
+      "value": "$($dbname)"
+    }
+  ],
+  "nxClusterId": "$($ERACluster.id)",
+  "databaseType": "sqlserver_database",
+  "databaseName": "$($dbname)",
+  "description": "",
+  "clustered": false,
   "forcedInstall": true,
-  "clusterId": "$($ERACluster.id)",
-  "tags": [],
+  "vmIp": "$($MSQLVMIP)",
+  "vmUsername": "administrator",
+  "vmPassword": "$($sysprepPass)",
+  "vmSshkey": "",
+  "vmDescription": "",
+  "autoTuneStagingDrive": false,
+  "workingDirectory": "c:\\",
   "timeMachineInfo": {
-    "name": "$($dbname)_TM",
-    "description": "",
+    "autoTuneLogDrive": true,
     "slaId": "$($SLA.ID)",
     "schedule": {
       "snapshotTimeOfDay": {
@@ -1575,12 +1578,12 @@ Function REST-ERA-RegisterMSSQL-ERA {
       },
       "monthlySchedule": {
         "enabled": true,
-        "dayOfMonth": "3"
+        "dayOfMonth": "14"
       },
       "quartelySchedule": {
         "enabled": true,
         "startMonth": "JANUARY",
-        "dayOfMonth": "3"
+        "dayOfMonth": "14"
       },
       "yearlySchedule": {
         "enabled": false,
@@ -1589,18 +1592,10 @@ Function REST-ERA-RegisterMSSQL-ERA {
       }
     },
     "tags": [],
-    "autoTuneLogDrive": true
+    "name": "$($dbname)_TM"
   },
-  "applicationSlaName": "$($sla.name)",
-  "applicationType": "sqlserver_database",
-  "autoTuneStagingDrive": false,
-  "eraBaseDirectory": "C:\\NTNX\\ERA_BASE",
-  "applicationHost": "$($MSQLVMIP)",
-  "vmIp": "$($MSQLVMIP)",
-  "vmUsername": "administrator",
-  "vmPassword": "$($sysprepPass)",
-  "applicationName": "$($dbname)"
-}
+  "tags": []
+}  
 "@
   if ($debug -ge 2){
     $json | out-file c:\temp\ERAMSSQL.json
