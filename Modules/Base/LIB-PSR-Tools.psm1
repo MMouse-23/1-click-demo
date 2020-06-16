@@ -52,6 +52,10 @@
   }
 
 Function Wait-TaskAnalytics{
+  param (
+    $datavar,
+    $datagen
+    )
     do {
       try{
 
@@ -59,14 +63,14 @@ Function Wait-TaskAnalytics{
         write-log -message "Wait for File Server Analytics Install Cycle $counter out of 25(minutes)."
     
         $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "DeployFileAnalytics"}
+        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerProtect"}
         if (!$FileServer){
           write-log -message "Task does not exist yet"
           do {
             $counterinstall++
             sleep 60
             $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "DeployFileAnalytics"}
+            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerProtect"}
           } until ($FileServer -or $counterinstall -ge 5)
         }
         $Inventorycount = 0

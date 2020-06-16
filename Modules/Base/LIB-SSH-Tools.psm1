@@ -1064,8 +1064,6 @@ Function SSH-Networking-Pe {
         write-log -message "Netbios Domain is $netbios"
 
         $result = Invoke-SSHCommand -SSHSession $session -command "/usr/local/nutanix/bin/acli net.create $nw2name vlan=$($nw2vlan) ip_config=$($ipconfig)" -EnsureConnection
-        $result = Invoke-SSHCommand -SSHSession $session -command "/usr/local/nutanix/bin/acli net.update_dhcp_dns $nw2name servers=$($DC1IP),$($DC2ip) domains=$($netbios)" -EnsureConnection
-        $result = Invoke-SSHCommand -SSHSession $session -command "/usr/local/nutanix/bin/acli net.add_dhcp_pool $nw2name start=$($nw2dhcpstart) end=$($lastIP)"
 
       } else {
 

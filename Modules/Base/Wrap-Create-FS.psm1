@@ -8,64 +8,6 @@ Function Wrap-Create-FS {
     [string] $jsonAna
   )
 
-# Side load Anaytics disabled since 2.0
-  #write-log -message "Building Credential for SSH session";
-  #$hide = Get-SSHTrustedHost | Remove-SSHTrustedHost
-  #$Securepass = ConvertTo-SecureString $datavar.pepass -AsPlainText -Force;
-  #$credential = New-Object System.Management.Automation.PSCredential ("nutanix", $Securepass);
-  #$session = New-SSHSession -ComputerName $datavar.peclusterip -Credential $credential -AcceptKey;
-#
-  #write-log -message "JSON Analytics $jsonAna"
-  #write-log -message "URL Analytics $UrlAnalytics"
- #
-  #do {;
-  #  $count1++
-  #    
-  #  try{
-  #    $binaryAnashort = $UrlAnalytics -split "/" | select -last 1
-  #    $jsonAnashort = $jsonAna -split "\\" | select -last 1
-#
-  #    $session = New-SSHSession -ComputerName $datavar.peclusterip -Credential $credential -AcceptKey
-#
-  #    $check2 = Invoke-SSHCommand -SSHSession $session -command "/home/nutanix/prism/cli/ncli software list software-type=File_Analytics name=2.0.0" -EnsureConnection
-  #    if ($check2.output -match "completed") {
-#
-  #      write-log -message "Already Done"
-#
-  #    } else {
-#
-  #      write-log -message "$($check1.output) Current status"
-  #      write-log -message "Uploading the Analytics Binaries"
-  #      write-log -message "To Its destination /home/nutanix/tmp/$($jsonAnashort)"
-  #      write-log -message "and /home/nutanix/tmp/$($binaryAnashort)"
-#
-  #      $Clean4 = Invoke-SSHCommand -SSHSession $session -command "sudo rm /home/nutanix/tmp/$binaryAnashort" 
-  #      $upload1 = Set-SCPFile -LocalFile $jsonAna -RemotePath "/home/nutanix/tmp" -ComputerName $datavar.peclusterip -Credential $credential -AcceptKey $true
-  #      sleep 4
-  #      $Upload2 = Invoke-SSHCommand -SSHSession $session -command "cd /home/nutanix/tmp/;wget $($UrlAnalytics)" -timeout 999 -EnsureConnection
-  #        
-  #      write-log -message "Uploading Software in NCLI";
-  #        
-  #      sleep 2
-  #      $NCLI2 = Invoke-SSHCommand -SSHSession $session -command "/home/nutanix/prism/cli/ncli software upload software-type=file_analytics file-path=/home/nutanix/tmp/$binaryAnashort meta-file-path=/home/nutanix/tmp/$jsonAnashort" -timeout 999 -EnsureConnection  
-  #      sleep 2
-#
-  #      write-log -message "Cleaning, NCLI Output was $($NCLI2.output)"
-  #        
-  #      $Clean4 = Invoke-SSHCommand -SSHSession $session -command "sudo rm /home/nutanix/tmp/$binaryAnashort" 
-  #      sleep 2
-  #      $check2 = Invoke-SSHCommand -SSHSession $session -command "/home/nutanix/prism/cli/ncli software list software-type=File_Analytics name=2.0.0" -timeout 999 -EnsureConnection
-#
-  #    }
-  #  } catch {
-  #
-  #    write-log -message "Failure during upload or execute";
-  #
-  #  }
-  #
-  #} until ($check2.output -match "completed" -or $count1 -ge 8)
-#
-  #write-log -message "File_Analytics Upload Success"
   write-log -message "Wait for Forest Task"
 
   do {
@@ -108,109 +50,6 @@ Function Wrap-Create-FS {
     }
   } until ($Looper -ge 300 -or $allReady -notcontains 0)
 
-  Function Wait-Task{
-    do {
-      try{
-
-        $counter++
-        write-log -message "Wait for File Server Install Cycle $counter out of 25(minutes)."
-    
-        $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
-        if (!$FileServer){
-          write-log -message "Task does not exist yet"
-          do {
-            $counterinstall++
-            sleep 60
-            $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
-          } until ($FileServer -or $counterinstall -ge 5)
-        }
-        $Inventorycount = 0
-        [array]$Results = $null
-        foreach ($item in $FileServer){
-          if ( $item.percentage_complete -eq 100) {
-            $Results += "Done"
-     
-            write-log -message "FS Install $($item.uuid) is completed."
-          } elseif ($item.percentage_complete -ne 100){
-            $Inventorycount ++
-    
-            write-log -message "FS Install $($item.uuid) is still running."
-            write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
-    
-            $Results += "BUSY"
-    
-          }
-        }
-        if ($Results -notcontains "BUSY" -or !$FileServer){
-
-          write-log -message "FS Install is done."
-     
-          $InstallCheck = "Success"
-     
-        } else{
-          sleep 60
-        }
-    
-      }catch{
-        write-log -message "Error caught in loop."
-      }
-    } until ($InstallCheck -eq "Success" -or $counter -ge 40)
-    return $item.status
-  }
-
-Function Wait-TaskAnalytics{
-    do {
-      try{
-
-        $counter++
-        write-log -message "Wait for File Server Analytics Install Cycle $counter out of 25(minutes)."
-    
-        $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "DeployFileAnalytics"}
-        if (!$FileServer){
-          write-log -message "Task does not exist yet"
-          do {
-            $counterinstall++
-            sleep 60
-            $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "DeployFileAnalytics"}
-          } until ($FileServer -or $counterinstall -ge 5)
-        }
-        $Inventorycount = 0
-        [array]$Results = $null
-        foreach ($item in $FileServer){
-          if ( $item.percentage_complete -eq 100) {
-            $Results += "Done"
-     
-            write-log -message "Analytics Install $($item.uuid) is completed."
-          } elseif ($item.percentage_complete -ne 100){
-            $Inventorycount ++
-    
-            write-log -message "Analytics Install $($item.uuid) is still running."
-            write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
-    
-            $Results += "BUSY"
-    
-          }
-        }
-        if ($Results -notcontains "BUSY" -or !$FileServer){
-
-          write-log -message "Analytics Install is done."
-     
-          $InstallCheck = "Success"
-     
-        } else{
-          sleep 60
-        }
-    
-      }catch{
-        write-log -message "Error caught in loop."
-      }
-    } until ($InstallCheck -eq "Success" -or $counter -ge 40)
-    return $item.status
-  }
 
   write-log -message "Checking Downloaded Files"
   
@@ -347,7 +186,7 @@ Function Wait-TaskAnalytics{
     
     REST-Create-FileAnalyticsServer -datagen $datagen -datavar $datavar -network $subnet -container $container -AnalyticsVersion $AnalyticsVersion
   
-    $result = Wait-TaskAnalytics
+    $result = Wait-TaskAnalytics -datagen $datagen -datavar $datavar 
 
     if ($result -ne "SUCCEEDED"){
       do {
