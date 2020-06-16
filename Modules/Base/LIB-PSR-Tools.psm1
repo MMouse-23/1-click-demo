@@ -1,3 +1,109 @@
+
+  Function Wait-Task{
+    do {
+      try{
+
+        $counter++
+        write-log -message "Wait for File Server Install Cycle $counter out of 25(minutes)."
+    
+        $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
+        if (!$FileServer){
+          write-log -message "Task does not exist yet"
+          do {
+            $counterinstall++
+            sleep 60
+            $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
+          } until ($FileServer -or $counterinstall -ge 5)
+        }
+        $Inventorycount = 0
+        [array]$Results = $null
+        foreach ($item in $FileServer){
+          if ( $item.percentage_complete -eq 100) {
+            $Results += "Done"
+     
+            write-log -message "FS Install $($item.uuid) is completed."
+          } elseif ($item.percentage_complete -ne 100){
+            $Inventorycount ++
+    
+            write-log -message "FS Install $($item.uuid) is still running."
+            write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
+    
+            $Results += "BUSY"
+    
+          }
+        }
+        if ($Results -notcontains "BUSY" -or !$FileServer){
+
+          write-log -message "FS Install is done."
+     
+          $InstallCheck = "Success"
+     
+        } else{
+          sleep 60
+        }
+    
+      }catch{
+        write-log -message "Error caught in loop."
+      }
+    } until ($InstallCheck -eq "Success" -or $counter -ge 40)
+    return $item.status
+  }
+
+Function Wait-TaskAnalytics{
+    do {
+      try{
+
+        $counter++
+        write-log -message "Wait for File Server Analytics Install Cycle $counter out of 25(minutes)."
+    
+        $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "DeployFileAnalytics"}
+        if (!$FileServer){
+          write-log -message "Task does not exist yet"
+          do {
+            $counterinstall++
+            sleep 60
+            $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "DeployFileAnalytics"}
+          } until ($FileServer -or $counterinstall -ge 5)
+        }
+        $Inventorycount = 0
+        [array]$Results = $null
+        foreach ($item in $FileServer){
+          if ( $item.percentage_complete -eq 100) {
+            $Results += "Done"
+     
+            write-log -message "Analytics Install $($item.uuid) is completed."
+          } elseif ($item.percentage_complete -ne 100){
+            $Inventorycount ++
+    
+            write-log -message "Analytics Install $($item.uuid) is still running."
+            write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
+    
+            $Results += "BUSY"
+    
+          }
+        }
+        if ($Results -notcontains "BUSY" -or !$FileServer){
+
+          write-log -message "Analytics Install is done."
+     
+          $InstallCheck = "Success"
+     
+        } else{
+          sleep 60
+        }
+    
+      }catch{
+        write-log -message "Error caught in loop."
+      }
+    } until ($InstallCheck -eq "Success" -or $counter -ge 40)
+    return $item.status
+  }
+
+
 function Get-FunctionName {
   param (
     [int]$StackNumber = 1
