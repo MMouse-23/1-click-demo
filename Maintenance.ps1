@@ -454,7 +454,14 @@ write-log -message "Getting XRAY"
 $portalassets = REST-Portal-Query-AssetOtions
 $LiveXrayVersion = ((((($portalassets | where {$_.id -eq "XRay"}).options).version | where {$_ -match "[0-9].*"}) -replace " ", '') | sort [version]$_ | select -last 1).tostring()
 if ([version]$LiveXrayVersion){
-  $XRayConf = "$($LiveXrayVersion);http://download.nutanix.com/XRay/$($LiveXrayVersion)/xray.qcow2;http://download.nutanix.com/xray/$($LiveXrayVersion)/xray.ova"
+  $xrayarr = $LiveXrayVersion.split(".")
+  $last = $xrayarr | select -last 1
+  if ($last -eq 0){
+    $filever = "$($xrayarr[0]).$($xrayarr[1])"
+  } else {
+    $LiveXrayVersion
+  }
+  $XRayConf = "$($LiveXrayVersion);http://download.nutanix.com/XRay/$($LiveXrayVersion)/xray-$($filever).qcow2;http://download.nutanix.com/xray/$($LiveXrayVersion)/xray-$($filever).ova"
   write-log -message "Writing XRay $XRayConf"
   write "Version;UrlAHV;UrlVMWare`n$($XRayConf)" | out-file "$basedir\AutoDownloadURLs\Xray.urlconf"    
 } else {

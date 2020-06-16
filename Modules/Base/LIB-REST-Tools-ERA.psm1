@@ -31,13 +31,18 @@ Function REST-ERA-Create-Low-ComputeProfile {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
 
   write-log -message "Creating Profile LOW_OOB_COMPUTE"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody    
     sleep 10
 
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
@@ -83,7 +88,7 @@ Function REST-ERA-Create-UltraLow-ComputeProfile {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
 
   write-log -message "Creating Profile LOW_OOB_COMPUTE"
 
@@ -91,7 +96,11 @@ Function REST-ERA-Create-UltraLow-ComputeProfile {
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
   } catch {
     sleep 10
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
@@ -116,12 +125,16 @@ Function REST-ERA-GetProfiles {
 
   write-log -message "Query All ERA Profiles"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -130,6 +143,7 @@ Function REST-ERA-GetProfiles {
 
   Return $task
 } 
+
 
 
 Function REST-ERA-ProvisionDatabase {
@@ -143,7 +157,7 @@ Function REST-ERA-ProvisionDatabase {
     [string] $debug,
     [string] $publicSSHKey,
     [string] $networkProfileId,
-    [object] $SoftwareProfile,
+    [string] $SoftwareProfileID,
     [string] $computeProfileId,
     [string] $dbParameterProfileId,
     [string] $Type,
@@ -166,19 +180,19 @@ Function REST-ERA-ProvisionDatabase {
   write-log -message "Using Type $($Type)"
   write-log -message "Using Port $($Port)"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/databases/provision"
+  $URL = "https://$($EraIP)/era/v0.9/databases/provision"
   $JSON = @"
 {
   "databaseType": "$($Type)",
-  "name": "$($Databasename)",
-  "databaseDescription": "ERA Rules",
+  "name": "$($databasename)",
+  "databaseDescription": "1CD $($type) Database",
   "dbParameterProfileId": "$($dbParameterProfileId)",
   "createDbserver": false,
   "newDbServerTimeZone": "Europe/Amsterdam",
   "timeMachineInfo": {
-    "name": "asd_TM",
-    "description": "",
-    "slaId": "$($SLA.id)",
+    "name": "$($databasename)_TM",
+    "description": "1CD $($type) TimeMachine",
+    "slaId": "$($SLA.ID)",
     "schedule": {
       "snapshotTimeOfDay": {
         "hours": 1,
@@ -192,16 +206,16 @@ Function REST-ERA-ProvisionDatabase {
       },
       "weeklySchedule": {
         "enabled": true,
-        "dayOfWeek": "SUNDAY"
+        "dayOfWeek": "MONDAY"
       },
       "monthlySchedule": {
         "enabled": true,
-        "dayOfMonth": "14"
+        "dayOfMonth": "15"
       },
       "quartelySchedule": {
         "enabled": true,
         "startMonth": "JANUARY",
-        "dayOfMonth": "14"
+        "dayOfMonth": "15"
       },
       "yearlySchedule": {
         "enabled": false,
@@ -226,29 +240,32 @@ Function REST-ERA-ProvisionDatabase {
       "value": true
     },
     {
-      "name": "host_ip",
-      "value": "$($DBServer.ipAddresses[0])"
+      "name": "dbserver_description",
+      "value": "1CD $($type) Database"
     },
     {
-      "name": "database_names",
-      "value": "ads"
+      "name": "host_ip",
+      "value": "$($dbserver.ip)"
     },
     {
       "name": "db_password",
-      "value": "$($clpassword)"
+      "value": "$($Clpassword)"
+    },
+    {
+      "name": "database_names",
+      "value": "$($databasename)"
     }
   ],
-  "dbserverId": "$($DBServer.id)",
+  "dbserverId": "$($dbserver.id)",
   "clustered": false,
   "nodes": [
     {
       "properties": [],
-      "dbserverId": "$($DBServer.id)"
+      "dbserverId": "$($dbserver.id)"
     }
   ],
   "autoTuneStagingDrive": true
 }
-
 "@
   if ($debug -ge 2){
     $json | out-file c:\temp\ERAMDBcr.json
@@ -256,7 +273,11 @@ Function REST-ERA-ProvisionDatabase {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch{
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     write-log -message "Going once." -sev "WARN"
 
     sleep 60
@@ -268,7 +289,6 @@ Function REST-ERA-ProvisionDatabase {
   }
   Return $task
 } 
-
 
 
 Function REST-ERA-RegisterOracle-ERA {
@@ -293,7 +313,7 @@ Function REST-ERA-RegisterOracle-ERA {
   write-log -message "Using Cluster ID $($ERACluster.id)"
   write-log -message "Using SLA ID $($SLA.ID)"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/databases"
+  $URL = "https://$($EraIP):8443/era/v0.8/databases"
   $JSON = @"
 {
   "vmAdd": true,
@@ -389,7 +409,11 @@ Function REST-ERA-RegisterOracle-ERA {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch{
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     write-log -message "Going once." -sev "WARN"
 
     sleep 60
@@ -403,7 +427,6 @@ Function REST-ERA-RegisterOracle-ERA {
 } 
 
 
-
 Function REST-ERA-ProvisionServer {
   Param (
     [string] $dbservername,
@@ -415,7 +438,7 @@ Function REST-ERA-ProvisionServer {
     [string] $debug,
     [string] $publicSSHKey,
     [string] $networkProfileId,
-    [object] $SoftwareProfile,
+    [string] $SoftwareProfileID,
     [string] $computeProfileId,
     [string] $dbParameterProfileId,
     [string] $Type,
@@ -434,50 +457,59 @@ Function REST-ERA-ProvisionServer {
   write-log -message "Using ComputeID $($computeProfileId)"
   write-log -message "Using DBParamID $($dbParameterProfileId)"
   write-log -message "Using POC Name  $($POCNAME)"  
-  write-log -message "Using SoftwareProfile $($SoftwareProfile.id)"
-  write-log -message "Using SoftwareProfile $($SoftwareProfile.id)"
+  write-log -message "Using SoftwareProfile $($SoftwareProfileID)"
   write-log -message "Using Type $($Type)"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/dbservers/provision"
+  $URL = "https://$($EraIP):8443/era/v0.8/dbservers/create"
   $JSON = @"
 {
-  "newDbServerTimeZone": "Europe/Amsterdam",
-  "actionArguments": [
-    {
-      "name": "vm_name",
-      "value": "$($dbservername)"
-    },
-    {
-      "name": "client_public_key",
-      "value": "$($publicSSHKey)"
-    }
-  ],
-  "nxClusterId": "$($ERACluster.id)",
-  "softwareProfileId": "$($SoftwareProfile.id)",
-  "latestSnapshot": true,
-  "databaseType": "$($Type)",
-  "computeProfileId": "$($computeProfileId)",
-  "networkProfileId": "$($networkProfileId)",
-  "description": "Nutanix ERA Rules",
-  "softwareProfileVersionId": "$($SoftwareProfile.latestVersionId)"
+  "actionArguments": [{
+    "name": "vm_name",
+    "value": "$($dbservername)"
+  }, {
+    "name": "working_dir",
+    "value": "/tmp"
+  }, {
+    "name": "era_deploy_base",
+    "value": "/opt/era_base"
+  }, {
+    "name": "compute_profile_id",
+    "value": "$($computeProfileId)"
+  }, {
+    "name": "client_public_key",
+    "value": "$($publicSSHKey)"
+  }, {
+    "name": "network_profile_id",
+    "value": "$($networkProfileId)"
+  }],
+  "description": "Launches the rocket",
+  "clusterId": "$($ERACluster.id)",
+  "softwareProfileId": "$($SoftwareProfileID)"
 }
-"@ 
+"@
   if ($debug -ge 2){
     $json | out-file c:\temp\ERADB.json
   }
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch{
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     write-log -message "Going once." -sev "WARN"
 
-    sleep 10
-    
-    Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
-
+    sleep 60
+    try {
+      $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+    } catch {
+      $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+    }
   }
   Return $task
 } 
+
 
 
 
@@ -498,7 +530,7 @@ Function REST-ERA-AcceptEULA {
 
   write-log -message "Building EULA Accept JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/auth/validate"
+  $URL = "https://$($EraIP):8443/era/v0.8/auth/validate"
   $Payload= @{
     eulaAccepted="true"
   } 
@@ -506,7 +538,11 @@ Function REST-ERA-AcceptEULA {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $JSON -ContentType 'application/json' -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 60
@@ -530,12 +566,16 @@ Function REST-ERA-GetDBServers {
 
   write-log -message "Get ERA DB Servers"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/dbservers"
+  $URL = "https://$($EraIP):8443/era/v0.9/dbservers?detailed=false"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -558,14 +598,18 @@ Function REST-ERA-GetDatabases {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  write-log -message "Get ERA DB Servers"
+  write-log -message "Get ERA Databases"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/databases"
+  $URL = "https://$($EraIP)/era/v0.9/databases?detailed=true"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -590,12 +634,16 @@ Function REST-ERA-GetClones {
 
   write-log -message "Get ERA Clones"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/clones"
+  $URL = "https://$($EraIP):8443/era/v0.8/clones"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -625,7 +673,11 @@ Function REST-PE-GetShares {
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -652,7 +704,7 @@ Function REST-ERA-MySQLNWProfileCreate {
 
   write-log -message "Building PostGres Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
   $JSON = @"
 {
   "engineType": "mysql_database",
@@ -671,7 +723,11 @@ Function REST-ERA-MySQLNWProfileCreate {
   try{
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -697,7 +753,7 @@ Function REST-ERA-PostGresNWProfileCreate {
 
   write-log -message "Building PostGres Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
   $JSON = @"
 {
   "engineType": "postgres_database",
@@ -715,7 +771,11 @@ Function REST-ERA-PostGresNWProfileCreate {
   try{
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 10
@@ -744,19 +804,25 @@ Function REST-ERA-Oracle-SW-ProfileCreate {
   "dbVersion": "ALL",
   "properties": [{
     "name": "SOURCE_DBSERVER_ID",
-    "value": "$($database.primaryHost)",
+    "value": "$($database.databaseNodes[0].dbserverId)",
     "description": "ID of the database server that should be used as a reference to create the software profile"
   }],
   "name": "Oracle"
 }
 "@
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
 
   write-log -message "Creating Profile Oracle Software"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
   } catch {
+
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
 
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
@@ -787,14 +853,14 @@ Function REST-ERA-MSSQL-SW-ProfileCreate {
   "dbVersion": "ALL",
   "properties": [{
     "name": "SOURCE_DBSERVER_ID",
-    "value": "$($database.primaryHost)",
+    "value": "$($database.databaseNodes[0].dbserverId)",
     "description": "ID of the database server that should be used as a reference to create the software profile"
   }],
   "name": "MSSQL",
   "description": "MSSQL"
 }
 "@
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
 
   write-log -message "Creating Profile MSSQL Software"
 
@@ -802,7 +868,11 @@ Function REST-ERA-MSSQL-SW-ProfileCreate {
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
   } catch {
     sleep 10
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
@@ -828,7 +898,7 @@ Function REST-ERA-Oracle-NW-ProfileCreate {
 
   write-log -message "Building Oracle Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
   $JSON = @"
 {
   "engineType": "oracle_database",
@@ -873,7 +943,7 @@ Function REST-ERA-MSSQL-NW-ProfileCreate {
 
   write-log -message "Building MSSQL Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
   $JSON = @"
 {
   "engineType": "sqlserver_database",
@@ -892,6 +962,11 @@ Function REST-ERA-MSSQL-NW-ProfileCreate {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
 
@@ -912,7 +987,7 @@ Function REST-ERA-GetLast-SnapShot {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  $URL = "https://$($datagen.Era1IP):8443/era/v0.9/tms/$($database.timeMachineId)/capability"
+  $URL = "https://$($datagen.Era1IP):8443/era/v0.9/tms/$($database.timeMachineId)/capability?type=real"
 
   write-log -message "Getting Snapshots for Database"
 
@@ -920,7 +995,11 @@ Function REST-ERA-GetLast-SnapShot {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers
   } catch {
     sleep 10
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers
@@ -936,7 +1015,8 @@ Function REST-ERA-MSSQL-Clone {
     [object] $datavar,
     [object] $database,
     [object] $snapshot,
-    [object] $profiles
+    [object] $profiles,
+    [object] $EraCluster
   )
 
   write-log -message "Debug level is $($debug)";
@@ -958,74 +1038,82 @@ Function REST-ERA-MSSQL-Clone {
 
   write-log -message "Creating new database server MSSQL2-$($datavar.pocname)"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/tms/$($database.timeMachineId)/clones"
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/tms/$($database.timeMachineId)/clones"
   $JSON = @"
 {
-  "cloneName": "WideWorldImportersDEV",
-  "cloneDescription": "WideWorldImportersDEV",
+  "name": "WideWorldImportersDEV",
+  "description": "1CD Clone",
+  "createDbserver": true,
+  "clustered": false,
+  "nxClusterId": "$($ERACluster.id)",
+  "sshPublicKey": null,
+  "dbserverId": null,
+  "dbserverClusterId": null,
+  "dbserverLogicalClusterId": null,
   "timeMachineId": "$($database.timeMachineId)",
   "snapshotId": "$($snapshot.id)",
-  "pitrTimestamp": null,
+  "userPitrTimestamp": null,
+  "newDbServerTimeZone": "Central Europe Standard Time",
   "timeZone": "Europe/Amsterdam",
-  "newDbServerTimeZone": "Central European Standard Time",
   "latestSnapshot": false,
-  "newImplementation": false,
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "vmName": "MSSQL2-$($datavar.pocname)",
+      "computeProfileId": "$($computeprofile.ID)",
+      "networkProfileId": "$($networkprofile.ID)",
+      "newDbServerTimeZone": null,
+      "nxClusterId": "$($ERACluster.id)",
+      "properties": []
+    }
+  ],
   "tags": [],
-  "cloneInfo": [{
-    "name": "vm_name",
-    "value": "MSSQL2-$($datavar.pocname)"
-  }, {
-    "name": "vm_win_lang_settings",
-    "value": "en-US"
-  }, {
-    "name": "sql_user_name",
-    "value": "sa"
-  }, {
-    "name": "authentication_mode",
-    "value": "windows"
-  }, {
-    "name": "working_dir",
-    "value": "C:\\temp"
-  }, {
-    "name": "era_deploy_base",
-    "value": "C:\\NTNX\\ERA_BASE"
-  }, {
-    "name": "create_era_drive",
-    "value": true
-  }, {
-    "name": "create_dbserver",
-    "value": "true"
-  }, {
-    "name": "drives_to_mountpoints",
-    "value": false
-  }, {
-    "name": "instance_name",
-    "value": "MSSQLSERVER"
-  }, {
-    "name": "database_name",
-    "value": "WideWorldImportersDEV"
-  }, {
-    "name": "cluster_only",
-    "value": false
-  }, {
-    "name": "cluster_db",
-    "value": false
-  }, {
-    "name": "compute_profile_id",
-    "value": "$($computeprofile.ID)"
-  }, {
-    "name": "network_profile_id",
-    "value": "$($networkprofile.ID)"
-  }, {
-    "name": "vm_dbserver_admin_password",
-    "value": "$($datavar.PEPass)"
-  }, {
-    "name": "vm_dbserver_user",
-    "value": "$($datagen.Domainname)\\Domain Users"
-  }],
-  "applicationType": "sqlserver_database",
-  "windowsDomainProfileId": "$($domainProfile.ID)"
+  "actionArguments": [
+    {
+      "name": "vm_name",
+      "value": "MSSQL2-$($datavar.pocname)"
+    },
+    {
+      "name": "sql_user_name",
+      "value": "sa"
+    },
+    {
+      "name": "vm_win_lang_settings",
+      "value": "en-US"
+    },
+    {
+      "name": "authentication_mode",
+      "value": "windows"
+    },
+    {
+      "name": "drives_to_mountpoints",
+      "value": false
+    },
+    {
+      "name": "database_name",
+      "value": "WideWorldImporters_DEV"
+    },
+    {
+      "name": "instance_name",
+      "value": "MSSQLSERVER"
+    },
+    {
+      "name": "cluster_db",
+      "value": false
+    },
+    {
+      "name": "dbserver_description",
+      "value": "1CD MSSQL Clone"
+    },
+    {
+      "name": "vm_dbserver_admin_password",
+      "value": "$($datavar.PEPass)"
+    }
+  ],
+  "computeProfileId": "$($computeprofile.ID)",
+  "networkProfileId": "$($networkprofile.ID)"
 }
+
 "@
   if ($debug -ge 2){
     $json | out-file c:\temp\MSSQLClone.json
@@ -1033,6 +1121,11 @@ Function REST-ERA-MSSQL-Clone {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 30
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
 
@@ -1090,7 +1183,7 @@ Function REST-ERA-Create-WindowsDomain-Profile {
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/profiles"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
 
   write-log -message "Creating Profile Windows Domain"
 
@@ -1098,7 +1191,11 @@ Function REST-ERA-Create-WindowsDomain-Profile {
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
   } catch {
     sleep 10
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
@@ -1109,13 +1206,16 @@ Function REST-ERA-Create-WindowsDomain-Profile {
 } 
 
 
+
+
 Function REST-ERA-Oracle-Clone {
   Param (
     [object] $datagen,
     [object] $datavar,
     [object] $database,
     [object] $snapshot,
-    [object] $profiles
+    [object] $profiles,
+    [object] $eracluster
   )
 
   write-log -message "Debug level is $($debug)";
@@ -1136,52 +1236,65 @@ Function REST-ERA-Oracle-Clone {
   write-log -message "Creating new Database TESTDB_DEV + Database server Oracle2-$($datavar.pocname)"
   write-log -message "Using ParameterProfileID $($parameterPRofile.ID)"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/tms/$($database.timeMachineId)/clones"
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/tms/$($database.timeMachineId)/clones"
   $JSON = @"
 {
-  "cloneName": "TESTDB_DEV",
-  "cloneDescription": "Development instance for TESTDB",
+  "name": "TESTDB_DEV",
+  "description": "1CD Oracle Clone",
+  "createDbserver": true,
+  "clustered": false,
+  "nxClusterId": "$($eracluster.id)",
+  "sshPublicKey": "$($datagen.PublicKey)",
+  "dbserverId": null,
+  "dbserverClusterId": null,
+  "dbserverLogicalClusterId": null,
   "timeMachineId": "$($database.timeMachineId)",
   "snapshotId": "$($snapshot.id)",
-  "pitrTimestamp": null,
+  "userPitrTimestamp": null,
+  "newDbServerTimeZone": "Europe/Amsterdam",
   "timeZone": "Europe/Amsterdam",
   "latestSnapshot": false,
-  "newImplementation": false,
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "vmName": "Oracle2-$($datavar.pocname)",
+      "computeProfileId": "$($computeprofile.ID)",
+      "networkProfileId": "$($networkprofile.ID)",
+      "newDbServerTimeZone": null,
+      "nxClusterId": "$($eracluster.id)",
+      "properties": []
+    }
+  ],
   "tags": [],
-  "cloneInfo": [{
-    "name": "new_db_sid",
-    "value": "TESTDB"
-  }, {
-    "name": "vm_name",
-    "value": "Oracle2-$($datavar.pocname)"
-  }, {
-    "name": "working_dir",
-    "value": "/tmp"
-  }, {
-    "name": "era_deploy_base",
-    "value": "/opt/era_base"
-  }, {
-    "name": "create_era_drive",
-    "value": true
-  }, {
-    "name": "create_dbserver",
-    "value": "true"
-  }, {
-    "name": "compute_profile_id",
-    "value": "$($computeprofile.ID)"
-  }, {
-    "name": "network_profile_id",
-    "value": "$($networkprofile.ID)"
-  }, {
-    "name": "client_public_key",
-    "value": "$($datagen.PublicKey)"
-  }, {
-    "name": "db_password",
-    "value": "$($datavar.PEPass)"
-  }, {
-    "name": "db_parameter_profile_id",
-    "value": "$($parameterPRofile.ID)"
-  }]
+  "actionArguments": [
+    {
+      "name": "new_db_sid",
+      "value": "TESTDB"
+    },
+    {
+      "name": "vm_name",
+      "value": "Oracle2-$($datavar.pocname)"
+    },
+    {
+      "name": "delete_logs_post_recovery",
+      "value": false
+    },
+    {
+      "name": "asm_driver",
+      "value": "None"
+    },
+    {
+      "name": "dbserver_description",
+      "value": "1CD Dev Clone Oracle"
+    },
+    {
+      "name": "db_password",
+      "value": "$($datavar.PEPass)"
+    }
+  ],
+  "computeProfileId": "$($computeprofile.ID)",
+  "networkProfileId": "$($networkprofile.ID)",
+  "databaseParameterProfileId": "$($parameterPRofile.ID)"
 }
 "@
   if ($debug -ge 2){
@@ -1190,6 +1303,11 @@ Function REST-ERA-Oracle-Clone {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 30
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
 
@@ -1198,6 +1316,8 @@ Function REST-ERA-Oracle-Clone {
 
   Return $task
 } 
+
+
 
 Function REST-ERA-Oracle-Provision {
   Param (
@@ -1225,7 +1345,7 @@ Function REST-ERA-Oracle-Provision {
   write-log -message "Using $($SoftwareProfile.id) as Software Source ID"
   write-log -message "Creating new database server Oracle2-$($datavar.pocname)"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/dbservers/create"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/dbservers/create"
   $JSON = @"
 {
   "actionArguments": [{
@@ -1264,6 +1384,11 @@ Function REST-ERA-Oracle-Provision {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 30
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
 
@@ -1272,6 +1397,7 @@ Function REST-ERA-Oracle-Provision {
 
   Return $task
 } 
+
 
 Function REST-ERA-Provision-HA-Database {
   Param (
@@ -1313,17 +1439,17 @@ Function REST-ERA-Provision-HA-Database {
   $JSON = @"
 {
   "databaseType": "$($Type)",
-  "databaseName": "$($Databasename)",
-  "clusterId": "$($ERACluster.id)",
-  "softwareProfileId": "$($SoftwareProfile.ID)",
-  "softwareProfileVersionId": "$($SoftwareProfile.latestVersionid)",
+  "name": "$($Databasename)",
+  "databaseDescription": "1CD Deployment",
+  "softwareProfileId": "$($SoftwareProfile.id)",
+  "softwareProfileVersionId": "$($SoftwareProfile.latestVersionId)",
   "computeProfileId": "$($computeProfileId)",
   "networkProfileId": "$($networkProfileId)",
   "dbParameterProfileId": "$($dbParameterProfileId)",
-  "newDbServerTimeZone": "Europe/Berlin",
+  "newDbServerTimeZone": "Europe/Amsterdam",
   "timeMachineInfo": {
     "name": "$($Databasename)_TM",
-    "description": "",
+    "description": "1CD Deployment",
     "slaId": "$($SLA.ID)",
     "schedule": {
       "snapshotTimeOfDay": {
@@ -1338,16 +1464,16 @@ Function REST-ERA-Provision-HA-Database {
       },
       "weeklySchedule": {
         "enabled": true,
-        "dayOfWeek": "WEDNESDAY"
+        "dayOfWeek": "TUESDAY"
       },
       "monthlySchedule": {
         "enabled": true,
-        "dayOfMonth": "13"
+        "dayOfMonth": "16"
       },
       "quartelySchedule": {
         "enabled": true,
         "startMonth": "JANUARY",
-        "dayOfMonth": "13"
+        "dayOfMonth": "16"
       },
       "yearlySchedule": {
         "enabled": false,
@@ -1358,67 +1484,104 @@ Function REST-ERA-Provision-HA-Database {
     "tags": [],
     "autoTuneLogDrive": true
   },
-  "provisionInfo": [{
-      "name": "application_type",
-      "value": "postgres_database"
-    },
-    {
-      "name": "cluster_database",
-      "value": true
-    },
-    {
-      "name": "nodes",
-      "value": "3"
-    },
+  "actionArguments": [
     {
       "name": "deploy_haproxy",
       "value": true
-    },
-    {
-      "name": "proxy_write_port",
-      "value": "5000"
-    },
-    {
-      "name": "listener_port",
-      "value": "5432"
     },
     {
       "name": "proxy_read_port",
       "value": "5001"
     },
     {
-      "name": "database_size",
-      "value": "200"
+      "name": "listener_port",
+      "value": "$($Port)"
     },
     {
-      "name": "working_dir",
-      "value": "/tmp"
+      "name": "proxy_write_port",
+      "value": "5000"
+    },
+    {
+      "name": "database_size",
+      "value": "200"
     },
     {
       "name": "auto_tune_staging_drive",
       "value": true
     },
     {
-      "name": "dbserver_name",
-      "value": "PostGresHA"
+      "name": "enable_synchronous_mode",
+      "value": true
+    },
+    {
+      "name": "backup_policy",
+      "value": "primary_only"
     },
     {
       "name": "cluster_name",
-      "value": "PostGresCL"
+      "value": "$($postgresclustername)"
     },
     {
-      "name": "dbserver_description",
-      "value": "PostGresHA"
+      "name": "cluster_description",
+      "value": "1CD Based Cluster"
     },
     {
-      "name": "ssh_public_key",
-      "value": "$($publicSSHKey)"
+      "name": "patroni_cluster_name",
+      "value": "$($postgresserverprefix)-PatrCL-01"
     },
     {
       "name": "db_password",
       "value": "$($Clpassword)"
+    },
+    {
+      "name": "database_names",
+      "value": "$($Databasename)"
     }
-  ]
+  ],
+  "createDbserver": true,
+  "nodeCount": 4,
+  "nxClusterId": "$($ERACluster.id)",
+  "sshPublicKey": "$($publicSSHKey)",
+  "clustered": true,
+  "nodes": [
+    {
+      "properties": [
+        {
+          "name": "node_type",
+          "value": "haproxy"
+        }
+      ],
+      "vmName": "$($postgresserverprefix)-Proxy-01"
+    },
+    {
+      "properties": [
+        {
+          "name": "node_type",
+          "value": "database"
+        }
+      ],
+      "vmName": "$($postgresserverprefix)-Node-01"
+    },
+    {
+      "properties": [
+        {
+          "name": "node_type",
+          "value": "database"
+        }
+      ],
+      "vmName": "$($postgresserverprefix)-Node-02"
+    },
+    {
+      "properties": [
+        {
+          "name": "node_type",
+          "value": "database"
+        }
+      ],
+      "vmName": "$($postgresserverprefix)-Node-03"
+    }
+  ],
+  "autoTuneStagingDrive": true
 }
 "@
   if ($debug -ge 2){
@@ -1427,7 +1590,11 @@ Function REST-ERA-Provision-HA-Database {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch{
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     write-log -message "Going once." -sev "WARN"
 
     sleep 60
@@ -1456,7 +1623,7 @@ Function REST-ERA-MariaNWProfileCreate {
 
   write-log -message "Building MariaDB Network Creation JSON"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/profiles"
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
   $JSON = @"
 {
   "engineType": "mariadb_database",
@@ -1474,6 +1641,11 @@ Function REST-ERA-MariaNWProfileCreate {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
 
@@ -1504,62 +1676,59 @@ Function REST-ERA-RegisterMSSQL-ERA {
   write-log -message "Building MSSQL Server Registration JSON"
   write-log -message "Using databasename $($dbname)"
 
-  $URL = "https://$($EraIP):8443/era/v0.9/databases/register"
+  $URL = "https://$($EraIP):8443/era/v0.8/databases"
   $JSON = @"
 {
-  "actionArguments": [
-    {
-      "name": "era_manage_log",
-      "value": true
-    },
-    {
-      "name": "sql_login_used",
-      "value": false
-    },
-    {
-      "name": "same_as_admin",
-      "value": true
-    },
-    {
-      "name": "recovery_model",
-      "value": "Full-logged"
-    },
-    {
-      "name": "vmIp",
-      "value": "$($MSQLVMIP)"
-    },
-    {
-      "name": "sysadmin_username_win",
-      "value": "administrator"
-    },
-    {
-      "name": "sysadmin_password_win",
-      "value": "$($sysprepPass)"
-    },
-    {
-      "name": "instance_name",
-      "value": "MSSQLSERVER"
-    },
-    {
-      "name": "database_name",
-      "value": "$($dbname)"
-    }
-  ],
-  "nxClusterId": "$($ERACluster.id)",
-  "databaseType": "sqlserver_database",
-  "databaseName": "$($dbname)",
-  "description": "",
-  "clustered": false,
+  "vmAdd": true,
+  "applicationInfo": [{
+    "name": "application_type",
+    "value": "sqlserver_database"
+  }, {
+    "name": "era_manage_log",
+    "value": true
+  }, {
+    "name": "sql_login_used",
+    "value": false
+  }, {
+    "name": "same_as_admin",
+    "value": true
+  }, {
+    "name": "create_era_drive",
+    "value": true
+  }, {
+    "name": "recovery_model",
+    "value": "Full-logged"
+  }, {
+    "name": "era_deploy_base",
+    "value": "C:\\NTNX\\ERA_BASE"
+  }, {
+    "name": "vm_ip",
+    "value": "$($MSQLVMIP)"
+  }, {
+    "name": "vm_username",
+    "value": "administrator"
+  }, {
+    "name": "vm_password",
+    "value": "$($sysprepPass)"
+  }, {
+    "name": "instance_name",
+    "value": "MSSQLSERVER"
+  }, {
+    "name": "database_name",
+    "value": "$($dbname)"
+  }, {
+    "name": "sysadmin_username_win",
+    "value": "administrator"
+  }, {
+    "name": "sysadmin_password_win",
+    "value": "$($sysprepPass)"
+  }],
   "forcedInstall": true,
-  "vmIp": "$($MSQLVMIP)",
-  "vmUsername": "administrator",
-  "vmPassword": "$($sysprepPass)",
-  "vmSshkey": "",
-  "vmDescription": "",
-  "autoTuneStagingDrive": false,
-  "workingDirectory": "c:\\",
+  "clusterId": "$($ERACluster.id)",
+  "tags": [],
   "timeMachineInfo": {
-    "autoTuneLogDrive": true,
+    "name": "$($dbname)_TM",
+    "description": "",
     "slaId": "$($SLA.ID)",
     "schedule": {
       "snapshotTimeOfDay": {
@@ -1578,12 +1747,12 @@ Function REST-ERA-RegisterMSSQL-ERA {
       },
       "monthlySchedule": {
         "enabled": true,
-        "dayOfMonth": "14"
+        "dayOfMonth": "3"
       },
       "quartelySchedule": {
         "enabled": true,
         "startMonth": "JANUARY",
-        "dayOfMonth": "14"
+        "dayOfMonth": "3"
       },
       "yearlySchedule": {
         "enabled": false,
@@ -1592,10 +1761,18 @@ Function REST-ERA-RegisterMSSQL-ERA {
       }
     },
     "tags": [],
-    "name": "$($dbname)_TM"
+    "autoTuneLogDrive": true
   },
-  "tags": []
-}  
+  "applicationSlaName": "$($sla.name)",
+  "applicationType": "sqlserver_database",
+  "autoTuneStagingDrive": false,
+  "eraBaseDirectory": "C:\\NTNX\\ERA_BASE",
+  "applicationHost": "$($MSQLVMIP)",
+  "vmIp": "$($MSQLVMIP)",
+  "vmUsername": "administrator",
+  "vmPassword": "$($sysprepPass)",
+  "applicationName": "$($dbname)"
+}
 "@
   if ($debug -ge 2){
     $json | out-file c:\temp\ERAMSSQL.json
@@ -1603,7 +1780,11 @@ Function REST-ERA-RegisterMSSQL-ERA {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
   } catch{
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     write-log -message "Going once." -sev "WARN"
 
     sleep 60
@@ -1634,11 +1815,16 @@ Function REST-ERA-GetSLAs {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  $URL = "https://$($EraIP):8443/era/v0.9/slas"
+  $URL = "https://$($EraIP):8443/era/v0.8/slas"
 
   try {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -body $JSON -ContentType 'application/json' -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
     $task = Invoke-RestMethod -Uri $URL -method "GET" -body $JSON -ContentType 'application/json' -headers $headers;
 
@@ -1659,7 +1845,7 @@ Function REST-ERA-Operations {
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
 
-  $URL = "https://$($EraIP):8443/era/v0.9/operations/short-info?user-triggered=true&system-triggered=true"
+  $URL = "https://$($EraIP):8443/era/v0.8/operations/short-info?user-triggered=true&system-triggered=true"
 
   try {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -body $JSON -ContentType 'application/json' -headers $headers;
@@ -1687,13 +1873,13 @@ Function REST-ERA-CreateSnapshot {
   $json = @"
 {
   "actionHeader": [{
-    "name": "snapshotName",
+    "name": "snapshot_name",
     "value": "Dev_Start"
   }]
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/tms/$($DBUUID)/snapshots"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/tms/$($DBUUID)/snapshots"
 
   write-log -message "Creating Snapshot for $DBUUID"
   write-log -message "Using URL $URL"
@@ -1705,6 +1891,11 @@ Function REST-ERA-CreateSnapshot {
   try{
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
 
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
@@ -1730,7 +1921,7 @@ Function REST-ERA-RegisterClusterStage1 {
 
   write-log -message "Building Cluster Registration JSON"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/clusters"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/clusters"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1756,7 +1947,11 @@ Function REST-ERA-RegisterClusterStage1 {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $JSON -ContentType 'application/json' -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 60
@@ -1765,35 +1960,7 @@ Function REST-ERA-RegisterClusterStage1 {
   Return $task
 } 
 
-Function REST-ERA-GetPENetworks {
-  Param (
-    [object] $datavar,
-    [object] $datagen
-  )
 
-  write-log -message "Debug level is $($debug)";
-  write-log -message "Building Credential object"
-  $credPair = "$($datavar.peadmin):$($datavar.pepass)"
-  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
-  $headers = @{ Authorization = "Basic $encodedCredentials" }
-
-  write-log -message "Getting Existing ERA networks"
-  $URL = "https://$($datagen.ERA1IP)/era/v0.9/resources/networks?detailed=true"
-
-  write-log -message "Using URL $URL"
-  write-log -message "Using IP $($datagen.era1ip)"
-
-  try {
-    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
-  } catch {
-
-    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
-
-    sleep 119
-    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers; 
-  }  
-  Return $task
-}
 
 Function REST-ERA-AttachPENetwork {
   Param (
@@ -1811,7 +1978,7 @@ Function REST-ERA-AttachPENetwork {
 
   write-log -message "Building ERA Network Registration JSON"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/resources/networks"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/resources/networks"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1822,15 +1989,24 @@ Function REST-ERA-AttachPENetwork {
 {
     "name":  "$($NetworkName)",
     "type":  "DHCP",
+    "clusterId":  "$($ClusterUUID)",
+    "managed":  true,
     "properties":  [
 
-                   ]
+                   ],
+    "propertiesMap":  {
+
+                      }
 }
 "@ 
   try {
     $task = Invoke-RestMethod -Uri $URL -method "POST" -body $JSON -ContentType 'application/json' -headers $headers;
   } catch {
-
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
 
     sleep 119
@@ -1854,7 +2030,7 @@ Function REST-ERA-GetClusters {
 
   write-log -message "Query ERA Clusters"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/clusters"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/clusters"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1862,6 +2038,11 @@ Function REST-ERA-GetClusters {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
 
@@ -1884,7 +2065,7 @@ Function REST-ERA-GetNetworks {
 
   write-log -message "Query ERA Networks"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/resources/networks"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/resources/networks"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"
@@ -1892,6 +2073,11 @@ Function REST-ERA-GetNetworks {
   try {
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
   } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
     sleep 10
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;
 
@@ -1915,7 +2101,7 @@ Function REST-ERA-RegisterClusterStage2 {
 
   write-log -message "Building Stage 2 JSON"
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.9/clusters/$($ClusterUUID)/json"
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/clusters/$($ClusterUUID)/json"
 
   write-log -message "Using URL $URL"
   write-log -message "Using IP $($datagen.era1ip)"

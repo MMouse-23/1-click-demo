@@ -160,13 +160,30 @@ Function Wrap-Install-Era-MSSQL {
       }
     } until ($count -ge 100 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
   
-    write-log -message "Doing ERA 1.0.1.5 magic." -slacklevel 1
+    write-log -message "Doing ERA 1.3 magic." -slacklevel 1
   
     $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
     $database = $databases | where {$_.name -eq "WideWorldImporters"}
   
     $operation = REST-ERA-MSSQL-SW-ProfileCreate -datagen $datagen -datavar $datavar -database $database
+    do {
+      $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+      $count++
+      sleep 60
+      if ($count % 4 -eq 0){
   
+        write-log -message "Pending Operation completion cycle $count"
+  
+      }
+      $real = $result.operations | where {$_.id -eq $operation.operationid}
+      if ($real.status){
+        if ($count % 4 -eq 0){
+  
+          write-log -message "Software Profile is $($real.percentageComplete) % complete."
+  
+        } 
+      }
+    } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
     write-log -message "Creating Domain MSSQL Profile"
     
     $domainprofile = REST-ERA-Create-WindowsDomain-Profile -datagen $datagen -datavar $datavar
@@ -238,13 +255,12 @@ Function Wrap-Install-Era-MSSQL {
       sleep 60
       write-log -message "Getting Snapshot UUID"
     
-     
       $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
       $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
     
       write-log -message "Provision MSSQL Clone" -slacklevel 1
     
-      $clone = REST-ERA-MSSQL-Clone -datagen $datagen -datavar $datavar -database $database -profiles $profiles -snapshot $snapshot
+      $clone = REST-ERA-MSSQL-Clone -datagen $datagen -datavar $datavar -database $database -profiles $profiles -snapshot $snapshot -ERACluster $cluster
       $count = 0
       write-log -message "Waiting for cloning process" -slacklevel 1
       do {
@@ -296,7 +312,7 @@ Function Wrap-Install-Era-MSSQL {
         $body += "PE Pass is $($Datavar.pepass)<br>"
   
         Send-MailMessage -BodyAsHtml -body $body -to "Michell.Grauwmans@nutanix.com" -from $datagen.smtpsender -port $datagen.smtpport -smtpserver $datagen.smtpserver -subject "Admin Copy, MSSQL Snapshot Failed."
-        Send-MailMessage -BodyAsHtml -body $body -to "omkarpradeep.salvi@nutanix.com" -from $datagen.smtpsender -port $datagen.smtpport -smtpserver $datagen.smtpserver -subject "1-click-Demo MSSQL Snapshot Failed."
+        #Send-MailMessage -BodyAsHtml -body $body -to "omkarpradeep.salvi@nutanix.com" -from $datagen.smtpsender -port $datagen.smtpport -smtpserver $datagen.smtpserver -subject "1-click-Demo MSSQL Snapshot Failed."
   
       } else {
     
@@ -308,6 +324,7 @@ Function Wrap-Install-Era-MSSQL {
     write-log -message "Registering MSSQL Server with second DB" -slacklevel 1
 
     $operation = REST-ERA-RegisterMSSQL-ERA -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin -ERACluster $cluster -MSQLVMIP $datagen.ERA_MSSQLIP -SLA $gold -sysprepPass $datagen.SysprepPassword -dbname "WideWorldImportersDW"
+  
   } else {
 
     write-log -message "First Database server failed to register, we cannot proceed" -sev "ERROR"

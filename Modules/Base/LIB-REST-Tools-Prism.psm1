@@ -4636,7 +4636,6 @@ Function REST-XPlay-Create-Playbook {
   write-log -message "Using Blueprint $($BluePrintObject.metadata.uuid)"
   write-log -message "Using BP App $($BPAppID)"
 
-######## THE A IN ALERT TRIGGER TYPE NEEDS TO BE THERE
 $Json = @"
 {
   "api_version": "3.1",

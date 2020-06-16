@@ -66,19 +66,6 @@ add-type @"
 $global:type = "Backend"
 $Guid = [guid]::newguid()
 $logfile  = "$($logingdir)\Backend-$($Guid.guid).log"
-#if ((get-date).hour -eq 1 -and (get-date).minute -lt 3 -and $portable -ne 1 -and $env:computername -notmatch "dev"){
-#  write-log -message "Refreshing GIT"
-#  rm "$($BaseDir)\System\Temp\Git" -force -confirm:0 -recurse
-#  mkdir "$($BaseDir)\System\Temp\Git"
-#
-#  git clone "https://github.com/MMouse-23/1-click-demo/" "$($BaseDir)\System\Temp\Git"
-#  rm "$($BaseDir)\Modules\" -force -recurse -confirm:0 -ea:0
-#  rm "$($BaseDir)\Blueprints\" -force -recurse -confirm:0 -ea:0
-#  mv "$($BaseDir)\System\Temp\Git\BluePrints\" "$($BaseDir)" -force -ea:0
-#  mv "$($BaseDir)\System\Temp\Git\Modules\" "$($BaseDir)" -force -ea:0
-#  mv "$($BaseDir)\System\Temp\Git\Backend-Processsor.ps1" "$($BaseDir)Backend-Processsor.ps1" -force -ea:0
-#  mv "$($BaseDir)\System\Temp\Git\Base-Outgoing-Queue-Processor.ps1" "$($BaseDir)Base-Outgoing-Queue-Processor.ps1" -force -ea:0
-#}
 
 start-transcript -path $logfile
 
@@ -109,7 +96,7 @@ do {
   if ($portable -eq 0){
     write-log -message "Checking Outlook"
     $singleusermode = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -ge (get-date).addminutes(-90)}
-    if ($env:computername -notmatch "dev"){
+    if ($env:computername -notmatch "dev" ){
       $object = Get-IncommingueueItem
     }
     if ($object.QueueStatus -eq "Manual"){

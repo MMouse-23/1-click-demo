@@ -157,6 +157,10 @@ Function Wrap-Install-Era-Oracle {
 
   $operation = REST-ERA-Oracle-SW-ProfileCreate -datagen $datagen -datavar $datavar -database $database
 
+  
+
+  
+
   write-log -message "Creating Network Oracle Profile"
 
   $OracleProfile = REST-ERA-Oracle-NW-ProfileCreate -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin -Networkname $datagen.Nw1name
@@ -188,23 +192,42 @@ Function Wrap-Install-Era-Oracle {
     $parameterPRofile = $profiles | where {$_.type -eq "Database_Parameter" -and $_.enginetype -eq "oracle_database"}
   } until (($networkprofile -and $parameterPRofile) -or $count -ge 10)
 
+  $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+  $database = $databases | where {$_.name -eq "TESTDB"}
+
+  write-log -message "Creating Oracle Snapshot for cloning" 
+
+  $operation = REST-ERA-CreateSnapshot -datagen $datagen -datavar $datavar -DBUUID $($database.timeMachineId)
+  do {
+    $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+    $count++
+    sleep 15
+  
+    write-log -message "Pending Operation completion cycle $count"
+  
+    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    if ($real.status){
+  
+      write-log -message "Snapshot is $($real.percentageComplete) % complete."
+  
+    } ## Beyond 5 % is success, status 4 is bad
+  } until ($count -ge 14 -or ($real -and $real.status -eq 4) -or [int]$real.percentageComplete -eq 100)
+
+  $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
+  $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
+
   $clonelooper= 0
   do{
     $clonelooper ++
-
-    write-log -message "Creating Oracle Snapshot for cloning. Attempt $($clonelooper)/5" -slacklevel 1
-
-    $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
-    $database = $databases | where {$_.name -eq "TESTDB"}
 
     write-log -message "Found Database with TimeMachine ID $($database.timeMachineId) Creating snapshot" -slacklevel 1
 
     write-log -message "Provision Oracle 2ND DBServer" -slacklevel 1
     sleep 60
-    #$clone = REST-ERA-Oracle-Clone -datagen $datagen -datavar $datavar -database $database -profiles $profiles -snapshot $snapshot
+    $clone = REST-ERA-Oracle-Clone -datagen $datagen -datavar $datavar -database $database -profiles $profiles -snapshot $snapshot -ERACluster $cluster
     #$count = 0
 
-    $clone = REST-ERA-Oracle-Provision -datagen $datagen -datavar $datavar -profiles $profiles -cluster $cluster
+    #$clone = REST-ERA-Oracle-Provision -datagen $datagen -datavar $datavar -profiles $profiles -cluster $cluster
     $count = 0
     write-log -message "Waiting for Server Provision process" -slacklevel 1
     do {
@@ -220,7 +243,7 @@ Function Wrap-Install-Era-Oracle {
         write-log -message "Clone is $($real.percentageComplete) % complete."
     
       } ## Beyond 5 % is success, status 4 is bad
-    } until ($count -ge 14 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -ge 30)
+    } until ($count -ge 14 -or ($real -and $real.status -eq 4) -or [int]$real.percentageComplete -ge 30)
   
     if ($real.percentageComplete -lt 15 ){
 

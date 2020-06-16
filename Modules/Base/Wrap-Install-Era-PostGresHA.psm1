@@ -28,10 +28,10 @@ Function Wrap-Install-Era-PostGresHA {
     $SoftwareProfile = ($profiles | where {$_.name -match "POSTGRES_.*_OOB" -and $_.name -match "HA" })
 
     
-    $operation = REST-ERA-Provision-HA-Database -postgresclustername "PostGHACL01" -postgresserverprefix "PostG-CN-$($datavar.pocname)" -Databasename "PostGHADB01" -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+    $operation = REST-ERA-Provision-HA-Database -postgresclustername "PostGHACL01" -postgresserverprefix "PostG-$($datavar.pocname)" -Databasename "PostGHADB01" -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
     sleep 60
     $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
-    $real = $result.operations | where {$_.id -eq $operation.operationid}  
+    $real = $result.operations | where {$_.systemTriggered -ne $true -and $_.entityName -eq "PostGHADB01"} | select -first 1
     $count = 0
     $retry = 0 
     do {
@@ -53,7 +53,7 @@ Function Wrap-Install-Era-PostGresHA {
       } 
       $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
       $count++
-      $real = $result.operations | where {$_.id -eq $operation.operationid}
+      $real = $result.operations | where {$_.systemTriggered -ne $true -and $_.entityName -eq "PostGHADB01"} | select -first 1
       sleep 60
   
       write-log -message "Pending Operation completion cycle $count"

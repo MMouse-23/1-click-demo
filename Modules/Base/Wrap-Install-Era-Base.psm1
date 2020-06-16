@@ -115,7 +115,7 @@ Function Wrap-Install-Era-Base {
       do{
         $maincounter++
         REST-ERA-RegisterClusterStage2 -datavar $datavar -datagen $datagen -ClusterUUID $cluster.id
-
+      
         write-log -message "Register PE Networkname" 
 
         REST-ERA-AttachPENetwork -datavar $datavar -datagen $datagen -ClusterUUID $cluster.id -Networkname $networkname
@@ -153,7 +153,7 @@ Function Wrap-Install-Era-Base {
 
         write-log -message "ERA is spinning up its internal logic, please standby" -slacklevel 1 
         write-log -message "ERA is becomming self aware."    
-        write-log -message "ERA Cyberdine systems model 130"
+        write-log -message "ERA Cyberdine systems model 110"
   
         $count = 0
         do {
@@ -239,7 +239,7 @@ Function Wrap-Install-Era-Base {
   write-log -message "Provsioning Maria and Postgres" -slacklevel 1
 
   $marianw = $profiles | where { $_.type -eq "Network" -and $_.EngineType -match "Maria"}
-  $SoftwareProfile = ($profiles | where {$_.name -match "MARIADB_.*_OOB"})
+  $SoftwareProfileID = ($profiles | where {$_.name -match "MARIADB_.*_OOB"}).id
 
   Write-log -message "Software Profile ID :"
   ($profiles | where {$_.name -match "MARIADB_.*_OOB"}).id
@@ -249,8 +249,9 @@ Function Wrap-Install-Era-Base {
 
   write-log -message "SoftwareProfile ID is $SoftwareProfileID"
 
-
-  if ($SoftwareProfile.ID -notmatch "[a-z]"){
+  $Profilecounter = 0
+  $SoftwareProfileID = ($profiles | where {$_.name -match "MARIADB_.*_OOB"}).id
+  if ($SoftwareProfileID -notmatch "[a-z]"){
     do {
       $Profilecounter ++
       $profiles = REST-ERA-GetProfiles -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin 
@@ -275,16 +276,22 @@ Function Wrap-Install-Era-Base {
     } until ($SoftwareProfileID -or $Profilecounter -ge 25)
   }
 
-  if ($SoftwareProfile.ID){
+  write-log -message "Creating MariaDB Server"
+
+  if ($SoftwareProfileID){
     try {
-      $operation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_MariaName -networkProfileId $marianw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname -debug $debug
+      $ServerCreateOperation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_MariaName -networkProfileId $marianw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
     } catch {
       $retryMaria = 1
     }
   } else {
+
     write-log -message "Software Profile ID is not created yet, very rarely this takes longer then normal, we will be back later." 
+
     $retryMaria = 1
   }
+
+  write-log -message "Waiting for Create MariaDB Server"
 
   $count = 0
   do {
@@ -295,7 +302,7 @@ Function Wrap-Install-Era-Base {
 
     write-log -message "Pending Operation completion cycle $count"
 
-    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    $real = $result.operations | where {$_.id -eq $ServerCreateOperation.operationid}
 
     if ($real.status){
 
@@ -303,7 +310,7 @@ Function Wrap-Install-Era-Base {
 
     }
     if ($real.status -eq 9 -or $real.status -eq 4){
-     $operation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_MariaName -networkProfileId $marianw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+     $ServerCreateOperation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_MariaName -networkProfileId $marianw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
     }
 
   } until ($count -ge 40 -or ($real -and $real.status -eq 5) -or $real.percentageComplete -eq 100)
@@ -311,7 +318,7 @@ Function Wrap-Install-Era-Base {
   $DBServers = REST-ERA-GetDBServers -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
   $DBServer = $DBservers | where {$_.name -eq $datagen.ERA_MariaName}
 
-  $operation = REST-ERA-ProvisionDatabase -databasename "MariaDB01" -DBServer $DBServer -networkProfileId $marianw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+  $operation = REST-ERA-ProvisionDatabase -databasename "MariaDB01" -DBServer $DBServer -networkProfileId $marianw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
 
   $count = 0
   do {
@@ -322,7 +329,7 @@ Function Wrap-Install-Era-Base {
 
     write-log -message "Pending Operation completion cycle $count"
 
-    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    $result.operations | where {$_.systemTriggered -ne $true -and $_.dbserverID -eq $dbserver.id}
 
     if ($real.status){
 
@@ -330,7 +337,7 @@ Function Wrap-Install-Era-Base {
 
     }
     if ($real.status -eq 9 -or $real.status -eq 4 ){
-     $operation = REST-ERA-ProvisionDatabase -databasename "MariaDB01" -DBServer $DBServer -networkProfileId $marianw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+     $operation = REST-ERA-ProvisionDatabase -databasename "MariaDB01" -DBServer $DBServer -networkProfileId $marianw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
     }
 
   } until ($count -ge 40 -or ($real -and $real.status -eq 5) -or $real.percentageComplete -eq 100)
@@ -341,8 +348,8 @@ Function Wrap-Install-Era-Base {
 
   $postgressnw= $profiles | where { $_.type -eq "Network" -and $_.EngineType -match "PostGres"}
   $Profilecounter = 0
-  $SoftwareProfile = ($profiles | where {$_.name -match "POSTGRES_.*_OOB" -and $_.name -notmatch "HA" })
-  if ($SoftwareProfile.ID -notmatch "[a-z]"){
+  $SoftwareProfileID = ($profiles | where {$_.name -match "POSTGRES_.*_OOB" -and $_.name -notmatch "HA" }).id
+  if ($SoftwareProfileID -notmatch "[a-z]"){
     do {
       $Profilecounter ++
       $profiles = REST-ERA-GetProfiles -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin 
@@ -362,7 +369,7 @@ Function Wrap-Install-Era-Base {
   }
   $dbParameterProfileId = ($profiles | where {$_.name -eq "DEFAULT_POSTGRES_PARAMS"}).id
 
-  $operation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_PostGName -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+  $operation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_PostGName -networkProfileId $postgressnw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
 
   $count = 0
   do {
@@ -382,7 +389,7 @@ Function Wrap-Install-Era-Base {
 
     }
     if ($real.status -eq 9){
-       $operation =REST-ERA-ProvisionServer -dbservername $datagen.ERA_PostGName -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+       $operation =REST-ERA-ProvisionServer -dbservername $datagen.ERA_PostGName -networkProfileId $postgressnw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
 
     }
   } until ($count -ge 35 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
@@ -390,51 +397,8 @@ Function Wrap-Install-Era-Base {
   $DBServers = REST-ERA-GetDBServers -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
   $DBServer = $DBservers | where {$_.name -eq $datagen.ERA_PostGName}
   
-  REST-ERA-ProvisionDatabase -databasename "PostGresDB01" -DBServer $DBServer -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+  REST-ERA-ProvisionDatabase -databasename "PostGresDB01" -DBServer $DBServer -networkProfileId $postgressnw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
   
-  write-log -message "We have to wait for PC patched state now."
-
-  try {
-    $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datavar.peadmin
-    $project = $projects.entities | where {$_.spec.name -match "Customer-B"}
-  } catch {
-
-    write-log -message "It seems PC is having a bad install day"
-    
-  }
-  if (!$project){
-
-    write-log -message "Project is not created yet, waiting for LCM to finish."
-    write-log -message "Waiting for the last steps in the core to finish."
-    write-log -message "Blueprints are required for the next step."
-
-    $count = 0
-    do {
-      $count++
-
-      if ($count % 4 -eq 0){
-
-        write-log -message "Sleeping $count out of 150"
-
-      }
-      try {
-        sleep 110
-        $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datavar.peadmin 
-        $project = $projects.entities | where {$_.spec.name -match "Customer-B"}
-      } catch {
-
-        if ($count % 4 -eq 0){
-
-          write-log -message "PC Install failure, waiting for PC install."
-
-        }
-      }
-    }until ($project -or $count -ge 250)
-  }
-  sleep 90
-  
-  write-log -message "Project UUID is $($project.metadata.uuid)"
-
   write-log -message "ERA Base Installation Finished" -slacklevel 1
 }
 Export-ModuleMember *

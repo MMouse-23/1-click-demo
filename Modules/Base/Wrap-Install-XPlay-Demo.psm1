@@ -31,7 +31,7 @@ Function Wrap-Install-XPlay-Demo{
   }    
   
   if ($datavar.hypervisor -match "nutanix|ahv"){
-    $imageimport = REST-Image-Import-PC -clpassword $datavar.PEPass -clusername $datagen.buildaccount -PCClusterIP $datagen.PCClusterIP
+    
     sleep 60
     $images = REST-Query-Images -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
     $image = $images.entities | where {$_.spec.name -match "Windows 2012"}
@@ -110,26 +110,18 @@ Function Wrap-Install-XPlay-Demo{
   write-log -message "Using Cluster $($cluster.metadata.uuid)"
   write-log -message "Using Subnet $($subnet.uuid)"
   write-log -message "Project UUID is $($project.metadata.uuid)"
-  write-log -message "Image UUID is $($image.metadata.uuid)"
+  write-log -message "Image UUID is $($image.metfadata.uuid)"
   write-log -message "Creating BluePrint"  -sev "Chapter"
 
-  $blueprint = REST-Import-Xplay-Blueprint -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\IIS Customer Horizontal Scale.json" -subnetUUID $($subnet.uuid) -projectUUID $($project.metadata.uuid) -ImageUUID $($image.metadata.uuid) -ClusterUUID $($cluster.metadata.uuid)
+  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\IIS Customer Horizontal Scale.json" -Project $project
 
-  write-log -message "Created BluePrint with $($blueprint.metadata.uuid)"
-  write-log -message "Getting newly created blueprint"
+  write-log -message "Retrieving Detailed BP"
 
   $blueprintdetail = REST-Query-DetailBP -datagen $datagen -datavar $datavar -uuid $($blueprint.metadata.uuid)
 
-  write-log -message "Modifying BP Export"
+  write-log -message "Updating XPlay Variables"
 
-  $sysprepObject = $blueprintdetail.spec.resources.credential_definition_list | where {$_.name -eq "SysprepCreds"}
-  $DomainObject = $blueprintdetail.spec.resources.credential_definition_list | where {$_.name -ne "SysprepCreds"}
-  
-  write-log -message "Were using $($sysprepObject.secret.attrs.secret_reference.uuid) for sysprep Creds"
-  write-log -message "Were using $($DomainObject.secret.attrs.secret_reference.uuid) for domain Creds"
-
-  $update = REST-Update-Xplay-Blueprint-Credential -datagen $datagen -datavar $datavar -bpobject $blueprintdetail -blueprintUUID $($blueprint.metadata.uuid) -sysprepObject $sysprepObject -DomainObject $DomainObject
-  $blueprintdetail = REST-Query-DetailBP -datagen $datagen -datavar $datavar -uuid $($blueprint.metadata.uuid)
+  $update = REST-Update-Xplay-Blueprint -datagen $datagen -datavar $datavar -BPObject $blueprintdetail -image $image -subnet $subnet
 
   if ($datavar.hypervisor -match "ESX|VMware"){
 

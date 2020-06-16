@@ -1414,6 +1414,61 @@ Function REST-Update-Project {
 } 
 
 
+Function REST-Update-Xplay-Blueprint {
+  Param (
+    [Object] $BPObject,
+    [object] $datagen,
+    [object] $datavar,
+    [object] $image,
+    [object] $subnet
+  )
+
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Prepping object"
+
+  $BPObject.psobject.properties.Remove('status')
+
+  write-log -message "Replacing Object Variables"
+
+  ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "SysprepCreds"}).secret.attrs.is_secret_modified = $true
+  ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "SysprepCreds"}).secret | add-member noteproperty value $datavar.pepass -force
+  ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "DomainCreds"}).secret.attrs.is_secret_modified = $true
+  ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "DomainCreds"}).secret | add-member noteproperty value $datavar.pepass -force
+  ($BPObject.spec.resources.substrate_definition_list[0]).create_spec.resources.disk_list[0].data_source_reference | add-member noteproperty uuid $image.metadata.uuid -force
+  $bpobject.spec.resources.substrate_definition_list | where {$_.Type -eq "AHV_VM"} | % {$_.create_spec.resources.nic_list.subnet_reference.uuid = $subnet.uuid}
+  $bpobject.spec.resources.substrate_definition_list | where {$_.Type -eq "AHV_VM"} | % {$_.create_spec.resources.nic_list.subnet_reference.name = $subnet.name}
+  (($BPObject.spec.resources.app_profile_list[0]).variable_list | where {$_.name -eq "NLBIP"}).value = $datagen.IISNLBIP
+  (($BPObject.spec.resources.app_profile_list[0]).variable_list | where {$_.name -eq "MachineName"}).value = "IIS-$($datavar.pocname)-01"
+  (($BPObject.spec.resources.app_profile_list[0]).variable_list | where {$_.name -eq "DomainFQDN"}).value = $datagen.Domainname
+
+
+  $URL = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($BPObject.metadata.uuid)"
+
+  $Json = $BPObject | ConvertTo-Json -depth 100
+  if ($debug -eq 2){
+    $Json | out-file "C:\temp\IIS.json"
+  }
+
+  write-log -message "Executing Import"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $Json -ContentType 'application/json' -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $Json -ContentType 'application/json' -headers $headers;
+  }
+
+  Return $task
+} 
+
+
+
 Function REST-Get-ACPs {
   Param (
     [string] $ClusterPC_IP,
@@ -1657,307 +1712,6 @@ Function REST-Query-DetailBP {
 } 
 
 
-Function REST-Import-Xplay-Blueprint {
-  Param (
-    [string] $BPfilepath,
-    [object] $datagen,
-    [object] $datavar,
-    [string] $subnetUUID,
-    [string] $ImageUUID,
-    [string] $ProjectUUID,
-    [string] $ClusterUUID
-  )
-
-  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
-  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
-  $headers = @{ Authorization = "Basic $encodedCredentials" }
-
-  write-log -message "Loading Json"
-
-  $jsonstring = get-content $BPfilepath
-
-  write-log -message "Replacing JSON String Variables"
-
-  $jsonstring = $jsonstring -replace "---NLBIP---", $($datagen.IISNLBIP)
-  $jsonstring = $jsonstring -replace "---Name---", "IIS@@{calm_second}@@@@{calm_minute}@@-$($datavar.pocname)"
-  $jsonstring = $jsonstring -replace "---DOMAINNAME---", $($datagen.Domainname)
-  $jsonstring = $jsonstring -replace "---SUBNETREF---", $($subnetUUID)
-  $jsonstring = $jsonstring -replace "---IMAGEREF---", $($ImageUUID)
-  $jsonstring = $jsonstring -replace "---PROJECTREF---", $($ProjectUUID)
-  $jsonstring = $jsonstring -replace "---CLUSTERREF---", $($ClusterUUID)
-  $jsonstring = $jsonstring -replace '"uuid": "---BLUEPRINTREF---",', ''
-  $jsonstring = $jsonstring -replace '"value": "---SYSPREPPASS---"', ''
-  $jsonstring = $jsonstring -replace '"is_secret_modified": true },', '"is_secret_modified": false }'
-
-  $URL = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/import_json"
-
-  if ($debug -eq 2){
-    $jsonstring | out-file "C:\temp\IIS.json"
-  }
-
-  write-log -message "Executing Import"
-
-  try{
-    $task = Invoke-RestMethod -Uri $URL -method "post" -body $jsonstring -ContentType 'application/json' -headers $headers;
-  } catch {
-    sleep 10
-
-    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
-
-    $task = Invoke-RestMethod -Uri $URL -method "post" -body $jsonstring -ContentType 'application/json' -headers $headers;
-  }
-
-  Return $task
-} 
-
-
-
-
-Function REST-Update-Xplay-Blueprint-Credential {
-  Param (
-    [object] $BPObject,
-    [string] $BlueprintUUID,
-    [object] $datagen,
-    [object] $sysprepObject,
-    [object] $DomainObject,
-    [object] $datavar
-  )
-
-  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
-  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
-  $headers = @{ Authorization = "Basic $encodedCredentials" }
-
-  write-log -message "Loading Json"
-
-$JSON = @"
-{
- "credential_definition_list":  [
-    {
-        "username":  "administrator",
-        "description":  "",
-        "uuid":  "$($sysprepObject.uuid)",
-        "secret":  {
-                       "attrs":  {
-                                     "is_secret_modified":  true,
-                                     "secret_reference":  {
-                                                              "uuid":  "$($sysprepObject.secret.attrs.secret_reference.uuid)"
-                                                          }
-                                 },
-                       "value": "$($datagen.SysprepPassword)"
-                   },
-        "editables":  {
-                          "secret":  true
-                      },
-        "type":  "PASSWORD",
-        "name":  "SysprepCreds"
-    },
-    {
-        "username":  "administrator",
-        "description":  "",
-        "uuid":  "$($DomainObject.uuid)",
-        "secret":  {
-                       "attrs":  {
-                                     "is_secret_modified":  true,
-                                     "secret_reference":  {
-                                                              "uuid":  "$($DomainObject.secret.attrs.secret_reference.uuid)"
-                                                          }
-                                 },
-                       "value": "$($datagen.SysprepPassword)"
-                   },
-        "editables":  {
-                          "secret":  true
-                      },
-        "type":  "PASSWORD",
-        "name":  "DomainCreds"
-    }
-  ],
-  "state":  "ACTIVE"
-}
-"@
-
-  $newBPObject = $BPObject
-  $newBPObject.psobject.members.remove("Status")
-  $newBPObject.spec.resources.credential_definition_list = ($JSON | convertfrom-json).credential_definition_list
-
-  $json = $newBPObject | convertto-json -depth 100
-
-  $URL = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($BlueprintUUID)"
-
-  if ($debug -eq 2){
-    $json | out-file "C:\temp\BPUpdate2.json"
-  }
-  write-log -message "Updating Import with Creds for $BlueprintUUID"
-
-  try{
-    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json -ContentType 'application/json' -headers $headers
-  } catch {
-    sleep 10
-
-    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
-
-    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json -ContentType 'application/json' -headers $headers
-    Return $RespErr
-  }
-
-  Return $task
-} 
-
-Function REST-Update-Xplay-Blueprint-Image {
-  Param (
-    [object] $BPObject,
-    [object] $datagen,
-    [object] $Account,
-    [object] $datavar,
-    [object] $winimage
-  )
-
-  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
-  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
-  $headers = @{ Authorization = "Basic $encodedCredentials" }
-
-  write-log -message "Loading Json"
-
-$JSON2 = @"
-{
-  "substrate_definition_list":  [{
-        "variable_list": [],
-        "action_list": [],
-        "name": "IIS Application X",
-        "editables": {
-          "create_spec": {
-            "resources": {
-              "template_nic_list": {},
-              "guest_customization": {
-                "windows_data": {
-                  "dns_primary": true,
-                  "dns_secondary": true,
-                  "network_settings": {
-                    "0": {
-                      "ip": true,
-                      "gateway_default": true,
-                      "subnet_mask": true
-                    }
-                  }
-                }
-              },
-              "nic_list": {},
-              "controller_list": {},
-              "template_controller_list": {},
-              "template_disk_list": {}
-            }
-          }
-        },
-        "os_type": "Windows",
-        "type": "VMWARE_VM",
-        "readiness_probe": {
-          "connection_type": "POWERSHELL",
-          "retries": "5",
-          "connection_port": 5985,
-          "address": "@@{platform.ipAddressList[0]}@@",
-          "delay_secs": "400",
-          "disable_readiness_probe": false
-        },
-        "uuid": "$($BPObject.spec.resources.substrate_definition_list.uuid)",
-        "description": "",
-        "create_spec": {
-          "name": "IIS@@{calm_second}@@@@{calm_minute}@@-$($datavar.pocname)",
-          "storage_pod": "OS",
-          "drs_mode": true,
-          "cluster": "$($datavar.pocname)",
-          "clone_is_template": false,
-          "template": "$($winimage.config.instanceuuid)",
-          "type": "PROVISION_VMWARE_VM",
-          "resources": {
-            "disk_list": [],
-            "controller_list": [],
-            "memory_size_mib": 8192,
-            "num_sockets": 4,
-            "guest_customization": {
-              "customization_type": "GUEST_OS_WINDOWS",
-              "linux_data": null,
-              "type": "",
-              "windows_data": {
-                "domain": "$($datagen.domainname)",
-                "dns_search_path": [],
-                "domain_user": "administrator",
-                "dns_tertiary": "",
-                "product_id": "",
-                "dns_primary": "",
-                "workgroup": "TEMP",
-                "computer_name": "vm-@@{calm_array_index}@@-@@{calm_time}@@",
-                "command_list": ["cmd.exe /c netsh advfirewall set allprofiles state off", "powershell -Command {Set-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\' -Name \"fDenyTSConnections\" -Value 0}", "powershell -Command &quot;Enable-PSRemoting -Force", "cmd.exe /c winrm quickconfig -q", "cmd.exe /c winrm quickconfig -transport:http", "cmd.exe /c winrm set winrm/config @{MaxTimeoutms=\"1800000\"}", "cmd.exe /c winrm set winrm/config/winrs @{MaxMemoryPerShellMB=\"300\"}", "cmd.exe /c winrm set winrm/config/service @{AllowUnencrypted=\"true\"}", ""],
-                "auto_logon": true,
-                "network_settings": [{
-                  "is_dhcp": true,
-                  "gateway_default": "",
-                  "name": "",
-                  "ip": "",
-                  "subnet_mask": "",
-                  "type": "",
-                  "gateway_alternate": ""
-                }],
-                "domain_password": {
-                  "attrs": {
-                    "is_secret_modified": true,
-                    "secret_reference": {}
-                  },
-                  "value": "$($Datagen.syspreppassword)"
-                },
-                "organization_name": "Nutanix",
-                "login_count": 99,
-                "is_domain": false,
-                "timezone": "110",
-                "type": "",
-                "full_name": "Nutanix",
-                "password": {
-                  "attrs": {
-                    "is_secret_modified": true,
-                    "secret_reference": {}
-                  },
-                  "value": "$($Datagen.syspreppassword)"
-                },
-                "dns_secondary": "$($datagen.dc2ip)"
-              }
-            },
-            "num_vcpus_per_socket": 1,
-            "account_uuid": "$($Account.metadata.uuid)",
-            "power_state": "poweron",
-            "type": ""
-          }
-        }
-      }
-    ]
-  }
-"@
-
-  $newBPObject = $BPObject
-  $newBPObject.psobject.members.remove("Status")
-  #$newBPObject.spec.resources.psobject.members.remove("substrate_definition_list")
-  $object =  ($JSON2 | convertfrom-json)
-  $newBPObject.spec.resources.substrate_definition_list = $object.substrate_definition_list
-
-  $json1 = $newBPObject | convertto-json -depth 100
-
-  $URL = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($BPObject.metadata.uuid)"
-
-  if ($debug -eq 2){
-    $json1 | out-file "C:\temp\BPUpdate2.json"
-  }
-  write-log -message "Updating Image with Creds for $($BPObject.metadata.uuid)"
-
-  try{
-    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json1 -ContentType 'application/json' -headers $headers
-  } catch {
-    sleep 10
-
-    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
-
-    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json1 -ContentType 'application/json' -headers $headers
-    Return $RespErr
-  }
-
-  Return $task
-} 
 
 Function REST-Update-Splunk-Blueprint-Image {
   Param (

@@ -72,8 +72,8 @@ Function Wrap-Install-Era-MYSQL {
 
   } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
 
-  $DBServers = REST-ERA-GetDBServers -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
-  $DBServer = $DBservers | where {$_.name -eq $datagen.ERA_MySQLName}
+  $DBservers = REST-ERA-GetDBServers -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
+  $DBServer = $DBservers | where {$_.name -eq $datagen.ERA_MySQLName}   
 
   $operation = REST-ERA-ProvisionDatabase -databasename "MYSQLDB01" -DBServer $DBServer -networkProfileId $MySQLNW.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mysql_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
  
@@ -86,7 +86,7 @@ Function Wrap-Install-Era-MYSQL {
 
     write-log -message "Pending Operation completion cycle $count"
 
-    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    $real = $result.operations | where {$_.systemTriggered -ne $true -and $_.dbserverID -eq $dbserver.id}
 
     if ($real.status){
 
