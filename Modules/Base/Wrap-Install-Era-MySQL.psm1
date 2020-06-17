@@ -97,7 +97,55 @@ Function Wrap-Install-Era-MYSQL {
      $operation = REST-ERA-ProvisionServer -dbservername $datagen.ERA_MariaName -networkProfileId $marianw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "mariadb_database" -port "3306" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
     }
 
+  } until ($count -ge 40 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
+  
+  write-log -message "Getting databases"
+
+  $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+  $database = $databases | where {$_.name -eq "MYSQLDB01"}  
+
+  write-log -message "Creating MySQL Snapshot"
+
+  $operation = REST-ERA-CreateSnapshot -datagen $datagen -datavar $datavar -DBUUID $($database.timeMachineId)
+
+  $count = 0
+  do {
+    $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+    $count++
+    sleep 5
+    if ($count % 4 -eq 0){
+  
+      write-log -message "Pending Operation completion cycle $count"
+  
+    }
+    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    if ($real.status){
+      if ($count % 4 -eq 0){
+  
+        write-log -message "Snapshot is $($real.percentageComplete) % complete."
+  
+      } 
+    }
   } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
+
+  write-log -message "Using Database ID $($database.id), Getting Snapshots" 
+
+  $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
+  $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
+
+  write-log -message "Creating MYSQL Clone" 
+
+  REST-ERA-Generic-Clone `
+    -datagen $datagen `
+    -datavar $datavar `
+    -snapshot $snapshot `
+    -profiles $profiles `
+    -EraCluster $cluster `
+    -database $database `
+    -DatabaseType "mysql_database" `
+    -NewDatabaseName "MYSQLDB02" `
+    -dbparamID $dbParameterProfileId `
+    -NewVMName "MySQL2-$($datavar.pocname)"
   
   write-log -message "MySQL ERA Installation Finished"  -slacklevel 1 
 }

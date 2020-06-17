@@ -1925,6 +1925,101 @@ Function REST-Update-XenDesktopBP {
   ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "Domain_Service_Account"}).secret | add-member noteproperty value $datavar.pepass -force
   ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "Domain_Service_Account"}).username = "$($netbios)\svc_HIX"
 
+$DomainPromptPy = @"
+api_url = 'https://localhost:9440/PrismGateway/services/rest/v1/authconfig'
+headers = {'Content-Type': 'application/json',  'Accept':'application/json'}
+#headers = {'Content-Type': 'application/json',  'Accept':'application/json', 'Authorization': 'Bearer {}'.format(jwt)}
+r = urlreq(api_url, verb='GET', auth="BASIC", user='admin', passwd='$($datavar.pepass)', headers=headers, verify=False)
+#r = urlreq(api_url, verb='GET', headers=headers, verify=False)
+if r.ok:
+    resp = json.loads(r.content)
+    #pprint(resp)
+else:
+    print "Post request failed", r.content
+    exit(1)
+authProv = []
+for i in resp['directoryList']:
+    authProv.append(str(i['domain']))
+authProv.append("Create New")
+#print (authProv)
+print(','.join(authProv))
+"@ 
+
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | Where {$_.name -eq "WindowsDomain"}).options.attrs.script = $DomainPromptPy
+
+$ContainerPy = @"
+api_url = 'https://$($Datavar.PEClusterIP):9440/PrismGateway/services/rest/v2.0/storage_containers'
+headers = {'Content-Type': 'application/json',  'Accept':'application/json'}
+#headers = {'Content-Type': 'application/json',  'Accept':'application/json', 'Authorization': 'Bearer {}'.format(jwt)}
+r = urlreq(api_url, verb='GET', auth="BASIC", user='admin', passwd='$($Datavar.PEPass)', headers=headers, verify=False)
+#r = urlreq(api_url, verb='POST', params=json.dumps(payload), headers=headers, verify=False)
+if r.ok:
+    resp = json.loads(r.content)
+    #pprint(resp)
+else:
+    print "Post request failed", r.content
+    exit(1)
+ContainerNames = []
+for i in resp['entities']:
+    ContainerNames.append(str(i['name']))
+ContainerNames.append("Create New")
+#print (authProv)
+print(','.join(ContainerNames))
+"@ 
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | Where {$_.name -eq "StorageContainerName"}).options.attrs.script = $ContainerPy
+
+$NetworkPy = @"
+api_url = 'https://$($Datavar.PEClusterIP):9440/api/nutanix/v3/subnets/list'
+headers = {'Content-Type': 'application/json',  'Accept':'application/json'}
+#headers = {'Content-Type': 'application/json',  'Accept':'application/json', 'Authorization': 'Bearer {}'.format(jwt)}
+
+payload = {
+  "kind": "subnet",
+  "offset": 0,
+  "length": 999
+}
+
+r = urlreq(api_url, verb='POST', auth="BASIC", user='admin', passwd='$($Datavar.PEPass)', headers=headers, params=json.dumps(payload), verify=False)
+
+
+#r = urlreq(api_url, verb='POST', params=json.dumps(payload), headers=headers, verify=False)
+if r.ok:
+    resp = json.loads(r.content)
+    #pprint(resp)
+else:
+    print "Post request failed", r.content
+    exit(1)
+VLanNames = []
+VLanNames.append("AutoSelect")
+for i in resp['entities']:
+    VLanNames.append(str(i['spec']['name']))
+
+print(','.join(VLanNames))
+"@ 
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | Where {$_.name -eq "VLanName"}).options.attrs.script = $NetworkPy
+
+$FileServerPy = @"
+api_url = 'https://10.42.30.37:9440/PrismGateway/services/rest/v1/vfilers'
+headers = {'Content-Type': 'application/json',  'Accept':'application/json'}
+#headers = {'Content-Type': 'application/json',  'Accept':'application/json', 'Authorization': 'Bearer {}'.format(jwt)}
+r = urlreq(api_url, verb='GET', auth="BASIC", user='admin', passwd='nx2Tech841!', headers=headers, verify=False)
+#r = urlreq(api_url, verb='POST', params=json.dumps(payload), headers=headers, verify=False)
+if r.ok:
+    resp = json.loads(r.content)
+    #pprint(resp)
+else:
+    print "Post request failed", r.content
+    exit(1)
+authProv = []
+for i in resp['entities']:
+    authProv.append(str(i['name']))
+authProv.append("Create New")
+#print (authProv)
+print(','.join(authProv))
+"@ 
+  ($bpobject.spec.resources.app_profile_list[0].variable_list | Where {$_.name -eq "FileServer"}).options.attrs.script = $FileServerPy
+
+
   write-log -message "PE / PC Pass"
 
   ($bpobject.spec.resources.app_profile_list[0].variable_list | where {$_.name -eq "Z_PCPassClearText" }).value = $datavar.pepass

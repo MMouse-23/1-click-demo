@@ -157,10 +157,6 @@ Function Wrap-Install-Era-Oracle {
 
   $operation = REST-ERA-Oracle-SW-ProfileCreate -datagen $datagen -datavar $datavar -database $database
 
-  
-
-  
-
   write-log -message "Creating Network Oracle Profile"
 
   $OracleProfile = REST-ERA-Oracle-NW-ProfileCreate -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin -Networkname $datagen.Nw1name
@@ -192,71 +188,56 @@ Function Wrap-Install-Era-Oracle {
     $parameterPRofile = $profiles | where {$_.type -eq "Database_Parameter" -and $_.enginetype -eq "oracle_database"}
   } until (($networkprofile -and $parameterPRofile) -or $count -ge 10)
 
-  $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
-  $database = $databases | where {$_.name -eq "TESTDB"}
 
-  write-log -message "Creating Oracle Snapshot for cloning" 
+
+  write-log -message "Getting databases"
+
+  $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+  $database = $databases | where {$_.name -eq "TESTDB"}  
+
+  write-log -message "Creating Oracle Snapshot"
 
   $operation = REST-ERA-CreateSnapshot -datagen $datagen -datavar $datavar -DBUUID $($database.timeMachineId)
+
+  $count = 0
   do {
     $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
     $count++
-    sleep 15
+    sleep 5
+    if ($count % 4 -eq 0){
   
-    write-log -message "Pending Operation completion cycle $count"
+      write-log -message "Pending Operation completion cycle $count"
   
+    }
     $real = $result.operations | where {$_.id -eq $operation.operationid}
     if ($real.status){
+      if ($count % 4 -eq 0){
   
-      write-log -message "Snapshot is $($real.percentageComplete) % complete."
+        write-log -message "Snapshot is $($real.percentageComplete) % complete."
   
-    } ## Beyond 5 % is success, status 4 is bad
-  } until ($count -ge 14 -or ($real -and $real.status -eq 4) -or [int]$real.percentageComplete -eq 100)
+      } 
+    }
+  } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
+
+  write-log -message "Using Database ID $($database.id), Getting Snapshots" 
 
   $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
   $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
 
-  $clonelooper= 0
-  do{
-    $clonelooper ++
+  write-log -message "Creating Postgres Clone" 
 
-    write-log -message "Found Database with TimeMachine ID $($database.timeMachineId) Creating snapshot" -slacklevel 1
-
-    write-log -message "Provision Oracle 2ND DBServer" -slacklevel 1
-    sleep 60
-    $clone = REST-ERA-Oracle-Clone -datagen $datagen -datavar $datavar -database $database -profiles $profiles -snapshot $snapshot -ERACluster $cluster
-    #$count = 0
-
-    #$clone = REST-ERA-Oracle-Provision -datagen $datagen -datavar $datavar -profiles $profiles -cluster $cluster
-    $count = 0
-    write-log -message "Waiting for Server Provision process" -slacklevel 1
-    do {
-      $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
-      $count++
-      sleep 60
-    
-      write-log -message "Pending Operation completion cycle $count"
-    
-      $real = $result.operations | where {$_.id -eq $clone.operationid}
-      if ($real.status){
-    
-        write-log -message "Clone is $($real.percentageComplete) % complete."
-    
-      } ## Beyond 5 % is success, status 4 is bad
-    } until ($count -ge 14 -or ($real -and $real.status -eq 4) -or [int]$real.percentageComplete -ge 30)
-  
-    if ($real.percentageComplete -lt 15 ){
-
-
-      $clonecompleted = $false
-
-    } else {
-  
-      $clonecompleted = $true
-  
-    }
-  } until ($clonecompleted -eq $true -or $clonelooper -ge 4)
-    write-log -message "ERA Oracle Installation Finished" -slacklevel 1
+  REST-ERA-Oracle-Clone `
+    -datagen $datagen `
+    -datavar $datavar `
+    -snapshot $snapshot `
+    -profiles $profiles `
+    -EraCluster $cluster `
+    -database $database `
+    -DatabaseType "oracle_database" `
+    -NewDatabaseName "Oracle_Clone" `
+    -dbparamID $parameterPRofile.id `
+    -NewVMName "Oracle2-$($datavar.pocname)" `
+    -NewSid "TESTDEV"
   
 }
 Export-ModuleMember *

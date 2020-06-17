@@ -55,57 +55,57 @@ Function Wait-TaskAnalytics{
   param (
     $datavar,
     $datagen
-    )
-    do {
-      try{
+  )
+  do {
+    try{
 
-        $counter++
-        write-log -message "Wait for File Server Analytics Install Cycle $counter out of 25(minutes)."
-    
-        $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerProtect"}
-        if (!$FileServer){
-          write-log -message "Task does not exist yet"
-          do {
-            $counterinstall++
-            sleep 60
-            $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerProtect"}
-          } until ($FileServer -or $counterinstall -ge 5)
-        }
-        $Inventorycount = 0
-        [array]$Results = $null
-        foreach ($item in $FileServer){
-          if ( $item.percentage_complete -eq 100) {
-            $Results += "Done"
-     
-            write-log -message "Analytics Install $($item.uuid) is completed."
-          } elseif ($item.percentage_complete -ne 100){
-            $Inventorycount ++
-    
-            write-log -message "Analytics Install $($item.uuid) is still running."
-            write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
-    
-            $Results += "BUSY"
-    
-          }
-        }
-        if ($Results -notcontains "BUSY" -or !$FileServer){
-
-          write-log -message "Analytics Install is done."
-     
-          $InstallCheck = "Success"
-     
-        } else{
+      $counter++
+      write-log -message "Wait for File Server Analytics Install Cycle $counter out of 25(minutes)."
+  
+      $tasks = REST-Get-AOS-LegacyTask -datagen $datagen -datavar $datavar
+      $FileServer = $tasks.entities | where {$_.operation -eq "DeployFileAnalytics"} | select -first 1
+      if (!$FileServer){
+        write-log -message "Task does not exist yet"
+        do {
+          $counterinstall++
           sleep 60
-        }
-    
-      }catch{
-        write-log -message "Error caught in loop."
+          $tasks = REST-Get-AOS-LegacyTask -datagen $datagen -datavar $datavar
+          $FileServer = $tasks.entities | where {$_.operation -eq "DeployFileAnalytics"} | select -first 1
+        } until ($FileServer -or $counterinstall -ge 5)
       }
-    } until ($InstallCheck -eq "Success" -or $counter -ge 40)
-    return $item.status
-  }
+      $Inventorycount = 0
+      [array]$Results = $null
+      foreach ($item in $FileServer){
+        if ( $item.percentageCompleted -eq 100) {
+          $Results += "Done"
+   
+          write-log -message "Analytics Install $($item.uuid) is completed."
+        } elseif ($item.percentageCompleted -ne 100){
+          $Inventorycount ++
+  
+          write-log -message "Analytics Install $($item.id) is still running."
+          write-log -message "We found 1 task $($item.status) and is $($item.percentageCompleted) % complete"
+  
+          $Results += "BUSY"
+  
+        }
+      }
+      if ($Results -notcontains "BUSY" -or !$FileServer){
+
+        write-log -message "Analytics Install is done."
+   
+        $InstallCheck = "Success"
+   
+      } else{
+        sleep 60
+      }
+  
+    }catch{
+      write-log -message "Error caught in loop."
+    }
+  } until ($InstallCheck -eq "Success" -or $counter -ge 40)
+  return $item.status
+}
 
 
 function Get-FunctionName {

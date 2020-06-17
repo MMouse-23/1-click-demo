@@ -1845,7 +1845,10 @@ Function REST-Get-AOS-LegacyTask {
   #output suppressed for task loopers
   #write-log -message "Executing LCM List Query"
 
-  $URL = "https://$($clusterip):9440/PrismGateway/services/rest/v1/progress_monitors"
+  $date = (get-date).addminutes(1)
+  $Epochsearch = (Get-Date -Date $date -UFormat '%s').Replace((Get-Culture).NumberFormat.NumberDecimalSeparator,'') + "0"
+
+  $URL = "https://$($clusterip):9440/PrismGateway/services/rest/v1/progress_monitors?_=$($Epochsearch)&count=500&page=1&hasSubTaskDetail=true&filterCriteria=internal_task%3D%3Dfalse%3B(display_failures%3D%3D%5Bno_val%5D%2Cdisplay_failures%3D%3Dtrue%2C(display_failures%3D%3Dfalse%3Bstatus!%3DkFailed))"
 
    # write-log -message "Using URL $URL"
 

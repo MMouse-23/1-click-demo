@@ -512,6 +512,213 @@ Function REST-ERA-ProvisionServer {
 
 
 
+Function REST-ERA-MSSQL-AAG-Cluster {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [object] $database,
+    [object] $snapshot,
+    [object] $profiles,
+    [object] $EraCluster,
+    [string] $ClusterName,
+    [string] $NewDatabaseName,
+    [string] $NewInstanceName,
+    [string] $nodePrefix
+  )
+
+  write-log -message "Debug level is $($debug)";
+  write-log -message "Building Credential object"
+  $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+  $networkprofile = $profiles | where {$_.type -eq "network" -and $_.enginetype -eq "sqlserver_database" -and $_.name -eq "MSSQL_ERA_Managed"}
+  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"}
+  $domainProfile  = $profiles | where {$_.type -eq "WindowsDomain"}
+
+  write-log -message "Building MSSQL AAG from Just one single box:)"
+  write-log -message "Using $($Profiles.count) Profiles"
+  write-log -message "Using $($networkprofile.ID) as Network Profile"
+  write-log -message "Using $($computeprofile.ID) as Compute Profile"
+  write-log -message "Using $($domainProfile.ID) as Domain Profile"
+  write-log -message "Using $($database.timeMachineId) as TimeMachine Source ID"
+  write-log -message "Using $($snapshot.id) as Snapshot Source ID"
+  write-log -message "Using $($NewDatabaseName) as Database Name"
+  write-log -message "Using $($NewInstanceName) as Instance Name"
+  write-log -message "Creating new database Cluster MSSQL_AAG-$($datavar.pocname)"
+
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/tms/$($database.timeMachineId)/clones"
+  $JSON = @"
+
+{
+  "name": "$($databasename)",
+  "description": "1CD AAG Cluster!",
+  "createDbserver": true,
+  "clustered": true,
+  "nxClusterId": "$($ERACluster.id)",
+  "sshPublicKey": null,
+  "dbserverId": null,
+  "dbserverClusterId": null,
+  "dbserverLogicalClusterId": null,
+  "timeMachineId": "$($database.timeMachineId)",
+  "snapshotId": "$($snapshot.id)",
+  "userPitrTimestamp": null,
+  "newDbServerTimeZone": "Central Europe Standard Time",
+  "timeZone": "Europe/Amsterdam",
+  "latestSnapshot": false,
+  "nodeCount": 2,
+  "nodes": [
+    {
+      "vmName": "$($nodePrefix)-1",
+      "properties": [
+        {
+          "name": "role",
+          "value": "Primary"
+        },
+        {
+          "name": "failover_mode",
+          "value": "Automatic"
+        },
+        {
+          "name": "availability_mode",
+          "value": "Synchronous"
+        },
+        {
+          "name": "backup_priority",
+          "value": 50
+        },
+        {
+          "name": "readable_secondary",
+          "value": "Yes"
+        }
+      ],
+      "computeProfileId": "$($computeprofile.ID)",
+      "networkProfileId": "$($networkprofile.ID)",
+      "newDbServerTimeZone": "Central Europe Standard Time",
+      "nxClusterId": "$($ERACluster.id)"
+    },
+    {
+      "vmName": "$($nodePrefix)-2",
+      "properties": [
+        {
+          "name": "role",
+          "value": "Secondary"
+        },
+        {
+          "name": "failover_mode",
+          "value": "Automatic"
+        },
+        {
+          "name": "availability_mode",
+          "value": "Synchronous"
+        },
+        {
+          "name": "backup_priority",
+          "value": 50
+        },
+        {
+          "name": "readable_secondary",
+          "value": "Yes"
+        }
+      ],
+      "computeProfileId": "$($computeprofile.ID)",
+      "networkProfileId": "$($networkprofile.ID)",
+      "newDbServerTimeZone": "Central Europe Standard Time",
+      "nxClusterId": "$($ERACluster.id)"
+    }
+  ],
+  "tags": [],
+  "actionArguments": [
+    {
+      "name": "vm_name",
+      "value": "$($nodePrefix)"
+    },
+    {
+      "name": "sql_user_name",
+      "value": "sa"
+    },
+    {
+      "name": "vm_win_lang_settings",
+      "value": "en-US"
+    },
+    {
+      "name": "authentication_mode",
+      "value": "windows"
+    },
+    {
+      "name": "drives_to_mountpoints",
+      "value": false
+    },
+    {
+      "name": "database_name",
+      "value": "$($NEWdatabasename)"
+    },
+    {
+      "name": "instance_name",
+      "value": "$($NewInstanceName)"
+    },
+    {
+      "name": "cluster_db",
+      "value": "true"
+    },
+    {
+      "name": "cluster_name",
+      "value": "$($clustername)"
+    },
+    {
+      "name": "aag_name",
+      "value": "1CD_AAG"
+    },
+    {
+      "name": "cluster_description",
+      "value": "1CD AAG Cluster"
+    },
+    {
+      "name": "windows_domain_profile_id",
+      "value": "$($domainProfile.ID)"
+    },
+    {
+      "name": "vm_dbserver_admin_password",
+      "value": "$($datavar.PEPass)"
+    },
+    {
+      "name": "sql_service_startup_account",
+      "value": "$($datagen.domainname)\\administrator"
+    },
+    {
+      "name": "vm_dbserver_user",
+      "value": "$($datagen.domainname)\\administrator"
+    },
+    {
+      "name": "sql_service_startup_account_password",
+      "value": "$($datavar.PEPass)"
+    }
+  ],
+  "networkProfileId": "$($networkprofile.ID)",
+  "computeProfileId": "$($computeprofile.ID)"
+}
+"@
+  if ($debug -ge 2){
+    $json | out-file c:\temp\MSSQLClone.json
+  } 
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+  } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    sleep 30
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+  }
+
+  Return $task
+} 
+
+
+
 
 
 Function REST-ERA-AcceptEULA {
@@ -737,6 +944,113 @@ Function REST-ERA-MySQLNWProfileCreate {
   Return $task
 } 
 
+
+Function REST-ERA-Generic-Clone {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [object] $database,
+    [object] $snapshot,
+    [object] $profiles,
+    [object] $EraCluster,
+    [string] $NewDatabaseName,
+    [string] $NewVMName,
+    [string] $databaseType,
+    [string] $dbparamID
+  )
+
+  write-log -message "Debug level is $($debug)";
+  write-log -message "Building Credential object"
+  $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+  $networkprofile = $profiles | where {$_.type -eq "network" -and $_.enginetype -eq $databaseType}
+  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"}
+  $domainProfile  = $profiles | where {$_.type -eq "WindowsDomain"}
+
+  write-log -message "Building ERA Clone"
+  write-log -message "Using $($Profiles.count) Profiles"
+  write-log -message "Using $($networkprofile.ID) as Network Profile"
+  write-log -message "Using $($computeprofile.ID) as Compute Profile"
+  write-log -message "Using $($domainProfile.ID) as Domain Profile"
+  write-log -message "Using $($database.timeMachineId) as TimeMachine Source ID"
+  write-log -message "Using $($dbparamID) database parameter ID"
+  write-log -message "Using $($snapshot.id) as Snapshot Source ID"
+
+  write-log -message "Creating new database server based on clone based of $($database.name)" 
+
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/tms/$($database.timeMachineId)/clones"
+  $JSON = @"
+{
+  "name": "$($NewDatabaseName)",
+  "description": "",
+  "createDbserver": true,
+  "clustered": false,
+  "nxClusterId": "$($EraCluster.id)",
+  "sshPublicKey": "$($datagen.PublicKey)",
+  "dbserverId": null,
+  "dbserverClusterId": null,
+  "dbserverLogicalClusterId": null,
+  "timeMachineId": "$($database.timeMachineId)",
+  "snapshotId": "$($snapshot.id)",
+  "userPitrTimestamp": null,
+  "newDbServerTimeZone": "Europe/Amsterdam",
+  "timeZone": "Europe/Amsterdam",
+  "latestSnapshot": false,
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "vmName": "$($NewVMName)",
+      "computeProfileId": "$($computeprofile.ID)",
+      "networkProfileId": "$($networkprofile.ID)",
+      "newDbServerTimeZone": null,
+      "nxClusterId": "$($EraCluster.id)",
+      "properties": []
+    }
+  ],
+  "tags": [],
+  "actionArguments": [
+    {
+      "name": "vm_name",
+      "value": "$($NewVMName)"
+    },
+    {
+      "name": "dbserver_description",
+      "value": "1CD Database Instance Clone"
+    },
+    {
+      "name": "db_password",
+      "value": "$($datavar.pepass)"
+    }
+  ],
+  "computeProfileId": "$($computeprofile.ID)",
+  "networkProfileId": "$($networkprofile.ID)",
+  "databaseParameterProfileId": "$($dbparamID)"
+}
+
+"@
+  if ($debug -ge 2){
+    $json | out-file c:\temp\MSSQLClone.json
+  } 
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+  } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    sleep 30
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+  }
+
+  Return $task
+} 
+
+
+
 Function REST-ERA-PostGresNWProfileCreate {
   Param (
     [string] $EraIP,
@@ -926,6 +1240,58 @@ Function REST-ERA-Oracle-NW-ProfileCreate {
   Return $task
 } 
 
+Function REST-ERA-MSSQL-ERA-NW-ProfileCreate {
+  Param (
+    [string] $EraIP,
+    [string] $clpassword,
+    [string] $clusername,
+    [string] $NetworkName
+  )
+
+  write-log -message "Debug level is $($debug)";
+  write-log -message "Building Credential object"
+  $credPair = "$($clusername):$($clpassword)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Building MSSQL Network Creation JSON"
+
+  $URL = "https://$($EraIP):8443/era/v0.8/profiles"
+  $JSON = @"
+{
+  "engineType": "sqlserver_database",
+  "type": "Network",
+  "topology": "ALL",
+  "dbVersion": "ALL",
+  "systemProfile": false,
+  "properties": [
+    {
+      "name": "VLAN_NAME",
+      "value": "$($NetworkName)",
+      "secure": false,
+      "description": "Name of the vLAN"
+    }
+  ],
+  "name": "MSSQL_ERA_Managed",
+  "description": "MSSQL_ERA_Managed"
+}
+"@
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+  } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    sleep 10
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+  }
+
+  Return $task
+} 
 
 Function REST-ERA-MSSQL-NW-ProfileCreate {
   Param (
@@ -1205,9 +1571,6 @@ Function REST-ERA-Create-WindowsDomain-Profile {
   Return $task
 } 
 
-
-
-
 Function REST-ERA-Oracle-Clone {
   Param (
     [object] $datagen,
@@ -1215,7 +1578,12 @@ Function REST-ERA-Oracle-Clone {
     [object] $database,
     [object] $snapshot,
     [object] $profiles,
-    [object] $eracluster
+    [object] $EraCluster,
+    [string] $NewDatabaseName,
+    [string] $NewVMName,
+    [string] $databaseType,
+    [string] $dbparamID,
+    [string] $newSid
   )
 
   write-log -message "Debug level is $($debug)";
@@ -1223,27 +1591,29 @@ Function REST-ERA-Oracle-Clone {
   $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
   $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
   $headers = @{ Authorization = "Basic $encodedCredentials" }
-  $networkprofile = $profiles | where {$_.type -eq "network" -and $_.enginetype -eq "oracle_database"}
-  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "DEFAULT"} 
-  $parameterPRofile = $profiles | where {$_.type -eq "Database_Parameter" -and $_.enginetype -eq "oracle_database"}
+  $networkprofile = $profiles | where {$_.type -eq "network" -and $_.enginetype -eq $databaseType}
+  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"}
+  $domainProfile  = $profiles | where {$_.type -eq "WindowsDomain"}
 
-  write-log -message "Building Oracle Clone JSON"
+  write-log -message "Building ERA Clone"
   write-log -message "Using $($Profiles.count) Profiles"
   write-log -message "Using $($networkprofile.ID) as Network Profile"
   write-log -message "Using $($computeprofile.ID) as Compute Profile"
+  write-log -message "Using $($domainProfile.ID) as Domain Profile"
   write-log -message "Using $($database.timeMachineId) as TimeMachine Source ID"
+  write-log -message "Using $($dbparamID) database parameter ID"
   write-log -message "Using $($snapshot.id) as Snapshot Source ID"
-  write-log -message "Creating new Database TESTDB_DEV + Database server Oracle2-$($datavar.pocname)"
-  write-log -message "Using ParameterProfileID $($parameterPRofile.ID)"
+
+  write-log -message "Creating new database server based on clone based of $($database.name)" 
 
   $URL = "https://$($datagen.ERA1IP)/era/v0.9/tms/$($database.timeMachineId)/clones"
   $JSON = @"
 {
-  "name": "TESTDB_DEV",
-  "description": "1CD Oracle Clone",
+  "name": "$($NewDatabaseName)",
+  "description": "",
   "createDbserver": true,
   "clustered": false,
-  "nxClusterId": "$($eracluster.id)",
+  "nxClusterId": "$($EraCluster.id)",
   "sshPublicKey": "$($datagen.PublicKey)",
   "dbserverId": null,
   "dbserverClusterId": null,
@@ -1257,11 +1627,11 @@ Function REST-ERA-Oracle-Clone {
   "nodeCount": 1,
   "nodes": [
     {
-      "vmName": "Oracle2-$($datavar.pocname)",
+      "vmName": "$($NewVMName)",
       "computeProfileId": "$($computeprofile.ID)",
       "networkProfileId": "$($networkprofile.ID)",
       "newDbServerTimeZone": null,
-      "nxClusterId": "$($eracluster.id)",
+      "nxClusterId": "$($EraCluster.id)",
       "properties": []
     }
   ],
@@ -1269,36 +1639,38 @@ Function REST-ERA-Oracle-Clone {
   "actionArguments": [
     {
       "name": "new_db_sid",
-      "value": "TESTDB"
+      "value": "$($newSid)"
     },
     {
       "name": "vm_name",
-      "value": "Oracle2-$($datavar.pocname)"
+      "value": "$($NewVMName)"
     },
     {
       "name": "delete_logs_post_recovery",
       "value": false
     },
     {
+      "name": "dbserver_description",
+      "value": "1CD Database Instance Clone"
+    },
+    {
       "name": "asm_driver",
       "value": "None"
     },
     {
-      "name": "dbserver_description",
-      "value": "1CD Dev Clone Oracle"
-    },
-    {
       "name": "db_password",
-      "value": "$($datavar.PEPass)"
+      "value": "$($datavar.pepass)"
     }
   ],
   "computeProfileId": "$($computeprofile.ID)",
   "networkProfileId": "$($networkprofile.ID)",
-  "databaseParameterProfileId": "$($parameterPRofile.ID)"
+  "databaseParameterProfileId": "$($dbparamID)"
 }
+
 "@
+  
   if ($debug -ge 2){
-    $json | out-file c:\temp\ORAClone.json
+    $json | out-file c:\temp\MSSQLClone.json
   } 
   try {
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
@@ -1317,6 +1689,110 @@ Function REST-ERA-Oracle-Clone {
   Return $task
 } 
 
+Function REST-ERA-Generic-Clone {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [object] $database,
+    [object] $snapshot,
+    [object] $profiles,
+    [object] $EraCluster,
+    [string] $NewDatabaseName,
+    [string] $NewVMName,
+    [string] $databaseType,
+    [string] $dbparamID
+  )
+
+  write-log -message "Debug level is $($debug)";
+  write-log -message "Building Credential object"
+  $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+  $networkprofile = $profiles | where {$_.type -eq "network" -and $_.enginetype -eq $databaseType}
+  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"}
+  $domainProfile  = $profiles | where {$_.type -eq "WindowsDomain"}
+
+  write-log -message "Building ERA Clone"
+  write-log -message "Using $($Profiles.count) Profiles"
+  write-log -message "Using $($networkprofile.ID) as Network Profile"
+  write-log -message "Using $($computeprofile.ID) as Compute Profile"
+  write-log -message "Using $($domainProfile.ID) as Domain Profile"
+  write-log -message "Using $($database.timeMachineId) as TimeMachine Source ID"
+  write-log -message "Using $($dbparamID) database parameter ID"
+  write-log -message "Using $($snapshot.id) as Snapshot Source ID"
+
+  write-log -message "Creating new database server based on clone based of $($database.name)" 
+
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/tms/$($database.timeMachineId)/clones"
+  $JSON = @"
+{
+  "name": "$($NewDatabaseName)",
+  "description": "",
+  "createDbserver": true,
+  "clustered": false,
+  "nxClusterId": "$($EraCluster.id)",
+  "sshPublicKey": "$($datagen.PublicKey)",
+  "dbserverId": null,
+  "dbserverClusterId": null,
+  "dbserverLogicalClusterId": null,
+  "timeMachineId": "$($database.timeMachineId)",
+  "snapshotId": "$($snapshot.id)",
+  "userPitrTimestamp": null,
+  "newDbServerTimeZone": "Europe/Amsterdam",
+  "timeZone": "Europe/Amsterdam",
+  "latestSnapshot": false,
+  "nodeCount": 1,
+  "nodes": [
+    {
+      "vmName": "$($NewVMName)",
+      "computeProfileId": "$($computeprofile.ID)",
+      "networkProfileId": "$($networkprofile.ID)",
+      "newDbServerTimeZone": null,
+      "nxClusterId": "$($EraCluster.id)",
+      "properties": []
+    }
+  ],
+  "tags": [],
+  "actionArguments": [
+    {
+      "name": "vm_name",
+      "value": "$($NewVMName)"
+    },
+    {
+      "name": "dbserver_description",
+      "value": "1CD Database Instance Clone"
+    },
+    {
+      "name": "db_password",
+      "value": "$($datavar.pepass)"
+    }
+  ],
+  "computeProfileId": "$($computeprofile.ID)",
+  "networkProfileId": "$($networkprofile.ID)",
+  "databaseParameterProfileId": "$($dbparamID)"
+}
+
+"@
+
+  if ($debug -ge 2){
+    $json | out-file c:\temp\MSSQLClone.json
+  } 
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+  } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    sleep 30
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $json -ContentType 'application/json' -headers $headers;
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+  }
+
+  Return $task
+} 
 
 
 Function REST-ERA-Oracle-Provision {
@@ -1959,6 +2435,84 @@ Function REST-ERA-RegisterClusterStage1 {
   }  
   Return $task
 } 
+
+
+Function REST-ERA-Attach-ERAManaged-PENetwork {
+  Param (
+    [object] $datavar,
+    [object] $datagen,
+    [string] $lastIP
+  )
+
+  write-log -message "Debug level is $($debug)";
+  write-log -message "Building Credential object"
+  $credPair = "$($datavar.peadmin):$($datavar.pepass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Building ERA Network Registration JSON"
+
+  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/resources/networks"
+
+  write-log -message "Using URL $URL"
+  write-log -message "Using IP $($datagen.era1ip)"
+  write-log -message "Using Network $($NetworkName)"
+  write-log -message "Using Gateway $($datavar.Nw2gw)"
+  write-log -message "Using Subnet $($datavar.nw2subnet)"
+  write-log -message "Using Domain $($datagen.Domainname)"
+  write-log -message "Using DHCP Start $($datavar.Nw2DHCPStart)"
+  write-log -message "Using DHCP End $($lastIP)"
+
+  $Json = @"
+{
+  "name": "$($datagen.Nw2name)",
+  "type": "Static",
+  "properties": [
+    {
+      "name": "VLAN_GATEWAY",
+      "value": "$($datavar.Nw2gw)"
+    },
+    {
+      "name": "VLAN_SUBNET_MASK",
+      "value": "$($datavar.nw2subnet)"
+    },
+    {
+      "name": "VLAN_PRIMARY_DNS",
+      "value": "$($datagen.DC1IP)"
+    },
+    {
+      "name": "VLAN_SECONDARY_DNS",
+      "value": "$($datagen.DC2IP)"
+    },
+    {
+      "name": "VLAN_DNS_DOMAIN",
+      "value": "$($datagen.Domainname)"
+    }
+  ],
+  "ipPools": [
+    {
+      "startIP": "$($datavar.Nw2DHCPStart)",
+      "endIP": "$($lastIP)"
+    }
+  ]
+}
+"@
+  try {
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $JSON -ContentType 'application/json' -headers $headers;
+  } catch {
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    sleep 119
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $JSON -ContentType 'application/json' -headers $headers; 
+  }  
+  Return $task
+} 
+
 
 
 

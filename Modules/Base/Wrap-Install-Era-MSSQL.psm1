@@ -207,7 +207,7 @@ Function Wrap-Install-Era-MSSQL {
   
     $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
     $database = $databases | where {$_.name -eq "WideWorldImporters"}
-    $operation = REST-ERA-CreateSnapshot -datagen $datagen -datavar $datavar -DBUUID $($database.timeMachineId)
+    #$operation = REST-ERA-CreateSnapshot -datagen $datagen -datavar $datavar -DBUUID $($database.timeMachineId)
     sleep 360 
     do{
       $clonelooper ++

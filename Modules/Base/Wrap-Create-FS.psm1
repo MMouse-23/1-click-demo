@@ -196,7 +196,7 @@ Function Wrap-Create-FS {
         sleep 120
         $countana ++
         REST-Create-FileAnalyticsServer -datagen $datagen -datavar $datavar -network $subnet -container $container -AnalyticsVersion $AnalyticsVersion
-        $result = Wait-TaskAnalytics
+        $result = Wait-TaskAnalytics -datagen $datagen -datavar $datavar 
       } until ($result -eq "SUCCEEDED" -or $countana -ge 3)
     }
   

@@ -399,6 +399,55 @@ Function Wrap-Install-Era-Base {
   
   REST-ERA-ProvisionDatabase -databasename "PostGresDB01" -DBServer $DBServer -networkProfileId $postgressnw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
   
+
+  write-log -message "Getting databases"
+
+  $databases = REST-ERA-GetDatabases -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+  $database = $databases | where {$_.name -eq "PostGresDB01"}  
+
+  write-log -message "Creating Postgres Snapshot"
+
+  $operation = REST-ERA-CreateSnapshot -datagen $datagen -datavar $datavar -DBUUID $($database.timeMachineId)
+
+  $count = 0
+  do {
+    $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+    $count++
+    sleep 5
+    if ($count % 4 -eq 0){
+  
+      write-log -message "Pending Operation completion cycle $count"
+  
+    }
+    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    if ($real.status){
+      if ($count % 4 -eq 0){
+  
+        write-log -message "Snapshot is $($real.percentageComplete) % complete."
+  
+      } 
+    }
+  } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
+
+  write-log -message "Using Database ID $($database.id), Getting Snapshots" 
+
+  $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
+  $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
+
+  write-log -message "Creating Postgres Clone" 
+
+  REST-ERA-Generic-Clone `
+    -datagen $datagen `
+    -datavar $datavar `
+    -snapshot $snapshot `
+    -profiles $profiles `
+    -EraCluster $cluster `
+    -database $database `
+    -DatabaseType "postgres_database" `
+    -NewDatabaseName "PostGresDB02" `
+    -dbparamID $dbParameterProfileId `
+    -NewVMName "PostG2-$($datavar.pocname)"
+
   write-log -message "ERA Base Installation Finished" -slacklevel 1
 }
 Export-ModuleMember *
