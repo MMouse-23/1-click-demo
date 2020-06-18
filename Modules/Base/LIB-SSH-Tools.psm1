@@ -1041,45 +1041,8 @@ Function SSH-Networking-Pe {
       sleep 2
 
     }
-    try {;
-      if ($Existing.output -match $nw2name -and $nw2vlan){
 
-        write-log -message "Network 2 exists";
-
-        $nw2completed = $true
-
-      } elseif ($nw2vlan) {
-
-        write-log -message "Network 2 $nw2name Does not exist, and needs creating.";
-        write-log -message "Calculating data.";
-
-        $prefix = Convert-IpAddressToMaskLength $nw2Subnet
-        $ipconfig = "$($nw2gateway)/$($prefix)"
-        $lastIP = Get-LastAddress -IPAddress $nw2dhcpstart -SubnetMask $nw2Subnet
-
-        write-log -message "IPconfig value should be: $ipconfig"
-        write-log -message "DHCP Start should be: $nw2dhcpstart"
-        write-log -message "Network 2 VLAN will be $nw2vlan"
-        write-log -message "Last IP will be $lastIP"
-        write-log -message "Netbios Domain is $netbios"
-
-        $result = Invoke-SSHCommand -SSHSession $session -command "/usr/local/nutanix/bin/acli net.create $nw2name vlan=$($nw2vlan) ip_config=$($ipconfig)" -EnsureConnection
-
-      } else {
-
-        write-log -message "Network 2 is not specified to be deployed";
-
-        $nw2completed = $true
-      }
-      
-    } catch {;
-      $nw2completed = $false
-
-      write-log -message "Error Creating networks, Retry" -sev "WARN";
-
-      sleep 2
-    };
-  } until (($nw1completed -eq $true -and $nw2completed -eq $true) -or $count -ge 6)
+  } until (($nw1completed -eq $true ) -or $count -ge 6)
 
  
   if ($nw1completed -eq $true){

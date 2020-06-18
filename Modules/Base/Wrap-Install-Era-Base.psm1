@@ -399,6 +399,25 @@ Function Wrap-Install-Era-Base {
   
   REST-ERA-ProvisionDatabase -databasename "PostGresDB01" -DBServer $DBServer -networkProfileId $postgressnw.id -SoftwareProfileID $SoftwareProfileID -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
   
+  $count = 0
+  do {
+    $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+    $count++
+    sleep 5
+    if ($count % 4 -eq 0){
+  
+      write-log -message "Pending Operation completion cycle $count"
+  
+    }
+    $real = $result.operations | where {$_.entityName -eq "PostGresDB01"} | select -last 1
+    if ($real.status){
+      if ($count % 4 -eq 0){
+  
+        write-log -message "Snapshot is $($real.percentageComplete) % complete."
+  
+      } 
+    }
+  } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
 
   write-log -message "Getting databases"
 
@@ -419,7 +438,7 @@ Function Wrap-Install-Era-Base {
       write-log -message "Pending Operation completion cycle $count"
   
     }
-    $real = $result.operations | where {$_.id -eq $operation.operationid}
+    $real = $result.operations | where {$_.entityName -eq "PostGresDB01_TM" -and $_.type -eq "create_snapshot" }| select -last 1
     if ($real.status){
       if ($count % 4 -eq 0){
   
