@@ -666,6 +666,21 @@ do {
           Lib-Get-Wrapper-Results -datavar $datavar -datagen $datagen -ModuleDir $ModuleDir -parentuuid "$($datavar.QueueUUID)" -basedir $basedir
           break
 
+        } else {
+          
+          if ($datavar.nw2vlan){
+
+            write-log -message "Creating Seconday network" 
+
+            REST-PE-Create-Network -PEClusterIP $datavar.PEClusterIP `
+              -PxClusterPass $Datavar.PEPass `
+              -PxClusterUser $Datavar.PEAdmin `
+              -name $datagen.nw2name `
+              -vlanID $datavar.nw2vlan `
+              -IPAM $false
+
+          }
+ 
         }
       } elseif ($autodetect.hypervisor -match "ESXi"){
 
