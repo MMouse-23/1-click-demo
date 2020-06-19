@@ -224,6 +224,14 @@ Function Wrap-Install-Era-Oracle {
   $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
   $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
 
+  write-log -message "Creating Low Oracle DB Profile" 
+
+  $DBprofile = REST-ERA-Oracle-DB-Low-ProfileCreate -datagen $datagen -datavar $datavar
+
+  write-log -message "Getting Low Oracle DB Profile" 
+  $profiles = REST-ERA-GetProfiles -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin
+  $DBprofile = $PROFILEs | where {$_.engineType -eq "oracle_database" -and $_.name -eq "LowProfile"}
+
   write-log -message "Creating Postgres Clone" 
 
   REST-ERA-Oracle-Clone `
@@ -235,7 +243,7 @@ Function Wrap-Install-Era-Oracle {
     -database $database `
     -DatabaseType "oracle_database" `
     -NewDatabaseName "Oracle_Clone" `
-    -dbparamID $parameterPRofile.id `
+    -dbparamID $DBprofile.id `
     -NewVMName "Oracle2-$($datavar.pocname)" `
     -NewSid "TESTDEV"
   

@@ -330,6 +330,9 @@ Function Wrap-Install-Era-MSSQL {
     write-log -message "First Database server failed to register, we cannot proceed" -sev "ERROR"
 
   }
+
+  Wrap-Install-Era-AAG-MSSQL -datagen $datagen -datavar $datavar
+
   write-log -message "ERA MSSQL Installation Finished" -slacklevel 1
 }
 Export-ModuleMember *

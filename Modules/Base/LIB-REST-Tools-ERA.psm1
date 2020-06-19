@@ -550,7 +550,7 @@ Function REST-ERA-MSSQL-AAG-Cluster {
   $JSON = @"
 
 {
-  "name": "$($databasename)",
+  "name": "$($NewDatabaseName)",
   "description": "1CD AAG Cluster!",
   "createDbserver": true,
   "clustered": true,
@@ -1125,6 +1125,114 @@ Function REST-ERA-Oracle-SW-ProfileCreate {
 }
 "@
   $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+
+  write-log -message "Creating Profile Oracle Software"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+  } catch {
+
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+    Return $RespErr
+  }
+
+  Return $task
+}
+
+
+Function REST-ERA-Oracle-DB-Low-ProfileCreate {
+  Param (
+    [object] $datagen,
+    [object] $datavar
+  )
+
+  $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Loading Json"
+  $json = @"
+{
+  "engineType": "oracle_database",
+  "type": "Database_Parameter",
+  "topology": "ALL",
+  "dbVersion": "ALL",
+  "systemProfile": false,
+  "properties": [
+    {
+      "name": "MEMORY_TARGET",
+      "value": 8192,
+      "secure": false,
+      "description": "Total Memory (MiB): Total memory (AKA MEMORY_TARGET) specifies the Oracle systemwide usable memory. The database tunes memory to the total memory value, reducing or enlarging the SGA and PGA as needed."
+    },
+    {
+      "name": "SGA_TARGET",
+      "value": "",
+      "secure": false,
+      "description": "SGA (MiB): Provide a value here to disable automatic shared memory management. Providing a value enables you to determine how the SGA memory is distributed among the SGA memory components."
+    },
+    {
+      "name": "PGA_AGGREGATE_TARGET",
+      "value": "",
+      "secure": false,
+      "description": "PGA (MiB): Provide a value here to disable automatic shared memory management. Providing a value enables you to determine how the PGA memory is distributed among the PGA memory components."
+    },
+    {
+      "name": "SHARED_SERVERS",
+      "value": "0",
+      "secure": false,
+      "description": "Number of shared servers: Specify this number when the connection mode is set to 'shared'"
+    },
+    {
+      "name": "DB_BLOCK_SIZE",
+      "value": "8",
+      "secure": false,
+      "description": "Block Size (KiB): Oracle Database data is stored in data blocks of the size specified. One data block corresponds to a specific number of bytes of physical space on the disk. Selecting a block size other than the default 8 kilobytes (KiB) value requires advanced knowledge and should be done only when absolutely required."
+    },
+    {
+      "name": "PROCESSES",
+      "value": "300",
+      "secure": false,
+      "description": "Number of processes: Specify the maximum number of processes that can simultaneously connect to the database. Enter a number or accept the default value of 300. The default value for this parameter is appropriate for many environments. The value you select should allow for all background processes, user processes, and parallel execution processes."
+    },
+    {
+      "name": "TEMP_TABLESPACE",
+      "value": "256",
+      "secure": false,
+      "description": "Temp Tablespace (MiB)"
+    },
+    {
+      "name": "UNDO_TABLESPACE",
+      "value": "1024",
+      "secure": false,
+      "description": "Undo Tablespace (MiB)"
+    },
+    {
+      "name": "NLS_LANGUAGE",
+      "value": "AMERICAN",
+      "secure": false,
+      "description": "Default Language: The default language determines how the database supports locale-sensitive information such as day and month abbreviations, default sorting sequence for character data, and reading direction (left to right ir right to left)."
+    },
+    {
+      "name": "NLS_TERRITORY",
+      "value": "AMERICA",
+      "secure": false,
+      "description": "Default Territory: Select the name of the territory whose conventions are to be followed for day and week numbering or accept the default. The default territory also establishes the default date format, the default decimal character and group separator, and the default International Standardization Organization (ISO) and local currency symbols."
+    }
+  ],
+  "name": "LowProfile"
+}
+"@
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/profiles"
 
   write-log -message "Creating Profile Oracle Software"
 

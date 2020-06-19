@@ -346,6 +346,39 @@ Function REST-LIST-SSP-VMwareImages {
   Return $task
 } 
 
+Function REST-Runbook-Import-Blob {
+  Param (
+    [object] $PCClusterIP,
+    [object] $PCClusterUser,
+    [object] $PCClusterPass,
+    [string] $filename
+  )
+
+  $credPair = "$($PCClusterUser):$($PCClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+
+  write-log -message "Importing Runbook $filename"
+  
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/import_file"
+
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -InFile $filename -ContentType 'multipart/form-data' -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -InFile $filename -ContentType 'multipart/form-data' -headers $headers;
+  }
+
+  Return $task
+} 
+
+
+
 Function REST-LIST-Environments {
   Param (
     [object] $datagen,
@@ -710,7 +743,271 @@ Function REST-List-SSP-Account {
    Return $task
 }
 
+Function REST-Runbook-Import-Blob {
+  Param (
+    [object] $PCClusterIP,
+    [object] $PCClusterUser,
+    [object] $PCClusterPass,
+    [string] $Json,
+    [string] $project_uuid,
+    [string] $name
+  )
 
+  $credPair = "$($PCClusterUser):$($PCClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+
+  write-log -message "Importing Runbook $filename"
+  
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/import_file"
+
+  $boundary = [System.Guid]::NewGuid().ToString(); 
+  $LF = "`r`n";
+  $bodyLines = (
+      "--$boundary",
+      "Content-Disposition: form-data; name=`"file`"; filename=`"blob`"",
+      '',
+      $Json,
+      "--$boundary",
+      "Content-Disposition: form-data; name=`"name`"",
+      '',
+      $name,
+      "--$boundary",
+      "Content-Disposition: form-data; name=`"project_uuid`"",
+      '',
+      $project_uuid,
+      "--$boundary",
+      "Content-Disposition: form-data; name=`"passphrase`"",
+      '',
+      1,
+      "--$boundary--"
+  ) -join $LF
+
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Body $bodyLines -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -ContentType "multipart/form-data; boundary=`"$boundary`"" -Body $bodyLines -headers $headers;
+  }
+
+  Return $task
+} 
+
+
+Function REST-Add-Endpoint-Windows {
+  Param (
+    [object] $PCClusterIP,
+    [object] $PCClusterUser,
+    [object] $PCClusterPass,
+    [object] $project,
+    [string] $IP,
+    [string] $username,
+    [string] $Password,
+    [string] $credname,
+    [string] $Endpname
+  )
+
+  $credPair = "$($PCClusterUser):$($PCClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Generating new UUIDs"
+  $credUUID = (new-guid).guid
+  $EndpointUUid = (new-guid).guid
+  $json = @"
+{
+  "api_version": "3.0",
+  "metadata": {
+    "kind": "endpoint",
+    "project_reference": {
+      "name": "$($project.status.name)",
+      "kind": "project",
+      "uuid": "$($project.metadata.uuid)"
+    },
+    "uuid": "$($EndpointUUid)"
+  },
+  "spec": {
+    "resources": {
+      "type": "Windows",
+      "attrs": {
+        "credential_definition_list": [{
+          "description": "",
+          "username": "$($username)",
+          "type": "PASSWORD",
+          "name": "$($credname)",
+          "secret": {
+            "attrs": {
+              "is_secret_modified": true
+            },
+            "value": "$($Password)"
+          },
+          "uuid": "$($credUUID)"
+        }],
+        "login_credential_reference": {
+          "name": "$($credname)",
+          "kind": "app_credential",
+          "uuid": "$($credUUID)"
+        },
+        "values": ["$($IP)"],
+        "value_type": "IP",
+        "port": 5985,
+        "connection_protocol": "http"
+      }
+    },
+    "name": "$($Endpname)"
+  }
+}
+"@
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/endpoints"
+
+  write-log -message "Creating EndPoint"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+  } catch {
+    sleep 10
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+    Return $RespErr
+  } 
+  $return = @{
+    EndpointUUID = $EndpointUUid
+    EndpointName = $Endpname
+    CredUUID     = $credUUID
+    CredName     = $credname
+  }
+  Return $return
+} 
+
+
+Function REST-Get-Runbook-Detailed {
+  Param (
+    [object] $PCClusterIP,
+    [object] $PCClusterUser,
+    [object] $PCClusterPass,
+    [string] $uuid
+  )
+
+  $credPair = "$($PCClusterUser):$($PCClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/$($uuid)"
+
+  write-log -message "Getting Runbook Detail"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers
+  } catch {
+    sleep 10
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers
+    Return $RespErr
+  } 
+
+  Return $task
+} 
+
+Function REST-Get-Runbooks {
+  Param (
+    [object] $PCClusterIP,
+    [object] $PCClusterUser,
+    [object] $PCClusterPass
+  )
+
+  $credPair = "$($PCClusterUser):$($PCClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Generating new UUIDs"
+  $credUUID = (new-guid).guid
+  $EndpointUUid = (new-guid).guid
+  $json = @"
+{
+  "length": 20,
+  "offset": 0,
+  "filter": "state!=DELETED"
+}
+"@
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/list"
+
+  write-log -message "Retrieving Runbooks"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+  } catch {
+    sleep 10
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -body $json -ContentType 'application/json' -headers $headers
+    Return $RespErr
+  } 
+
+  Return $task
+} 
+
+Function REST-Update-Runbook {
+  Param (
+    [object] $PCClusterIP,
+    [object] $PCClusterUser,
+    [object] $PCClusterPass,
+    [object] $RunbookDetail
+  )
+
+  $credPair = "$($PCClusterUser):$($PCClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Preparing Payload for update"
+
+  $RunbookDetail.psobject.members.remove("Status")
+
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/list"
+
+  $json = $RunbookDetail | convertto-json
+
+  write-log -message "Retrieving Runbooks"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json -ContentType 'application/json' -headers $headers
+  } catch {
+    sleep 10
+    $_.Exception.Message
+    $respStream = $_.Exception.Response.GetResponseStream()
+    $reader = New-Object System.IO.StreamReader($respStream)
+    $respBody = $reader.ReadToEnd() | ConvertFrom-Json
+    write-log -message $respBody
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json -ContentType 'application/json' -headers $headers
+    Return $RespErr
+  } 
+
+  Return $task
+} 
 
 Function REST-Enable-ShowBack {
    Param (
@@ -742,7 +1039,6 @@ Function REST-Enable-ShowBack {
    Return $task
 }
 
-   $ShowbackID = (new-guid).Guid
 
 Function REST-Update-SSP-AccountCost {
    Param (

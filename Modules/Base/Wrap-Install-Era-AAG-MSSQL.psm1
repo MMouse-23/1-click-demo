@@ -1,4 +1,4 @@
-Function Wrap-Install-Era-MSSQL {
+Function Wrap-Install-Era-AAG-MSSQL {
   param (
     [object] $datavar,
     [object] $datagen,
