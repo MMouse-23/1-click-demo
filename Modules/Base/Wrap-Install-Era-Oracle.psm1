@@ -221,12 +221,25 @@ Function Wrap-Install-Era-Oracle {
 
   write-log -message "Using Database ID $($database.id), Getting Snapshots" 
 
+  write-log -message "Taking a nap for the timemachine to wake up." 
+
+  sleep 110
+
   $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
   $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
 
-  write-log -message "Creating Low Oracle DB Profile" 
+  write-log -message "Using Snapshot ID $($snapshot.id)" 
 
-  $DBprofile = REST-ERA-Oracle-DB-Low-ProfileCreate -datagen $datagen -datavar $datavar
+  write-log -message "Creating Low Oracle DB Profile"
+  write-log -message "Calculating Oracle Profile size" 
+
+  $GBCompute = ($computeprofile.versions[0].properties | where {$_.name -eq "MEMORY_SIZE"}).value
+
+  write-log -message "GB Compute is '$($GBCompute)GB'"
+
+  $MBRAM = [math]::Round(([int]$GBCompute * 1024) * 0.66)
+
+  $DBprofile = REST-ERA-Oracle-DB-Low-ProfileCreate -datagen $datagen -datavar $datavar -mb_ram $MBRAM
 
   write-log -message "Getting Low Oracle DB Profile" 
   $profiles = REST-ERA-GetProfiles -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin

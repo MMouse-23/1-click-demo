@@ -157,6 +157,91 @@ Function REST-Get-PE-Networks {
   Return $task
 } 
 
+Function REST-PE-Create-Network {
+ Param (
+    [string] $PEClusterIP,
+    [string] $PxClusterPass,
+    [string] $PxClusterUser,
+    [bool]   $IPAM,
+    [string] $SubnetMask,
+    [string] $GateWay,
+    [string] $DHCPStart,
+    [string] $DHCPEnd,
+    [string] $Name,
+    [string] $VLanID,
+    [string] $Address,
+    [String] $DNSServers,
+    [string] $Domain
+  )
+
+  $credPair = "$($PxClusterUser):$($PxClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Creating Network '$($Name)' on '$PEClusterIP'"
+  write-log -message "VLAN: '$($VLanID)'"
+
+  $URL = "https://$($PEClusterIP):9440/api/nutanix/v0.8/networks"
+
+  if ($IPAM -eq $true){
+
+    $prefix = Convert-IpAddressToMaskLength $SubnetMask
+
+    $ipconfig = "$($nw1gateway)/$($prefix)"
+    write-log -message "VLAN: '$($VLanID)' Prefix: '$Prefix'"
+    write-log -message "Gateway: '$($GateWay)' Address: '$Address'"
+    write-log -message "DHCPStart: '$($DHCPStart)' DHCPEnd: '$DHCPEnd'"
+    write-log -message "Domain: '$($Domain)' DNS: '$DNSServers'"
+    write-log -message "Nutanix IPAM Enabled!"
+
+    $Payload= @"
+{
+  "name": "$($Name)",
+  "vlanId": "$($VLanID)",
+  "ipConfig": {
+    "dhcpOptions": {
+      "domainNameServers": "$($DNSServers)",
+      "domainName": "$($Domain)"
+    },
+    "networkAddress": "$($Address)",
+    "prefixLength": "$($Prefix)",
+    "defaultGateway": "$($GateWay)",
+    "pool": [{
+      "range": "$($DHCPStart) $($DHCPEnd)"
+    }]
+  }
+}
+"@ 
+  } else {
+
+    write-log -message "Nutanix IPAM Disabled!"
+
+    $Payload= @"
+{
+  "name":"$($Name)",
+  "vlanId":"$($VLanID)"
+}
+"@ 
+  }
+
+  $JSON = $Payload 
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $JSON -ContentType 'application/json' -headers $headers -ea:4;
+  } catch {$error.clear()
+    sleep 10
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $JSON -ContentType 'application/json' -headers $headers
+  }
+
+  Return $task
+} 
+
+
+
+
+
+
 Function REST-Get-PE-Hosts {
   Param (
     [object] $datavar,
@@ -928,10 +1013,10 @@ Function REST-WorkShopConfig-Px {
   write-log -message "Building JSON Array" 
 
   [array]$JSONA += @"
-{"type":"custom_login_screen","key":"color_in","value":"#ADD100"}
+{"type":"custom_login_screen","key":"color_in","value":"#ffffff"}
 "@
   [array]$JSONA += @"
-{"type":"custom_login_screen","key":"color_out","value":"#11A3D7"}
+{"type":"custom_login_screen","key":"color_out","value":"#80d4ff"}
 "@
   if ($mode -eq "PC"){
   [array]$JSONA += @"

@@ -985,11 +985,13 @@ Function REST-Update-Runbook {
 
   $RunbookDetail.psobject.members.remove("Status")
 
-  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/list"
+  $URL = "https://$($PCClusterIP):9440/api/nutanix/v3/runbooks/$($RunbookDetail.metadata.uuid)"
 
-  $json = $RunbookDetail | convertto-json
-
-  write-log -message "Retrieving Runbooks"
+  $json = $RunbookDetail | convertto-json -depth 100
+  if ($debug -ge 2){
+    $json | out-file c:\temp\runbook.json
+  }
+  write-log -message "Updating Runbook $($RunbookDetail.metadata.uuid)"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $json -ContentType 'application/json' -headers $headers

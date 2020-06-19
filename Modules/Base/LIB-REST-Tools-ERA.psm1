@@ -1152,7 +1152,8 @@ Function REST-ERA-Oracle-SW-ProfileCreate {
 Function REST-ERA-Oracle-DB-Low-ProfileCreate {
   Param (
     [object] $datagen,
-    [object] $datavar
+    [object] $datavar,
+    [string] $mb_ram
   )
 
   $credPair = "$($datavar.peadmin):$($datavar.PEPass)"
@@ -1170,7 +1171,7 @@ Function REST-ERA-Oracle-DB-Low-ProfileCreate {
   "properties": [
     {
       "name": "MEMORY_TARGET",
-      "value": 8192,
+      "value": $($mb_ram),
       "secure": false,
       "description": "Total Memory (MiB): Total memory (AKA MEMORY_TARGET) specifies the Oracle systemwide usable memory. The database tunes memory to the total memory value, reducing or enlarging the SGA and PGA as needed."
     },

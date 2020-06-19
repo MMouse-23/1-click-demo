@@ -15,14 +15,14 @@ function Wrap-Install-Runbooks {
 
   write-log -message "Creating Endpoints" -sev "Chapter" -slacklevel 1
 
-  $endpoints = "DC1;$($datagen.dc1ip)","DC3;$($datagen.dc2ip)"
+  $endpoints = "$($datagen.dc1name);$($datagen.dc1ip)","$($datagen.dc2name);$($datagen.dc2ip)"
   
   foreach ($endpoint in $endpoints){
   
     $endpointname = $endpoint.split(";")[0]
     $endpointIP = $endpoint.split(";")[1]
     $username = "Administrator"
-    $credname = "$($username)_$($endpointname)"
+    $credname = "$($username)_$(get-random)"
   
     write-log -message "Creating Endpoint $endpointname"
     write-log -message "Using IP $endpointIP"
@@ -75,9 +75,14 @@ function Wrap-Install-Runbooks {
     -uuid $runbook.metadata.uuid
   
   write-log -message "Updating Runbook Endpoint" 
+  
+  $default_target_reference = @{
+    uuid = $endpoint.EndpointUUID
+    name = $endpoint.EndpointName
+  }
 
-  $runbookdetail.spec.resources.default_target_reference.uuid = $endpoint.EndpointUUID
-  $runbookdetail.spec.resources.default_target_reference.name = $endpoint.EndpointName
+  $runbookdetail.spec.resources | add-member noteproperty default_target_reference $default_target_reference -force
+
   
   write-log -message "Sending Payload back to Calm" 
 
