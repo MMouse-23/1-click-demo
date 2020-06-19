@@ -1013,10 +1013,10 @@ Function REST-WorkShopConfig-Px {
   write-log -message "Building JSON Array" 
 
   [array]$JSONA += @"
-{"type":"custom_login_screen","key":"color_in","value":"#ffffff"}
+{"type":"custom_login_screen","key":"color_in","value":"#ADD100"}
 "@
   [array]$JSONA += @"
-{"type":"custom_login_screen","key":"color_out","value":"#80d4ff"}
+{"type":"custom_login_screen","key":"color_out","value":"#11A3D7"}
 "@
   if ($mode -eq "PC"){
   [array]$JSONA += @"
