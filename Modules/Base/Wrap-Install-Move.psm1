@@ -52,8 +52,6 @@ Function Wrap-Install-Move {
   
   REST-Move-SetProvider -datagen $datagen -datavar $datavar -Token $token -mode "Target"
 
-  REST-Move-SetProvider -datagen $datagen -datavar $datavar -Token $token -mode "Source"
-
   write-log -message "Move Installation and Configuration Finished" -slacklevel 1
 }
 Export-ModuleMember *

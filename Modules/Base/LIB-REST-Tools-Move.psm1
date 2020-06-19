@@ -65,12 +65,14 @@ Function REST-Move-EULA {
   write-log -message "Replacing JSON String Variables"
 $Json = @"
 {
-  "EulaAccepted":true,
-  "TelemetryOn":true,
-  "NewPassword":"$($datavar.PEPass)"
+  "Spec": {
+    "EulaAccepted": true,
+    "TelemetryOn": true,
+    "NewPassword": "$($datavar.PEPass)"
+  }
 }
 "@ 
-  $URL = "https://$($datagen.MoveIP)/v1/configure"
+  $URL = "https://$($datagen.MoveIP)/move/v2/configure"
 
   write-log -message "Using URL $URL"
 

@@ -2297,10 +2297,10 @@ print(','.join(VLanNames))
   ($bpobject.spec.resources.app_profile_list[0].variable_list | Where {$_.name -eq "VLanName"}).options.attrs.script = $NetworkPy
 
 $FileServerPy = @"
-api_url = 'https://10.42.30.37:9440/PrismGateway/services/rest/v1/vfilers'
+api_url = 'https://$($Datavar.PEClusterIP):9440/PrismGateway/services/rest/v1/vfilers'
 headers = {'Content-Type': 'application/json',  'Accept':'application/json'}
 #headers = {'Content-Type': 'application/json',  'Accept':'application/json', 'Authorization': 'Bearer {}'.format(jwt)}
-r = urlreq(api_url, verb='GET', auth="BASIC", user='admin', passwd='nx2Tech841!', headers=headers, verify=False)
+r = urlreq(api_url, verb='GET', auth="BASIC", user='admin', passwd='$($Datavar.PEPass)', headers=headers, verify=False)
 #r = urlreq(api_url, verb='POST', params=json.dumps(payload), headers=headers, verify=False)
 if r.ok:
     resp = json.loads(r.content)
