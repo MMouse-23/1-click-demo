@@ -1,5 +1,9 @@
 
   Function Wait-Task{
+    param (
+      $datavar,
+      $datagen
+    )
     do {
       try{
 

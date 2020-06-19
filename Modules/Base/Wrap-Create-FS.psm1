@@ -125,7 +125,7 @@ Function Wrap-Create-FS {
   do {
     $looper++
     $createFS = REST-Create-FileServer -datagen $datagen -datavar $datavar -network $subnet -filesversion $filesversion -nodecount $nodecount
-    $task = Wait-Task
+    $task = Wait-Task -datagen $datagen -datavar $datavar
     $vfiler = REST-Query-FileServer -datagen $datagen -datavar $datavar
   } until ($vfiler.entities.uuid.length -ge 5 -or $looper -ge 5)
 

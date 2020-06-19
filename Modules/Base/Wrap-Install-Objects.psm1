@@ -60,7 +60,7 @@ Function Wrap-Install-Objects {
   #SSH-Restart-KeepAlived -datavar $datavar -datagen $datagen
   $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
   [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
-  If ($adcount -le 1){
+  If ($adcount -lt 1){
     $count4 = 0
     do {
       $count4++

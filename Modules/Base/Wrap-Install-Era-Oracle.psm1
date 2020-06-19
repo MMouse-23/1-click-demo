@@ -232,6 +232,8 @@ Function Wrap-Install-Era-Oracle {
 
   write-log -message "Creating Low Oracle DB Profile"
   write-log -message "Calculating Oracle Profile size" 
+  
+  $computeprofile = $profiles | where {$_.type -eq "compute" -and $_.name -match "LOW"}
 
   $GBCompute = ($computeprofile.versions[0].properties | where {$_.name -eq "MEMORY_SIZE"}).value
 

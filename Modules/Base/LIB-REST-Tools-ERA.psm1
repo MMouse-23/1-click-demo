@@ -841,7 +841,7 @@ Function REST-ERA-GetClones {
 
   write-log -message "Get ERA Clones"
 
-  $URL = "https://$($EraIP):8443/era/v0.8/clones"
+  $URL = "https://$($EraIP)/era/v0.9/clones"
 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "GET" -headers $headers;

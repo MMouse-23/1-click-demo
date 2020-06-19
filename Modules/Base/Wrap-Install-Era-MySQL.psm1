@@ -126,13 +126,11 @@ Function Wrap-Install-Era-MYSQL {
   
       } 
     }
-  } until ($count -ge 18 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
+  } until ($count -ge 40 -or ($real -and $real.status -eq 4) -or $real.percentageComplete -eq 100)
 
   write-log -message "Using Database ID $($database.id), Getting Snapshots" 
 
   write-log -message "Taking a nap for the timemachine to wake up." 
-
-  sleep 110
 
   $snapshots = REST-ERA-GetLast-SnapShot -datagen $datagen -datavar $datavar -database $database
   $snapshot = ($snapshots.capability | where {$_.mode -eq "MANUAL"}).snapshots | select -last 1
