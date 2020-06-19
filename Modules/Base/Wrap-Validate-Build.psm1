@@ -62,6 +62,24 @@ function Wrap-Validate-Build {
         $countFailedApps++
       }
     }
+
+    write-log -message "Getting All Runbooks" 
+
+    $Runbooks = REST-Get-Runbooks `
+      -PCClusterIP $datagen.PCClusterIP `
+      -PCClusterUser $datagen.buildaccount `
+      -PCClusterPass $datavar.pepass
+  
+    $runbook = $Runbooks.entities |where {$_.status.name -eq "Windows Patching" }
+
+    write-log -message "Getting Runbook detail for $($runbook.metadata.uuid)" 
+  
+    $runbookdetail = REST-Get-Runbook-Detailed `
+      -PCClusterIP $datagen.PCClusterIP `
+      -PCClusterUser $datagen.buildaccount `
+      -PCClusterPass $datavar.pepass `
+      -uuid $runbook.metadata.uuid
+  
     $projectcount = ($marketplace.group_results.entity_results[20].data | where {$_.name -eq "project_uuids"}).values.values.count
     if ($countFailedApps -ge 1){
       write-log -message "Broken Calm Apps detected" 
@@ -75,8 +93,10 @@ function Wrap-Validate-Build {
       $calmvalidated = 0
     } elseif ($datavar.DemoXenDeskT -eq 1 -and $xdvalidated -eq 0){
       $calmresult = "Calm is not healthy. XenDesktop Blueprint failed, $XenDesktopResult"
+    } elseif ($runbookdetail.status.state -ne "Active"){
+      $calmresult = "Calm is not healthy. Runbook is not active or present."  
     } else {
-      $calmresult = "Calm is healthy. There are $($applications.entities.count) running apps, $($blueprints.entities.count) imported blueprints and $($marketplace.group_results.entity_results.count) Marketplace items spread over $projectcount Projects, $XenDesktopResult"
+      $calmresult = "Calm is healthy. There are $($Runbooks.entities.count) Runbook(s), There are $($applications.entities.count) running apps, $($blueprints.entities.count) imported blueprints and $($marketplace.group_results.entity_results.count) Marketplace items spread over $projectcount Projects, $XenDesktopResult"
       $calmvalidated = 1
     }
   } else {
@@ -96,13 +116,13 @@ function Wrap-Validate-Build {
 
     [array]$databaseservers = REST-ERA-GetDBServers -clusername $datavar.peadmin -clpassword $datavar.pepass -eraip $datagen.era1ip
     if ($hosts.entities.count -ge 3){
-      $databaseserversthreshold = 10
+      $databaseserversthreshold = 11
     } else {
       $databaseserversthreshold = 9
     }
     if ($datavar.hypervisor -match "Nutanix|AHV" -and $datavar.InstallEra -eq 1 ){
       
-      if ($databases.count -ge 6 -and $clones.count -ge 1 -and $databaseservers.count -ge $databaseserversthreshold){
+      if ($databases.count -ge 6 -and $clones.count -ge 3 -and $databaseservers.count -ge $databaseserversthreshold){
   
         $eraresult = "ERA is healthy. There are $($databaseservers.count) Servers, $($databases.count) Databases and $($clones.count) Clones"
         $eravalidated = 1
