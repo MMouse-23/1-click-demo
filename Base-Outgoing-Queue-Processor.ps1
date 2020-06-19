@@ -988,6 +988,7 @@ do {
         Lib-Spawn-Wrapper -Type "Splunk" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
       } 
 
+    
       if ($datavar.InstallHashiVault -eq 1 ){
 
         write-log -message "Spawning HashiCorpVault Install" -sev "CHAPTER" -slacklevel 1
@@ -1008,6 +1009,10 @@ do {
 
         $LauchCommand = 'Wrap-Install-BPPack -datagen $datagen -datavar $datavar -BlueprintsPath ' + $BlueprintsPath
         Lib-Spawn-Wrapper -Type "BPPack" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
+        
+        $LauchCommand = 'Wrap-Install-Runbooks -datagen $datagen -datavar $datavar -basedir ' + $basedir
+        Lib-Spawn-Wrapper -Type "Runbooks" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
+
       }     
       if ($datavar.DemoLab -eq 1){
  
