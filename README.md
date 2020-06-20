@@ -3,7 +3,7 @@
 
 
 
-**Current Version 1.1.2.3*
+**Current Version 1.2.0.0*
 
 
 ## Introduction
@@ -26,6 +26,26 @@
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.2.0.0
+
+**Fixes:**
+- ERA 0.9 API fixes.
+- Full era 1.3.0 support.
+- Enhanced Code, still a lot garbage to clean.
+- Citrix BluePrint Launch Fixed.
+- XPlay IIS / Calm 3.0 Fixes, Old BP did not fire correctly anymore.
+- Wait timer enhancements.
+- SQL Stability.
+- Postgres HA Stability.
+
+**Features:**
+- SQL AAG in ERA (based of a single node, 1-click how cool is that)
+- Calm 3.0.0 Runbook Automation Windows Patching
+- Full Oracle Clone.
+- MySQL Clone
+- Calm ERA BP Removed, but replaced with API Clones.
+- Move 3.5.1
 
 ## Release notes 1.1.2.3
 
