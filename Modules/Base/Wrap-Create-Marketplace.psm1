@@ -42,7 +42,7 @@ Function Wrap-Create-MarketPlace {
 
       sleep 110
       $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-    } until ($projects.entities.count -ge 5 -or $count -ge 25)
+    } until ($projects.entities.count -ge 5 -or $count -ge 50)
   }
 
   foreach ($marketplacelatest in $LatestMarketPlaceBPs){

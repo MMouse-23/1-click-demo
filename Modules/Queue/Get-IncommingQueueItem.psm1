@@ -1,5 +1,7 @@
 Function Get-IncommingueueItem{
-
+  param (
+    [string] $mode
+  )
   ## Version 3.0 Only Params are SQL, but are global
   $item = $null
   write-log -message "Terminating leftover outlook."
@@ -34,7 +36,7 @@ Function Get-IncommingueueItem{
 
   write-log -message "Mailbox loaded checking items."
 
-  $item = $folder.items | select -first 1
+  $item = $folder.items | select -last 1
   if ($item){
 
     write-log -message "We found 1 item to process."
@@ -250,24 +252,29 @@ Function Get-IncommingueueItem{
     $Ver = "AOS"
     $datecre = get-date;
     $queueUuid = [guid]::newguid();
-    $item.delete()
+    
     if ($queue -eq "Manual"){
       $qstatus = "Manual"
     } else {
       $qstatus = "Ready"
     }
-    $SQLQuery = "USE `"$SQLDatabase`"
-    INSERT INTO dbo.$SQLQueueTableName (QueueUUID, QUEUEStatus, QUEUEValid, QueueSource, DateCreated, PEClusterIP, SenderName, SenderEMail, PEAdmin, PEPass, debug, AOSVersion, PCVersion, Hypervisor, InfraSubnetmask, CVMIPs, InfraGateway, DNSServer, POCname, PCmode, SystemModel, Nw1Vlan, Nw2DHCPStart, Nw2Vlan, Nw2subnet, Nw2gw, Destroy, Location, VersionMethod, VPNUser, VPNPass, VPNURL, SetupSSP, DemoLab, EnableFlow, DemoXenDeskT, EnableBlueprintBackup, InstallEra, InstallFrame, InstallMove, InstallXRay, InstallObjects, UpdateAOS, DemoExchange, InstallKarbon, DemoIISXPlay, InstallFiles, InstallSplunk, InstallHashiVault, Install1CD, Slackbot, InstallBPPack, Portable, EnableEmail, Install3TierLAMP, VCenterUser, VCenterPass, VCenterIP, pcsidebin, pcsidemeta )
+    if ($mode -ne "scan"){
+      $SQLQuery = "USE `"$SQLDatabase`"
+      INSERT INTO dbo.$SQLQueueTableName (QueueUUID, QUEUEStatus, QUEUEValid, QueueSource, DateCreated, PEClusterIP, SenderName, SenderEMail, PEAdmin, PEPass, debug, AOSVersion, PCVersion, Hypervisor, InfraSubnetmask, CVMIPs, InfraGateway, DNSServer, POCname, PCmode, SystemModel, Nw1Vlan, Nw2DHCPStart, Nw2Vlan, Nw2subnet, Nw2gw, Destroy, Location, VersionMethod, VPNUser, VPNPass, VPNURL, SetupSSP, DemoLab, EnableFlow, DemoXenDeskT, EnableBlueprintBackup, InstallEra, InstallFrame, InstallMove, InstallXRay, InstallObjects, UpdateAOS, DemoExchange, InstallKarbon, DemoIISXPlay, InstallFiles, InstallSplunk, InstallHashiVault, Install1CD, Slackbot, InstallBPPack, Portable, EnableEmail, Install3TierLAMP, VCenterUser, VCenterPass, VCenterIP, pcsidebin, pcsidemeta )
                 VALUES('$queueUuid','$qstatus','ToBeValidated','E-Mail','$datecre','$PEClusterIP','$Sender','$email','$PEAdmin','$PEPass','$debug','$AOSVersion','$PCVersion','$Hypervisor','$InfraSubnet','$cvms','$InfraGW','$DnsSRV','$POCname','$PCM','$model','$nw1vlan','$nw2dhcpst','$nw2vl','$nw2subnet','$nw2gw','$destroy','$Region','$ver','$VPNUser','$VPNPass','$VPNURL','$SSP','$DemoLab','$EnableFlow','$DemoXen','$backup','$InstallEra','$frame','$move','$xray','$objects','$UpdateAOS','$DemoExchange','$installKarbon','$DemoIISXPlay','$InstallFiles','$InstallSplunk','$InstallHashiVault','$Install1CD','$Slackbot','$bpp','0','$enableEmail','$Install3TierLAMP','$VCenterUser','$VCenterPass','$VCenterIP','$pcsidebin','$pcsidemeta')"
-    write-host $SQLQuery
-    $SQLQueryOutput = Invoke-Sqlcmd -query $SQLQuery -ServerInstance $SQLInstance 
+      write-host $SQLQuery
+      $SQLQueryOutput = Invoke-Sqlcmd -query $SQLQuery -ServerInstance $SQLInstance 
 
-    write-log -message "Creating Queue entry with status $qstatus and ID $queueUuid"
-
-    sleep 5
-    $outlook.quit()
-    $object = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE QueueUUID='$queueUuid';"
-    return $object 
+      write-log -message "Creating Queue entry with status $qstatus and ID $queueUuid"
+      $item.delete()
+      sleep 5
+      $outlook.quit()
+      $object = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLQueueTableName) WHERE QueueUUID='$queueUuid';"
+      return $object
+    } else {
+      $outlook.quit()
+      return $email
+    }
   };
 };
 

@@ -3847,8 +3847,8 @@ Function REST-Add-AuthConfig {
 {
   "name": "$netbios",
   "domain": "$($datagen.Domainname)",
-  "directoryUrl": "ldap://$($datagen.DC1Name).$($datagen.domainname):3268",
-  "groupSearchType": "RECURSIVE",
+  "directoryUrl": "ldap://$($datagen.domainname):3268",
+  "groupSearchType": "NON_RECURSIVE",
   "directoryType": "ACTIVE_DIRECTORY",
   "connectionType": "LDAP",
   "serviceAccountUsername": "$($netbios)\\administrator",

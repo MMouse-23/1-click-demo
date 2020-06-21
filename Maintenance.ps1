@@ -370,7 +370,7 @@ foreach ($stat in $last10){
 $averagesecond = [string]($total4time.totalseconds) / 10
 $Averagetime = New-TimeSpan -Seconds $averagesecond
 
-$Limitseconds = 10000
+$Limitseconds = 11200
 $limittime = New-TimeSpan -Seconds $Limitseconds
 if ($Averagetime.totalseconds -ge $Limitseconds){
   $datagenTemp = $Validation = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 1 * FROM [$($SQLDatabase)].[dbo].$($SQLDataGenTableName) WHERE QueueUUID='$($last10[0].QueueUUID)';"

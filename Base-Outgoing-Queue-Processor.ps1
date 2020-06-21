@@ -248,13 +248,13 @@ do {
       $time = (get-date).addhours(-48)
       $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
       #$Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE Status = 'Running' order by DateCreated";
-      [array]$active    = $Statobjects | where {$_.Percentage -le 75 -and $_.status -eq "Running"}
+      [array]$active    = $Statobjects | where {$_.Percentage -le 98 -and $_.status -eq "Running"}
       $ramfree = 25
       $totalCPUPerc = 65
       if ($env:computername -match "DEv"){
-        $concurrent = 4
+        $concurrent = 5
       } else {
-        $concurrent = 5     
+        $concurrent = 6     
       }
       if ($ram.pctfree -le $ramfree -or $totalav -ge $totalCPUPerc -or $active.count -gt $concurrent){
         
@@ -267,7 +267,6 @@ do {
         $queueingcounter = 0
         do{
           $queueingcounter ++ 
-          sleep 119
           if ($queueingcounter % 8 -eq 0){
             $ram = Test-MemoryUsage
             $totalav = Test-CPUUsage
@@ -801,6 +800,12 @@ do {
  
       }
 
+      $DNS =$null
+      [array]$DNS += $datagen.DC1IP
+      [array]$DNS += $datagen.DC2IP
+
+      $hide = REST-Add-DNS-Servers -datagen $datagen -datavar $datavar -DNSArr $dns -mode "PC"
+
       if ($datavar.InstallFiles -eq 1){
         
         write-log -message "Spawning Files Plus Analytics Install" -sev "CHAPTER" -slacklevel 1
@@ -886,7 +891,12 @@ do {
 
       $LauchCommand = 'Wrap-Post-PC -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile'
       Lib-Spawn-Wrapper -Type "POSTPC" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
-  
+      $count = 0
+      do {
+        $count++
+        sleep 60
+        write-log "Message Sleeping for SSP"
+      } until ($count -ge 3)  
       write-log -message "Getting Versions"
 
       $calmversion = ($updates | where {$_.Name -match "Calm"}).version
@@ -923,7 +933,13 @@ do {
         write-log -message "Spawning SSP Portal with AD content" -sev "CHAPTER" -slacklevel 1
         $LauchCommand = 'Wrap-Create-SSP-Base -datagen $datagen -datavar $datavar'
         Lib-Spawn-Wrapper -Type "SSP_Base" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
-        sleep 10
+
+        $count = 0
+        do {
+          $count++
+          sleep 60
+          write-log "Message Sleeping for SSP"
+        } until ($count -ge 3)
 
         write-log -message "Spawning MarketPlace" -sev "CHAPTER" -slacklevel 1
         $LauchCommand = 'Wrap-Create-Marketplace -datagen $datagen -datavar $datavar'

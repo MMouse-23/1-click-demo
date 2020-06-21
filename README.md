@@ -37,6 +37,7 @@
 - XPlay IIS / Calm 3.0 Fixes, Old BP did not fire correctly anymore.
 - Wait timer enhancements.
 - SQL Stability.
+- Portable Edition, broken startup.
 - Postgres HA Stability.
 
 **Features:**

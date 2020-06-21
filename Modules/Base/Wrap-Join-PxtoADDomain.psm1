@@ -68,7 +68,7 @@ function Wrap-Join-PxtoADDomain{
       write-log -message "DNS Setup Failure" -sev "WARN"
 
     }
-    sleep 30
+    $count = 0
 
     $authdom = REST-Get-AuthConfig -datagen $datagen -datavar $datavar -mode $mode
     if ($authdom.directoryList.domain -eq $datagen.domainname){;
@@ -102,7 +102,7 @@ function Wrap-Join-PxtoADDomain{
           $pxjoin =0
           write-log -message "$($mode) Join Failure." -sev "WARN"
         }
-      } until ($pxjoin -eq 1 -or $count -ge 3)
+      } until ($pxjoin -eq 1 -or $count -ge 8)
     }
     sleep 10
     $authdom = REST-Get-AuthConfig -datagen $datagen -datavar $datavar -mode $mode

@@ -71,6 +71,7 @@ start-transcript -path $logfile
 
 # Program log cleanup
 
+
 write-log -message "Starting Log Cleanup"
 
 $oldFiles = get-item "$($logingdir)\Backend-*.log" | where {$_.lastwritetime -le ((get-date).adddays(-5))}
@@ -93,11 +94,27 @@ if ($portable -eq 1){
 write-log -message "Backend Process active"
 
 do {
+  $time = (get-date).addhours(-48)
+  $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
+  [array]$active           = $Statobjects | where {$_.Percentage -le 98 -and $_.status -eq "Running"}
   if ($portable -eq 0){
-    write-log -message "Checking Outlook"
+    write-log -message "Checking Outlook active count is $($active.count)"
     $singleusermode = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -ge (get-date).addminutes(-90)}
     if ($env:computername -notmatch "dev" ){
-      $object = Get-IncommingueueItem
+      if ($active.count -le 6){
+        $object = Get-IncommingueueItem
+        if ($object){
+          sleep 60
+        }
+      } else {
+        $object = Get-IncommingueueItem -mode "scan"
+        $datagen = LIB-Config-DetailedDataSet -datavar $object -mode "BackEnd"
+        
+        Send-MailMessage -body "High load at the moment" -to $object -from "1-click-demo@nutanix.com" -port 25 -smtpserver mxb-002c1b01.gslb.pphosted.com -subject "1-Click-Demo Queue is Full, please wait"
+        write-log "Queue is full, not accepting new emails sleeping 20"
+
+        sleep 1200
+      }
     }
     if ($object.QueueStatus -eq "Manual"){
       write-log -message "Sending Manual Queue EMAIL"
