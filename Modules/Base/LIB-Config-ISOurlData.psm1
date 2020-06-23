@@ -45,7 +45,7 @@ Function  LIB-Config-ISOurlData {
   if ($datavar.Hypervisor -match "ESX"){
     $MoveAutoUrl = $object.urlVMWare
   } else {
-    $MoveAutoUrl = "https://dl.dropboxusercontent.com/s/jilto2sy98kbi0k/move-3.5.1.qcow"
+    $MoveAutoUrl = $object.urlAHV
   }
   if ($debug -ge 2){
 
