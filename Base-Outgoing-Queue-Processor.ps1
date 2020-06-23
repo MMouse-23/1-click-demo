@@ -814,7 +814,7 @@ do {
 
         $UrlBase = $ISOurlData1."$($datagen.files1_Imagename)"
         $UrlAnalytics = $ISOurlData1."$($datagen.files2_Imagename)"
-        $LauchCommand = 'Wrap-Create-FS -datavar $datavar -datagen $datagen'
+        $LauchCommand = 'Wrap-Create-FS -datavar $datavar -datagen $datagen -ramcap ' + $ramcap
         Lib-Spawn-Wrapper -Type "Files" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
 
       }

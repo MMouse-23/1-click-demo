@@ -5,7 +5,8 @@ Function Wrap-Create-FS {
     [string] $UrlBase,
     [string] $UrlAnalytics,
     [string] $jsonbase,
-    [string] $jsonAna
+    [string] $jsonAna,
+    [string] $ramcap
   )
 
   write-log -message "Wait for Forest Task"
@@ -183,8 +184,19 @@ Function Wrap-Create-FS {
     
     Write-log -message "Using version $AnalyticsVersion"
     Write-log -message "Building Analytics Server" -slacklevel 1
+    write-log -message "RAM Cap is $($ramcap)"
+    if ($ramcap -ge 2){
+      write-log -message "Creating Small Analytics Server"
+      $VCPU  = 4
+      $cores = 4
+      $GBRAM = 16
+    } else {
+      $VCPU  = 4
+      $cores = 4
+      $GBRAM = 32      
+    }
     
-    REST-Create-FileAnalyticsServer -datagen $datagen -datavar $datavar -network $subnet -container $container -AnalyticsVersion $AnalyticsVersion
+    REST-Create-FileAnalyticsServer -datagen $datagen -datavar $datavar -network $subnet -container $container -AnalyticsVersion $AnalyticsVersion -GBRAM $GBRAM -VCPU $VCPU -Cores $cores
   
     $result = Wait-TaskAnalytics -datagen $datagen -datavar $datavar 
 

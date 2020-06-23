@@ -138,15 +138,17 @@ $Share= @"
   "secondaryProtocolType": "NONE",
   "sharePath": "",
   "isNestedShare": false,
+  "fileBlockingExtensions": [],
   "authenticationType": "SYSTEM",
-  "defaultShareAccessType": "NONE",
+  "defaultShareAccessType": "READ_WRITE",
   "anonymousUid": "1024",
   "anonymousGid": "1024",
   "squashType": "ALL_SQUASH",
-  "clientReadWrite": "$($ipconfig)",
+  "clientReadWrite": "",
   "clientReadOnly": "",
   "clientNoAccess": "",
-  "shareType": "GENERAL"
+  "shareType": "GENERAL",
+  "compressionEnabled": true
 }
 "@
 
@@ -736,7 +738,10 @@ Function REST-Create-FileAnalyticsServer {
     [object] $datavar,
     [object] $network,
     [object] $container,
-    [string] $AnalyticsVersion
+    [string] $AnalyticsVersion,
+    [string] $GBRAM,
+    [string] $VCPU,
+    [string] $cores
   )
   $clusterip = $datavar.PEClusterIP  
   $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
@@ -766,9 +771,9 @@ $Payload= @"
     "gateway": "$($datavar.InfraGateway)"
   },
   "resource": {
-    "memory": "32",
-    "cores": "4",
-    "vcpu": "4"
+    "memory": "$($GBRAM)",
+    "cores": "$($Cores)",
+    "vcpu": "$($VCPU)"
   },
   "dns_servers": ["$($datagen.DC1IP)", "$($datagen.DC2IP)"],
   "ntp_servers": ["$($datagen.NTPServer1)", "$($datagen.NTPServer2)", "$($datagen.NTPServer3)", "$($datagen.NTPServer4)"]
