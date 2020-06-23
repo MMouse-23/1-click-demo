@@ -473,7 +473,7 @@ write-log -message "Getting Move"
 $portalassets = REST-Portal-Query-AssetOtions
 $LiveMoveVersion = (($portalassets | where {$_.id -eq "xtract"}).options.version | select-string -pattern "[0-9].*" | sort [version]$_ | select -last 1).tostring()
 if ([version]$LiveMoveVersion){
-  $MoveConf = "$($LiveMoveVersion);http://download.nutanix.com/NutanixMove/$($LiveMoveVersion)/move-$($LiveMoveVersion).zip;http://download.nutanix.com/NutanixMove/$($LiveMoveVersion)/move-$($LiveMoveVersion)-esxi.ova"
+  $MoveConf = "$($LiveMoveVersion);http://download.nutanix.com/NutanixMove/$($LiveMoveVersion)/move-$($LiveMoveVersion).qcow2;http://download.nutanix.com/NutanixMove/$($LiveMoveVersion)/move-$($LiveMoveVersion)-esxi.ova"
   write-log -message "Writing Move $MoveConf"
   write "Version;UrlAHV;UrlVMWare`n$($MoveConf)" | out-file "$basedir\AutoDownloadURLs\Move.urlconf"    
 } else {
