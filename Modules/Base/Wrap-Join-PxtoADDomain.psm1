@@ -78,6 +78,7 @@ function Wrap-Join-PxtoADDomain{
 
       $authdom.directoryList.domain
     } else {
+
       if ($authdom.directoryList.domain -and $authdom.directoryList.domain -ne $datagen.domainname){
 
         REST-Remove-AuthConfig -datavar $datavar -datagen $datagen -name $authdom.directoryList.name

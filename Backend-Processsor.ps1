@@ -97,15 +97,14 @@ do {
   $time = (get-date).addhours(-48)
   $Statobjects      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT TOP 100 * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName) WHERE DateCreated >= '$time' order by DateCreated";
   [array]$active           = $Statobjects | where {$_.Percentage -le 98 -and $_.status -eq "Running"}
+  [array]$locks = get-childitem $Lockdir | where {$_.LastWriteTime -ge (get-date).addminutes(-90)}
   if ($portable -eq 0){
-    write-log -message "Checking Outlook active count is $($active.count)"
-    $singleusermode = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -ge (get-date).addminutes(-90)}
+    write-log -message "Checking Outlook, active DB count is $($active.count), Active Locks is $($locks.count)"
+    $singleusermode = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -ge (get-date).addminutes(-300)}
     if ($env:computername -notmatch "dev" ){
-      if ($active.count -le 6){
+      if ($active.count -le 6 -and $locks.count -le 5){
         $object = Get-IncommingueueItem
-        if ($object){
-          sleep 60
-        }
+
       } else {
         $object = Get-IncommingueueItem -mode "scan"
         $datagen = LIB-Config-DetailedDataSet -datavar $object -mode "BackEnd"
@@ -163,8 +162,8 @@ do {
 
         if ($Object){
           Lib-Spawn-Base -basedir $basedir -ps1file $ps1file -Type $tasktype 
-          sleep 119
-          $tasktype = "Sleeping 2 minutes after launch" 
+          sleep 300
+          $tasktype = "Sleeping 5 minutes after launch" 
         }
       }
     }

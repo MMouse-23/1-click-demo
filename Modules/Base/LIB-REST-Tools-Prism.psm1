@@ -3847,7 +3847,7 @@ Function REST-Add-AuthConfig {
 {
   "name": "$netbios",
   "domain": "$($datagen.Domainname)",
-  "directoryUrl": "ldap://$($datagen.domainname):3268",
+  "directoryUrl": "ldap://$($datagen.DC1IP):3268",
   "groupSearchType": "NON_RECURSIVE",
   "directoryType": "ACTIVE_DIRECTORY",
   "connectionType": "LDAP",

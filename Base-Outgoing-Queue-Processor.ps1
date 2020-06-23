@@ -610,12 +610,14 @@ do {
       $LauchCommand = 'Wrap-Upload-ISOImages -ISOurlData1 $ISOurlData1 -ISOurlData2 $ISOurlData2 -datavar $datavar -datagen $datagen -mode "Base"'
       Lib-Spawn-Wrapper -Type "ImageUpload-Pass-1-Base" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand    
       if ($datavar.installera -ge 1 ){
-        if ($Hypervisor -match "AHV|Nutanix"){
+        if ($Hypervisor -match "AHV|Nutanix" -and $datavar.installera -eq 1){
           $LauchCommand = 'Wrap-Upload-ISOImages -ISOurlData1 $ISOurlData1 -ISOurlData2 $ISOurlData2 -datavar $datavar -datagen $datagen -mode "MSSQL"'
           Lib-Spawn-Wrapper -Type "ImageUpload-Pass-1-MSSQL" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
         }
-        $LauchCommand = 'Wrap-Upload-ISOImages -ISOurlData1 $ISOurlData1 -ISOurlData2 $ISOurlData2 -datavar $datavar -datagen $datagen -mode "Oracle"'
-        Lib-Spawn-Wrapper -Type "ImageUpload-Pass-1-Oracle" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
+        if ($datavar.installera -eq 1){
+          $LauchCommand = 'Wrap-Upload-ISOImages -ISOurlData1 $ISOurlData1 -ISOurlData2 $ISOurlData2 -datavar $datavar -datagen $datagen -mode "Oracle"'
+          Lib-Spawn-Wrapper -Type "ImageUpload-Pass-1-Oracle" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
+        }
       }
       
  
