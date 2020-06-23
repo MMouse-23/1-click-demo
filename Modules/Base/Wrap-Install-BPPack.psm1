@@ -2,7 +2,8 @@ function Wrap-Install-BPPack {
   param(
     $datavar,
     $datagen,
-    $BlueprintsPath
+    $BlueprintsPath,
+    $ramcap
   )
 
   write-log -message "Starting BluePrint Pack Installer" -sev "Chapter" -slacklevel 1
@@ -18,6 +19,16 @@ function Wrap-Install-BPPack {
     write-log -message "Importing BluePrint $($object.metadata.name)"
     REST-Restore-BackupBlueprint -datagen $datagen -datavar $datavar -blueprint $json
   }
+  if ($ramcap -le 1){
 
-  write-log -message "Backup Engine Scheduler Finished." -sev "Chapter" -slacklevel 1
+    write-log -message "Launching 5 Custom MarketPlace Apps" -sev "Chapter"
+
+    Wrap-Install-BPApps -datagen $datagen -datavar $datavar -BlueprintsPath $BlueprintsPath
+
+  } else {
+
+    write-log -message "This cluster is full, we cannot add bulk apps"
+
+  }
+  write-log -message "BP Pack Install Finished." -sev "Chapter" -slacklevel 1
 }

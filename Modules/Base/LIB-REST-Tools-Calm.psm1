@@ -2129,6 +2129,68 @@ $JSON2 = @"
   Return $task
 } 
 
+Function REST-Update-Generic-MarketPlace-Blueprint {
+  Param (
+    [object] $blueprintdetail,
+    [object] $datagen,
+    [object] $datavar,
+    [object] $subnet,
+    [object] $image,
+    [string] $VMname
+  )
+
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  $BPObject = $blueprintdetail
+
+  write-log -message "Prepping object"
+
+  $BPObject.psobject.properties.Remove('status')
+
+  write-log -message "Setting Credential Objects"
+
+  ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "CENTOS"}).secret.attrs.is_secret_modified = $true
+  ($BPObject.spec.resources.credential_definition_list | where {$_.name -eq "CENTOS"}).secret | add-member noteproperty value $datavar.pepass -force
+
+  write-log -message "Updating Name"
+
+  $BPObject.spec.resources.substrate_definition_list[0].create_spec.name = $VMname
+
+  write-log -message "Correcting Image"
+
+  $blueprintdetail.spec.resources.substrate_definition_list | % {$_.create_spec.resources.disk_list[0].data_source_reference.uuid = $image.metadata.uuid}
+
+  write-log -message "Setting up Subnet"
+
+  $BPObject.spec.resources.substrate_definition_list | % {$_.create_spec.resources.nic_list.subnet_reference.uuid = $subnet.uuid }
+
+  write-log -message "Passing the ball to Calm"
+
+  $Json = $BPObject | ConvertTo-Json -depth 100
+   
+  $URL = "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($blueprintdetail.metadata.uuid)"
+
+  write-log -message "Executing Update using URL $url"
+  if ($debug -ge 2){
+    $json | out-file c:\temp\1cd.json
+  }
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $Json -ContentType 'application/json' -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "PUT" -body $Json -ContentType 'application/json' -headers $headers;
+  }
+
+  Return $task
+} 
+
+
 Function REST-Update-1CD-Blueprint {
   Param (
     [object] $blueprintdetail,
@@ -2190,6 +2252,8 @@ Function REST-Update-1CD-Blueprint {
 
   Return $task
 } 
+
+
 
 Function REST-Update-XenDesktopBP {
   Param (

@@ -1025,7 +1025,7 @@ do {
 
         write-log -message "Spawning Install GTS 2019 BP Pack" -sev "CHAPTER" -slacklevel 1
 
-        $LauchCommand = 'Wrap-Install-BPPack -datagen $datagen -datavar $datavar -BlueprintsPath ' + $BlueprintsPath
+        $LauchCommand = 'Wrap-Install-BPPack -datagen $datagen -datavar $datavar -BlueprintsPath ' + $BlueprintsPath + ' -ramcap ' + $ramcap
         Lib-Spawn-Wrapper -Type "BPPack" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
         
         $LauchCommand = 'Wrap-Install-Runbooks -datagen $datagen -datavar $datavar -basedir ' + $basedir
