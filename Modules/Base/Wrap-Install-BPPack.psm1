@@ -19,7 +19,7 @@ function Wrap-Install-BPPack {
     write-log -message "Importing BluePrint $($object.metadata.name)"
     REST-Restore-BackupBlueprint -datagen $datagen -datavar $datavar -blueprint $json
   }
-  if ($ramcap -le 1){
+  if ($ramcap -le 1 -and $datagen.hostcount -ge 2){
 
     write-log -message "Launching 5 Custom MarketPlace Apps" -sev "Chapter"
 

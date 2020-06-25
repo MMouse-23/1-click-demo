@@ -98,9 +98,11 @@ function Lib-Update-DataX {
 
     }  
     if ($ramcap -ge 2){
+      $Install1CD = 0
       $InstallHashiVault = 0
     } 
     if ($ramcap -ge 3 -and $datavar.InstallERA -ne 0){
+      $Install1CD = 0
       $InstallEra = 2
     }
     if ($InstallXenDesktop -eq 1 ){

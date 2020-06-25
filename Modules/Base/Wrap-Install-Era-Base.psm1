@@ -122,10 +122,32 @@ Function Wrap-Install-Era-Base {
   
         write-log -message "Get Cluster UUID" 
     
-        $cluster = REST-ERA-GetClusters -datavar $datavar -datagen $datagen
-    
+        $cluster = REST-ERA-GetClusters -datavar $datavar -datagen $datagen 
+        
+        
+      
+        $PEnetworks = Rest-get-pe-networks -datagen $datagen -datavar $datavar
+
+        if ($PEnetworks.entities.name -contains $datagen.nw2name) {
+
+          $lastIP = Get-LastAddress -IPAddress $datavar.Nw2DHCPStart -SubnetMask $datavar.nw2subnet
+          
+          write-log -message "Secondary network is present. We can deploy SQL AAG"
+          write-log -message "Using last IP: $lastIP"
+          write-log -message "Creating Secondary ERA Managed Network"  
+
+          REST-ERA-Attach-ERAManaged-PENetwork -datagen $datagen -datavar $datavar -lastIP $lastIP
+          sleep 2 
+          $networkname = $datagen.nw2name
+
+        } else {
+
+          write-log -message "There is no secondary network present."
+     
+        }
+
         write-log -message "Getting SLAs"
-    
+
         $slas = REST-ERA-GetSLAs -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
         $gold = $slas | where {$_.name -eq "DEFAULT_OOB_GOLD_SLA"}
     

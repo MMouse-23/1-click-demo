@@ -24,15 +24,6 @@ Function Wrap-Install-Era-AAG-MSSQL {
       break
     }
     
-    $lastIP = Get-LastAddress -IPAddress $datavar.Nw2DHCPStart -SubnetMask $datavar.nw2subnet
-    
-    write-log -message "Using last IP: $lastIP"
-
-    write-log -message "Creating Secondary ERA Managed Network"  
-
-    REST-ERA-Attach-ERAManaged-PENetwork -datagen $datagen -datavar $datavar -lastIP $lastIP
-    sleep 2
-
     write-log -message "Creating ERA IP Managed Network Profile" 
 
     $MSSQLProfile = REST-ERA-MSSQL-ERA-NW-ProfileCreate  -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.PEadmin -Networkname $datagen.Nw2name

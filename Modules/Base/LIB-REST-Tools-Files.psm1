@@ -780,7 +780,7 @@ $Payload= @"
 }
 "@ 
   if ($debug -ge 2){
-    $JSON | out-file c:\temp\createFSana.json
+    $Payload | out-file c:\temp\createFSana.json
   }
   $JSON = $Payload 
   try{
