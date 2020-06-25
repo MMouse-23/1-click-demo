@@ -3,7 +3,7 @@
 
 
 
-**Current Version 1.2.0.1*
+**Current Version 1.2.0.3*
 
 
 ## Introduction
@@ -46,7 +46,10 @@
 - Full Oracle Clone.
 - MySQL Clone
 - Calm ERA BP Removed, but replaced with API Clones.
-- Move 3.5.1
+- Move 3.5.2
+- Full auto versioning
+- 5 Marketplace Apps Running (BPPack and < 2 nodes only.)
+- ERA Moved to secondary network.
 
 ## Release notes 1.1.2.3
 
