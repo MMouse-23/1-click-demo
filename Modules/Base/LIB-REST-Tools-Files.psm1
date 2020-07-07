@@ -267,7 +267,7 @@ $Payload= @"
   "windowsAdUsername": "administrator",
   "windowsAdPassword": "$($datagen.SysprepPassword)",
   "dnsServerIpAddresses": ["$($datagen.DC1IP)", "$($datagen.DC2IP)"],
-  "ntpServers": ["$($datagen.NTPServer1)", "$($datagen.NTPServer2)", "$($datagen.NTPServer3)", "$($datagen.NTPServer4)"],
+  "ntpServers": ["$($datagen.DC1IP)", "$($datagen.DC2IP)"],
   "sizeGib": "5120",
   "version": "$($filesversion)",
   "dnsDomainName": "$($datagen.Domainname)",

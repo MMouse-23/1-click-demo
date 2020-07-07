@@ -215,6 +215,7 @@ function Wrap-Validate-Build {
   
     $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
     $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token
+    $clusters = $clusters | select -first 1
 
     $Classes = REST-Karbon-List-StorageCloss -datagen $datagen -datavar $datavar -cluster $clusters -token $token
 
