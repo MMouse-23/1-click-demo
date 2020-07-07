@@ -1,59 +1,111 @@
-
-  Function Wait-Task{
-    param (
-      $datavar,
-      $datagen
-    )
-    do {
-      try{
-
-        $counter++
-        write-log -message "Wait for File Server Install Cycle $counter out of 25(minutes)."
-    
-        $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-        $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
-        if (!$FileServer){
-          write-log -message "Task does not exist yet"
-          do {
-            $counterinstall++
-            sleep 60
-            $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
-            $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
-          } until ($FileServer -or $counterinstall -ge 5)
-        }
-        $Inventorycount = 0
-        [array]$Results = $null
-        foreach ($item in $FileServer){
-          if ( $item.percentage_complete -eq 100) {
-            $Results += "Done"
-     
-            write-log -message "FS Install $($item.uuid) is completed."
-          } elseif ($item.percentage_complete -ne 100){
-            $Inventorycount ++
-    
-            write-log -message "FS Install $($item.uuid) is still running."
-            write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
-    
-            $Results += "BUSY"
-    
-          }
-        }
-        if ($Results -notcontains "BUSY" -or !$FileServer){
-
-          write-log -message "FS Install is done."
-     
-          $InstallCheck = "Success"
-     
-        } else{
-          sleep 60
-        }
-    
-      }catch{
-        write-log -message "Error caught in loop."
-      }
-    } until ($InstallCheck -eq "Success" -or $counter -ge 40)
-    return $item.status
+function Get-CalculatedIP {
+  param (
+    [parameter(Mandatory=$true,Position=0)]$IPAddress,
+    [parameter(Mandatory=$true,Position=1)][int]$ChangeValue
+  )
+  $count = 0..3
+  foreach($number in $count){
+    $splat = @{
+      Name = ('Octet' + $number)
+      Value = ([int]$IPAddress.toString().Split('\.')[$number])
+    }
+    New-Variable @splat
   }
+
+  $newValue = $ChangeValue + $octet3
+  If($newValue -ge 256 -or $newValue -lt 0){
+    $count = 3
+    do {
+      $continue = $false
+      $remainder = ($newValue % 256)
+      if($remainder -lt 0){
+        $remainder = $remainder + 256
+      }      
+      $name = ('Octet' + $count)
+      $splat = @{
+        Name = $name
+        Value = $remainder
+      }
+      Set-Variable @splat
+
+      $quotient = [math]::Round(($newValue - $remainder) / 256)
+
+      $count--
+      $name = ('Octet' + $count)
+      $newValue = $quotient + $(Get-Variable -Name $name).Value
+
+      if($newValue -ge 256 -or $newValue -lt 0) {
+        $continue = $true
+      } else {
+        $splat = @{
+          Name = $name
+          Value = $newValue
+        }
+        Set-Variable @splat
+      }
+    } until ($continue -eq $false)
+  } else {
+    $newValue = $octet3 + $ChangeValue
+    Set-Variable -Name Octet3 -Value $newValue 
+  }
+  [ipaddress]$("{0}.{1}.{2}.{3}" -f $octet0,$octet1,$octet2,$octet3)
+}
+
+Function Wait-Task{
+  param (
+    $datavar,
+    $datagen
+  )
+  do {
+    try{
+
+      $counter++
+      write-log -message "Wait for File Server Install Cycle $counter out of 25(minutes)."
+  
+      $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+      $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
+      if (!$FileServer){
+        write-log -message "Task does not exist yet"
+        do {
+          $counterinstall++
+          sleep 60
+          $PCtasks = REST-Task-List -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+          $FileServer = $PCtasks.entities | where {$_.operation_type -eq "FileServerAdd"}
+        } until ($FileServer -or $counterinstall -ge 5)
+      }
+      $Inventorycount = 0
+      [array]$Results = $null
+      foreach ($item in $FileServer){
+        if ( $item.percentage_complete -eq 100) {
+          $Results += "Done"
+   
+          write-log -message "FS Install $($item.uuid) is completed."
+        } elseif ($item.percentage_complete -ne 100){
+          $Inventorycount ++
+  
+          write-log -message "FS Install $($item.uuid) is still running."
+          write-log -message "We found 1 task $($item.status) and is $($item.percentage_complete) % complete"
+  
+          $Results += "BUSY"
+  
+        }
+      }
+      if ($Results -notcontains "BUSY" -or !$FileServer){
+
+        write-log -message "FS Install is done."
+   
+        $InstallCheck = "Success"
+   
+      } else{
+        sleep 60
+      }
+  
+    }catch{
+      write-log -message "Error caught in loop."
+    }
+  } until ($InstallCheck -eq "Success" -or $counter -ge 40)
+  return $item.status
+}
 
 Function Wait-TaskAnalytics{
   param (
