@@ -114,7 +114,7 @@ Function Wrap-Create-KarbonCluster {
 
     $VIP = (Get-CalculatedIP -IPAddress $datavar.Nw2DHCPStart -ChangeValue 2).IPAddressToString
 
-    REST-Karbon-Create-Cluster-Calico -datagen $datagen -datavar $datavar -token $token -image $image -k8version $lastversion -subnet $subnet2 -PCcluster $cluster -VIP 
+    REST-Karbon-Create-Cluster-Calico -datagen $datagen -datavar $datavar -token $token -image $image -k8version $lastversion -subnet $subnet2 -PCcluster $cluster -VIP $VIP
     
   }
 
