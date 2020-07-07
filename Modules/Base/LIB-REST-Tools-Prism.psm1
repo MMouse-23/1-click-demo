@@ -212,11 +212,15 @@ Function REST-PE-Create-Network {
   }
 }
 "@ 
+    if ($debug -ge 2){
+      $Payload | out-file c:\temp\nwcreate.json
+    }
   } else {
 
     write-log -message "Nutanix IPAM Disabled!"
 
     $Payload= @"
+}
 {
   "name":"$($Name)",
   "vlanId":"$($VLanID)"

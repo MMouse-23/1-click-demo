@@ -44,7 +44,7 @@ Function Wrap-Install-Objects {
     do {
       $count2 ++
       REST-Create-Objects-Bucket -datagen $datagen -datavar $datavar -storeID $result.group_results.Entity_results.entity_id -bucketname "demo$($count2)"
-    } until ($count2 -ge 100)
+    } until ($count2 -ge 5)
   }
   $count3 = 0
   do {
@@ -52,7 +52,7 @@ Function Wrap-Install-Objects {
     sleep 60
     $result = REST-Query-Objects-Store -datagen $datagen -datavar $datavar
     [int]$bucketcount = ($result.group_results.Entity_results.data | where {$_.name -eq "num_buckets"}).values.values
-  } until ($bucketcount -ge 20 -or $count3 -ge 2)
+  } until ($bucketcount -ge 5 -or $count3 -ge 2)
   
   write-log -message "We created $bucketcount buckets."
 

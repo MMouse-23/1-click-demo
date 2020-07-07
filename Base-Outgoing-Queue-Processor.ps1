@@ -680,6 +680,29 @@ do {
               -vlanID $datavar.nw2vlan `
               -IPAM $false
 
+            $networkAddr = (Get-NetworkAddress -ip $datavar.Nw2gw -mask $datavar.nw2subnet).IPAddressToString
+            $lastIP = Get-LastAddress -IPAddress $datavar.Nw2DHCPStart -SubnetMask $datavar.nw2subnet
+            $start = (Get-CalculatedIP -IPAddress $datavar.Nw2DHCPStart -ChangeValue 10).IPAddressToString
+            $end = (Get-CalculatedIP -IPAddress $datavar.Nw2DHCPStart -ChangeValue 30).IPAddressToString
+
+            write-log -message "Creating Thrird network"  #ERA SPLIT
+
+            REST-PE-Create-Network `
+              -PEClusterIP $datavar.PEClusterIP `
+              -PxClusterPass $Datavar.PEPass `
+              -PxClusterUser $Datavar.PEAdmin `
+              -name "Network-03" `
+              -vlanID $datavar.nw2vlan `
+              -IPAM $true `
+              -DNSServers "$($datagen.DC1IP), $($datagen.DC2IP)" `
+              -DHCPStart $start `
+              -DHCPEnd $end `
+              -GateWay $datavar.Nw2gw `
+              -SubnetMask $datavar.nw2subnet `
+              -Address $networkAddr `
+              -Domain $datagen.domainname
+
+
           }
  
         }

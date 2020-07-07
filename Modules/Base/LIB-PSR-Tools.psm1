@@ -1,3 +1,51 @@
+function Get-NetworkAddress {
+  param ( 
+    [string]$ip, 
+    [string]$mask
+  ) 
+  $ipaddr = [Net.IPAddress]::Parse($ip)
+  $maskaddr = [Net.IPAddress]::Parse($mask)
+  $networkaddr = new-object net.ipaddress ($maskaddr.address -band $ipaddr.address)
+  return $networkaddr
+}
+
+function Get-IPrange {
+param ( 
+  [string]$start, 
+  [string]$end, 
+  [string]$ip, 
+  [string]$mask
+) 
+
+  if ($ip) {
+    $ipaddr = [Net.IPAddress]::Parse($ip)
+  } 
+  if ($cidr) {
+    $maskaddr = [Net.IPAddress]::Parse((INT64-toIP -int ([convert]::ToInt64(("1"*$cidr+"0"*(32-$cidr)),2)))) 
+  } 
+  if ($mask) {
+    $maskaddr = [Net.IPAddress]::Parse($mask)
+  } 
+  if ($ip) {
+    $networkaddr = new-object net.ipaddress ($maskaddr.address -band $ipaddr.address)
+  } 
+  if ($ip) {
+    $broadcastaddr = new-object net.ipaddress (([system.net.ipaddress]::parse("255.255.255.255").address -bxor $maskaddr.address -bor $networkaddr.address))
+  } 
+  if ($ip) { 
+    $startaddr = IP-toINT64 -ip $networkaddr.ipaddresstostring 
+    $endaddr = IP-toINT64 -ip $broadcastaddr.ipaddresstostring 
+  } else { 
+    $startaddr = IP-toINT64 -ip $start 
+    $endaddr = IP-toINT64 -ip $end 
+  } 
+   
+  for ($i = $startaddr; $i -le $endaddr; $i++) { 
+    INT64-toIP -int $i 
+  }
+
+}
+
 function Get-CalculatedIP {
   param (
     [parameter(Mandatory=$true,Position=0)]$IPAddress,
@@ -1729,6 +1777,8 @@ Function Wait-AHV-Upgrade{
   } until (($notready -eq $null) -or $installcounter -ge 60)
   sleep 60
 }
+
+
 
 Function PSR-Reboot-PC {
   param (
