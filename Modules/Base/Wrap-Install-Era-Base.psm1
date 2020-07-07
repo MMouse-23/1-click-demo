@@ -136,7 +136,9 @@ Function Wrap-Install-Era-Base {
           write-log -message "Using last IP: $lastIP"
           write-log -message "Creating Secondary ERA Managed Network"  
 
-          REST-ERA-Attach-ERAManaged-PENetwork -datagen $datagen -datavar $datavar -lastIP $lastIP
+          $start = (Get-CalculatedIP -IPAddress $datavar.Nw2DHCPStart -ChangeValue 10).IPAddressToString
+
+          REST-ERA-Attach-ERAManaged-PENetwork -datagen $datagen -datavar $datavar -lastIP $lastIP -start $start 
           sleep 2 
           $networkname = $datagen.nw2name
 

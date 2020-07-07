@@ -419,7 +419,7 @@ Function REST-Karbon-Get-Clusters {
 } 
 
 
-Function REST-Karbon-Create-Cluster {
+Function REST-Karbon-Create-Cluster-Fannel {
   Param (
     [object] $datagen,
     [object] $datavar,
@@ -539,7 +539,7 @@ Function REST-Karbon-Create-Cluster {
   },
   "etcd_config": {
     "num_instances": 3,
-    "name": "K8-$($datavar.pocname)",
+    "name": "K8-$($datavar.pocname)-F",
     "nodes": [{
       "node_pool_name": "",
       "name": "",
@@ -554,6 +554,137 @@ Function REST-Karbon-Create-Cluster {
   }
 }
 "@
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -websession $websession -body $json -ContentType 'application/json'
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "POST" -websession $websession -body $json -ContentType 'application/json'
+    Return $RespErr
+  }
+
+  Return $task
+} 
+
+Function REST-Karbon-Create-Cluster-Calico {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [object] $image,
+    [object] $token,
+    [string] $k8version,
+    [object] $PCcluster,
+    [object] $subnet,
+    [string] $VIP
+  )
+
+  $URL = "https://$($datagen.PCClusterIP):9440/karbon/v1/k8s/clusters"
+  $Cookie = New-Object System.Net.Cookie
+  $Cookie.Name = "NTNX_IGW_SESSION" # Add the name of the cookie
+  $Cookie.Value = "$($token.value)" # Add the value of the cookie
+  [System.Uri]$uri = $url 
+  $Cookie.Domain = $uri.DnsSafeHost
+  $WebSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+  $WebSession.Cookies.Add($Cookie)
+
+  write-log -message "Creating Karbon Cluster"
+  write-log -message "Using Subnet UUID $($subnet.uuid)"
+  write-log -message "Using Image UUID $($image.image_uuid)"
+  write-log -message "Using Production worker /master count but 4GB of RAM"
+  write-log -message "Using VIP IP $($datagen.KarbonIP)"
+  write-log -message "Using Cluster UUID $($PCcluster.metadata.uuid)"
+  write-log -message "Using Container $($datagen.KarbonContainerName)"
+  write-log -message "Using K8 Clustername K8-$($datavar.pocname)"
+
+  $json = @"
+{
+  "cni_config": {
+    "calico_config": {
+      "ip_pool_configs": [
+        {
+          "cidr": "172.21.0.0/16"
+        }
+      ]
+    },
+    "node_cidr_mask_size": 24,
+    "pod_ipv4_cidr": "172.21.0.0/16",
+    "service_ipv4_cidr": "172.22.0.0/16"
+  },
+  "etcd_config": {
+    "node_pools": [
+      {
+        "ahv_config": {
+          "cpu": 2,
+          "disk_mib": 40960,
+          "memory_mib": 8192,
+          "network_uuid": "$($subnet.uuid)",
+          "prism_element_cluster_uuid": "$($PCcluster.metadata.uuid)"
+        },
+        "name": "etcd-node-pool",
+        "node_os_version": "$($image.version)",
+        "num_instances": 3
+      }
+    ]
+  },
+  "masters_config": {
+    "active_passive_config": {
+      "external_ipv4_address": "$($VIP)"
+    },
+    "node_pools": [
+      {
+        "ahv_config": {
+          "cpu": 2,
+          "disk_mib": 122880,
+          "memory_mib": 4096,
+          "network_uuid": "$($subnet.uuid)",
+          "prism_element_cluster_uuid": "$($PCcluster.metadata.uuid)"
+        },
+        "name": "master-node-pool",
+        "node_os_version": "$($image.version)",
+        "num_instances": 2
+      }
+    ]
+  },
+  "metadata": {
+    "api_version": "v1.0.0"
+  },
+  "name": "K8-$($datavar.pocname)-C",
+  "storage_class_config": {
+    "default_storage_class": true,
+    "name": "default-storageclass",
+    "reclaim_policy": "Delete",
+    "volumes_config": {
+      "file_system": "xfs",
+      "flash_mode": false,
+      "password": "$($datavar.pepass)",
+      "prism_element_cluster_uuid": "$($PCcluster.metadata.uuid)",
+      "storage_container": "$($datagen.KarbonContainerName)",
+      "username": "$($datagen.buildaccount)"
+    }
+  },
+  "version": "$($k8version)",
+  "workers_config": {
+    "node_pools": [
+      {
+        "ahv_config": {
+          "cpu": 4,
+          "disk_mib": 122880,
+          "memory_mib": 8192,
+          "network_uuid": "$($subnet.uuid)",
+          "prism_element_cluster_uuid": "$($PCcluster.metadata.uuid)"
+        },
+        "name": "worker-node-pool",
+        "node_os_version": "$($image.version)",
+        "num_instances": 3
+      }
+    ]
+  }
+}
+"@
+  $json | out-file c:\temp\K8s2.json
+
   try{
     $task = Invoke-RestMethod -Uri $URL -method "POST" -websession $websession -body $json -ContentType 'application/json'
   } catch {

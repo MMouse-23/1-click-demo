@@ -84,9 +84,14 @@ Function Wrap-Create-KarbonCluster {
   $array  = $null
   $versions = REST-Karbon-Get-Versions-Local -datagen $datagen -datavar $datavar -token $token
   foreach ($line in $versions.k8sversion) { 
-    [array]$array += [version]($line -replace "-0",'')
+    [array]$array += [version]($line -replace "-",'.')
   }
-  $lastversion = "$(($array | SORT | select -LAST 1).tostring())-0"
+  $lastversion = "$(($array | SORT | select -LAST 1).tostring())"
+  $lastversion = (($lastversion.split(".") | select -first 3 )-join ".") + "-$($lastversion.split(".")[3])"
+
+  $UpgradeVersion = "$(($array | SORT | select -first 1).tostring())"
+  $UpgradeVersion = (($UpgradeVersion.split(".") | select -first 3 )-join ".") + "-$($UpgradeVersion.split(".")[3])"
+
 
   write-log -message "Using K8 Version $lastversion + Lame pause to impove Karon Create stability."
 
@@ -99,9 +104,18 @@ Function Wrap-Create-KarbonCluster {
 
   } else {
 
-    write-log -message "Creating 8GB Prod Instance" -slacklevel 1
-    REST-Karbon-Create-Cluster -datagen $datagen -datavar $datavar -token $token -image $image -k8version $lastversion -subnet $subnet -PCcluster $cluster
+    write-log -message "Creating 8GB Prod Fannel Instance" -slacklevel 1
 
+    REST-Karbon-Create-Cluster-Fannel -datagen $datagen -datavar $datavar -token $token -image $image -k8version $UpgradeVersion -subnet $subnet -PCcluster $cluster
+
+    write-log -message "Creating 8GB Prod Calico Instance" -slacklevel 1
+
+    $subnet2 = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq $datagen.nw2name}
+
+    $VIP = (Get-CalculatedIP -IPAddress $datavar.Nw2DHCPStart -ChangeValue 2).IPAddressToString
+
+    REST-Karbon-Create-Cluster-Calico -datagen $datagen -datavar $datavar -token $token -image $image -k8version $lastversion -subnet $subnet2 -PCcluster $cluster -VIP 
+    
   }
 
   sleep 10

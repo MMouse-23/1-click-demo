@@ -2550,7 +2550,8 @@ Function REST-ERA-Attach-ERAManaged-PENetwork {
   Param (
     [object] $datavar,
     [object] $datagen,
-    [string] $lastIP
+    [string] $lastIP,
+    [string] $start
   )
 
   write-log -message "Debug level is $($debug)";
@@ -2600,7 +2601,7 @@ Function REST-ERA-Attach-ERAManaged-PENetwork {
   ],
   "ipPools": [
     {
-      "startIP": "$($datavar.Nw2DHCPStart)",
+      "startIP": "$($start)",
       "endIP": "$($lastIP)"
     }
   ]
