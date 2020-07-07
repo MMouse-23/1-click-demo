@@ -776,7 +776,7 @@ $Payload= @"
     "vcpu": "$($VCPU)"
   },
   "dns_servers": ["$($datagen.DC1IP)", "$($datagen.DC2IP)"],
-  "ntp_servers": ["$($datagen.NTPServer1)", "$($datagen.NTPServer2)", "$($datagen.NTPServer3)", "$($datagen.NTPServer4)"]
+  "ntp_servers": ["$($datagen.DC1IP)", "$($datagen.DC2IP)"]
 }
 "@ 
   if ($debug -ge 2){
