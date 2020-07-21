@@ -245,7 +245,7 @@ Function REST-ERA-ProvisionDatabase {
     },
     {
       "name": "host_ip",
-      "value": "$($dbserver.ip)"
+      "value": "$($dbserver.ipAddresses[0])"
     },
     {
       "name": "db_password",
@@ -1624,41 +1624,91 @@ Function REST-ERA-Create-WindowsDomain-Profile {
   write-log -message "Loading Json"
   $json = @"
 {
+  "engineType": "sqlserver_database",
   "type": "WindowsDomain",
   "topology": "ALL",
   "dbVersion": "ALL",
   "systemProfile": false,
-  "properties": [{
-    "name": "DOMAIN_NAME",
-    "value": "$($datagen.Domainname)",
-    "description": "Name of the Windows domain"
-  }, {
-    "name": "DOMAIN_USER_NAME",
-    "value": "$($datagen.Domainname)\\administrator",
-    "description": "Username with permission to join computer to domain"
-  }, {
-    "name": "DOMAIN_USER_PASSWORD",
-    "value": "$($datavar.PEPass)",
-    "description": "Password for the username with permission to join computer to domain"
-  }, {
-    "name": "DB_SERVER_OU_PATH",
-    "value": "",
-    "description": "Custom OU path for database servers"
-  }, {
-    "name": "CLUSTER_OU_PATH",
-    "value": "",
-    "description": "Custom OU path for server clusters"
-  }, {
-    "name": "ADD_PERMISSION_ON_OU",
-    "value": "",
-    "description": "Grant server clusters permission on OU"
-  }],
-  "name": "$($datagen.Domainname)",
-  "description": "Domain Profile"
+  "properties": [
+    {
+      "name": "DOMAIN_NAME",
+      "value": "$($datagen.Domainname)",
+      "secure": false,
+      "description": "Name of the Windows domain (in FQDN format)"
+    },
+    {
+      "name": "DOMAIN_USER_NAME",
+      "value": "$($datagen.Domainname)\\administrator",
+      "secure": false,
+      "description": "Username with permission to join computer to domain"
+    },
+    {
+      "name": "DOMAIN_USER_PASSWORD",
+      "value": "$($datavar.PEPass)",
+      "secure": false,
+      "description": "Password for the username with permission to join computer to domain"
+    },
+    {
+      "name": "DB_SERVER_OU_PATH",
+      "value": "",
+      "secure": false,
+      "description": "Custom OU path for database server VMs"
+    },
+    {
+      "name": "CLUSTER_OU_PATH",
+      "value": "",
+      "secure": false,
+      "description": "Custom OU path for server clusters"
+    },
+    {
+      "name": "SQL_SERVICE_ACCOUNT_USER",
+      "value": "$($datagen.Domainname)\\administrator",
+      "secure": false,
+      "description": "Sql service account username"
+    },
+    {
+      "name": "SQL_SERVICE_ACCOUNT_PASSWORD",
+      "value": "$($datavar.PEPass)",
+      "secure": false,
+      "description": "Sql service account password"
+    },
+    {
+      "name": "ALLOW_SERVICE_ACCOUNT_OVERRRIDE",
+      "value": false,
+      "secure": false,
+      "description": "Allow override of sql service account in provisioning workflows"
+    },
+    {
+      "name": "ERA_WORKER_SERVICE_USER",
+      "value": "$($datagen.Domainname)\\administrator",
+      "secure": false,
+      "description": "Era worker service account username"
+    },
+    {
+      "name": "ERA_WORKER_SERVICE_PASSWORD",
+      "value": "$($datavar.PEPass)",
+      "secure": false,
+      "description": "Era worker service account password"
+    },
+    {
+      "name": "RESTART_SERVICE",
+      "value": "",
+      "secure": false,
+      "description": "Restart sql service on the dbservers"
+    },
+    {
+      "name": "UPDATE_CREDENTIALS_IN_DBSERVERS",
+      "value": "true",
+      "secure": false,
+      "description": "Update the credentials in all the dbservers"
+    }
+  ],
+  "name": "Windows POC Domain Profile",
+  "description": "POC Domain"
 }
 "@
 
-  $URL = "https://$($datagen.ERA1IP):8443/era/v0.8/profiles"
+  $URL = "https://$($datagen.ERA1IP)/era/v0.9/profiles"
 
   write-log -message "Creating Profile Windows Domain"
 

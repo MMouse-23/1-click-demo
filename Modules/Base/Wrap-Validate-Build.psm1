@@ -93,7 +93,7 @@ function Wrap-Validate-Build {
       $calmvalidated = 0
     } elseif ($datavar.DemoXenDeskT -eq 1 -and $xdvalidated -eq 0){
       $calmresult = "Calm is not healthy. XenDesktop Blueprint failed, $XenDesktopResult"
-    } elseif ($runbookdetail.status.state -ne "Active"){
+    } elseif ($runbookdetail.status.state -ne "Active" -and $datavar.InstallBPPack -eq 1 -and ([version]$datagen.CALMversion).Major -ge 3){
       $calmresult = "Calm is not healthy. Runbook is not active or present."  
     } else {
       $calmresult = "Calm is healthy. There are $($Runbooks.entities.count) Runbook(s), There are $($applications.entities.count) running apps, $($blueprints.entities.count) imported blueprints and $($marketplace.group_results.entity_results.count) Marketplace items spread over $projectcount Projects, $XenDesktopResult"
@@ -215,7 +215,7 @@ function Wrap-Validate-Build {
   
     $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
     $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token
-    $clusters = $clusters | select -first 1
+    $clusters = $clusters | where {$_.task_progress_percent -eq 100 } | select -first 1
 
     $Classes = REST-Karbon-List-StorageCloss -datagen $datagen -datavar $datavar -cluster $clusters -token $token
 
@@ -337,7 +337,7 @@ function Wrap-Validate-Build {
         [int]$bucketcount = (($result.group_results.Entity_results.data | where {$_.name -eq "num_buckets"}).values.values).tostring()
       } until ( $bucketcount -ge 20 -or $buckcounter -ge 5)
     }
-    if ($percentage -ge 99 -and $bucketcount -ge 20 -and $ADmatch){
+    if ($percentage -ge 99 -and $bucketcount -ge 4 -and $ADmatch){
       $ObjectsValidated = 1
       $Objectsresult = "Objects OK: There are $bucketcount Buckets, state is $state at $percentage % and there is $adcount Directory configured"
     } else {

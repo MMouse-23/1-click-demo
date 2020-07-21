@@ -450,7 +450,7 @@ Function REST-Karbon-Create-Cluster-Fannel {
 
   $json = @"
 {
-  "name": "K8-$($datavar.pocname)",
+  "name": "K8-$($datavar.pocname)-F",
   "description": "",
   "vm_network": "$($subnet.uuid)",
   "k8s_config": {
@@ -532,7 +532,7 @@ Function REST-Karbon-Create-Cluster-Fannel {
         "user": "$($datagen.buildaccount)",
         "password": "$($datavar.pepass)",
         "storage_container": "$($datagen.KarbonContainerName)",
-        "file_system": "ext4",
+        "file_system": "xfs",
         "flash_mode": false
       }
     }
@@ -554,6 +554,9 @@ Function REST-Karbon-Create-Cluster-Fannel {
   }
 }
 "@
+if ($debug -ge 2 ){
+  $json | out-file c:\temp\fannel.json
+}
   try{
     $task = Invoke-RestMethod -Uri $URL -method "POST" -websession $websession -body $json -ContentType 'application/json'
   } catch {

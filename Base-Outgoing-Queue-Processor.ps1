@@ -673,7 +673,8 @@ do {
 
             write-log -message "Creating Seconday network" 
 
-            REST-PE-Create-Network -PEClusterIP $datavar.PEClusterIP `
+            REST-PE-Create-Network `
+              -PEClusterIP $datavar.PEClusterIP `
               -PxClusterPass $Datavar.PEPass `
               -PxClusterUser $Datavar.PEAdmin `
               -name $datagen.nw2name `
@@ -942,7 +943,7 @@ do {
       if ($datavar.InstallKarbon -eq 1){
 
         write-log -message "Spawning Karbon Cluster" -sev "CHAPTER" -slacklevel 1
-        $LauchCommand = 'Wrap-Create-KarbonCluster -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -BlueprintsPath ' + $BlueprintsPath
+        $LauchCommand = 'Wrap-Create-KarbonCluster-Fannel -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -BlueprintsPath ' + $BlueprintsPath
         Lib-Spawn-Wrapper -Type "Karbon" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
 
       }
@@ -1060,6 +1061,13 @@ do {
         write-log -message "Installing Workshop Lab Settings Prism Element" -sev "CHAPTER" -slacklevel 1
        
         REST-WorkShopConfig-Px -ClusterPx_IP $datavar.PEClusterIP -clpassword $datavar.PEPass -clusername $datagen.buildaccount -POCName $datavar.POCname -VERSION $datavar.PCVersion -Mode "PE" -datavar $datavar
+
+      }
+      if ($datavar.InstallKarbon -eq 1){
+
+        write-log -message "Spawning Karbon Cluster" -sev "CHAPTER" -slacklevel 1
+        $LauchCommand = 'Wrap-Create-KarbonCluster-Çalico -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -BlueprintsPath ' + $BlueprintsPath
+        Lib-Spawn-Wrapper -Type "Karbon-C" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
 
       }
       write-log -message "Finalizing Build." -sev "CHAPTER" -slacklevel 1

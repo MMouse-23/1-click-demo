@@ -368,6 +368,57 @@ Function Wait-ImageUpload-Task{
 }
 
 
+Function Wait-MSSQL-Task {
+  param(
+    $datavar
+  )
+  write-log -message "Wait for Image Upload Task with ID $($datavar.queueuuid)"
+  do {
+    $Looper++
+    try{
+      [array]$tasks = Get-ScheduledTask | where {$_.taskname -match $datavar.queueuuid -and $_.taskname -match "^ERA_MSSQL" }
+    } catch {
+      try {
+        [array]$tasks = Get-ScheduledTask | where {$_.taskname -match $datavar.queueuuid -and $_.taskname -match "^ERA_MSSQL" }
+      } catch {}
+    }
+    if ($Looper % 4 -eq 0){
+      write-log -message "We found $($tasks.count) task";
+    }
+    [array] $allready = $null
+    if ($Looper % 4 -eq 0){
+      write-log "Cycle $looper out of 200"
+    }
+    if ($tasks){
+      Foreach ($task in $tasks){
+        if ($task.state -eq "ready"){
+          
+          if ($Looper % 4 -eq 0){
+            write-log -message "Task $($task.taskname) is ready."
+          }
+          $allReady += 1
+      
+        } else {
+      
+          $allReady += 0
+
+          if ($Looper % 4 -eq 0){
+            write-log -message "Task $($task.taskname) is $($task.state)."
+          }
+        };
+      };
+      sleep 20
+    } else {
+      $allReady = 0
+      sleep 20
+      if ($Looper % 4 -eq 0){
+        write-log -message "There are no jobs to process."
+      }
+    }
+  } until ($Looper -ge 200 -or $allReady -notcontains 0)
+}
+
+
 Function PSR-MulticlusterPE-PC {
   param(
     [object] $datagen,

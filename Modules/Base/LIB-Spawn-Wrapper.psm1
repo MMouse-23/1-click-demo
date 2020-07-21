@@ -143,7 +143,7 @@ Function Lib-Get-Wrapper-Results {
 
   do {
     $Looper++
-    [array]$tasks = Get-ScheduledTask | where {$_.taskname -match $parentuuid -and ($_.taskname -notmatch "^Watchdog" -and $_.taskname -notmatch "^Base" -and $_.taskname -notmatch "^Backup" -and $_.taskname -notmatch "^ERA_MSSQL" -and $_.taskname -notmatch "^Objects")} -ea:0
+    [array]$tasks = Get-ScheduledTask | where {$_.taskname -match $parentuuid -and ($_.taskname -notmatch "^Watchdog" -and $_.taskname -notmatch "^Base" -and $_.taskname -notmatch "^Backup" -and $_.taskname -notmatch "^ERA_MSSQL" -and $_.taskname -notmatch "^Objects" -and $_.taskname -notmatch "Karbon-C")} -ea:0
 
     write-log -message "We found $($tasks.count) to process";
 
@@ -177,7 +177,7 @@ Function Lib-Get-Wrapper-Results {
   if ($allReady -eq 1 -and $tasks.count -ge 1){
     
     write-log -message "Grabbing logs for $($tasks.count) Jobs";
-    $WatchDog = Get-ScheduledTask | where {$_.taskname -match $parentuuid -and $_.taskname -match "WatchDog" -and $_.taskname -notmatch "backup"} -ea:0
+    $WatchDog = Get-ScheduledTask | where {$_.taskname -match $parentuuid -and $_.taskname -match "WatchDog" -and $_.taskname -notmatch "backup" } -ea:0
     $WatchDog | stop-scheduledtask -ea:0 
     $WatchDog | unregister-scheduledtask -ea:0 -confirm:0
 

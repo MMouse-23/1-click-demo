@@ -212,22 +212,21 @@ Function REST-PE-Create-Network {
   }
 }
 "@ 
-    if ($debug -ge 2){
-      $Payload | out-file c:\temp\nwcreate.json
-    }
+
   } else {
 
     write-log -message "Nutanix IPAM Disabled!"
 
     $Payload= @"
-}
 {
   "name":"$($Name)",
   "vlanId":"$($VLanID)"
 }
 "@ 
   }
-
+  if ($debug -ge 2){
+    $Payload | out-file c:\temp\nwcreate.json
+  }
   $JSON = $Payload 
   try{
     $task = Invoke-RestMethod -Uri $URL -method "post" -body $JSON -ContentType 'application/json' -headers $headers -ea:4;
