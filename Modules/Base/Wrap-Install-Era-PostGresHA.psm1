@@ -3,6 +3,13 @@ Function Wrap-Install-Era-PostGresHA {
     [object] $datavar,
     [object] $datagen
   )
+  $count = 0
+  do {
+    write-log -message "Sleeping for PGHA issues."
+    sleep 119
+    $count ++ 
+  } until ($count -ge 3)
+  $count = 0
   write-log -message "Installing PostGres HA ERA"  -slacklevel 1 
 
   write-log -message "Get Cluster UUID" 
@@ -49,7 +56,7 @@ Function Wrap-Install-Era-PostGresHA {
           $hide = get-ntnxvm | where {$_.vmname -match "^PostGresHA"} | Remove-NTNXVirtualMachine -ea:0
         }
         sleep 90
-        $operation = REST-ERA-Provision-HA-Database -postgresclustername "PostGHACL01" -postgresserverprefix "PostG-CN-$($datavar.pocname)" -Databasename "PostGHADB01" -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+        $operation = REST-ERA-Provision-HA-Database -postgresclustername "PostGHACL01" -postgresserverprefix "PostG-CN-$($datavar.pocname)" -Databasename "postghadb01" -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
       } 
       $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
       $count++

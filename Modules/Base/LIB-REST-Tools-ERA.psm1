@@ -2174,7 +2174,7 @@ Function REST-ERA-Provision-HA-Database {
     }
   ],
   "createDbserver": true,
-  "nodeCount": 4,
+  "nodeCount": 5,
   "nxClusterId": "$($ERACluster.id)",
   "sshPublicKey": "$($publicSSHKey)",
   "clustered": true,
@@ -2187,6 +2187,15 @@ Function REST-ERA-Provision-HA-Database {
         }
       ],
       "vmName": "$($postgresserverprefix)-Proxy-01"
+    },
+    {
+      "properties": [
+        {
+          "name": "node_type",
+          "value": "haproxy"
+        }
+      ],
+      "vmName": "$($postgresserverprefix)-Proxy-02"
     },
     {
       "properties": [
