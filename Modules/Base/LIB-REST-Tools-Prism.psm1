@@ -796,7 +796,10 @@ Function REST-Install-PC {
 
 
    try {
-      $Version = (Invoke-RestMethod -Uri $queryURL -method "get" -headers $headers).entities.version | sort { [Version]$_} | select -last 1
+      $Version = (Invoke-RestMethod -Uri $queryURL -method "get" -headers $headers).entities.version | % {$_.replace("pc`.",'')} | sort { [Version]$_} | select -last 1
+      if ($Version -match "^20[0-90-9]"){
+        [string]$Version = "pc." + $Version
+      }
       write-log -message "Latest Version is $Version"
       write-log -message "Specified version is $pcVersion"
 
@@ -821,8 +824,11 @@ Function REST-Install-PC {
 
       write-log -message "Hmm, yeah sideloading does not give me image sizes, let me get the second last one"
 
-      $last2Versions = (Invoke-RestMethod -Uri $queryURL -method "get" -headers $headers).entities.version | sort { [Version]$_} | select -last 2 
-      $SecondLastVersion = $last2Versions | sort { [Version]$_} | select -first 1
+      $last2Versions = (Invoke-RestMethod -Uri $queryURL -method "get" -headers $headers).entities.version | % {$_.replace("pc`.",'')} | sort { [Version]$_} | select -last 2 
+      $SecondLastVersion = $last2Versions | % {$_.replace("pc`.",'')} | sort { [Version]$_} | select -first 1
+      if ($SecondLastVersion -match "^20[0-90-9]"){
+        [string]$SecondLastVersion = "pc." + $SecondLastVersion
+      }      
       $Object = (Invoke-RestMethod -Uri $queryURL -method "get" -headers $headers).entities | where {$_.version -eq $SecondLastVersion}
       $sizeL = $object.prismCentralSizes | where {$_.pcvmformfactor -eq "large"}
       sleep 1

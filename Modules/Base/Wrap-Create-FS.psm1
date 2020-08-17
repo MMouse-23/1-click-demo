@@ -205,13 +205,13 @@ Function Wrap-Create-FS {
 
         Write-log -message "Failure detected, lets delete download and retry after 2 minutes."
         REST-Delete-FileAnalyticsDownload -datagen $datagen -datavar $datavar -Anaversion $AnalyticsVersion
-        sleep 120
+        sleep 115
         $countana ++
-        REST-Create-FileAnalyticsServer -datagen $datagen -datavar $datavar -network $subnet -container $container -AnalyticsVersion $AnalyticsVersion
+        REST-Create-FileAnalyticsServer -datagen $datagen -datavar $datavar -network $subnet -container $container -AnalyticsVersion $AnalyticsVersion -GBRAM $GBRAM -VCPU $VCPU -Cores $cores
         $result = Wait-TaskAnalytics -datagen $datagen -datavar $datavar 
       } until ($result -eq "SUCCEEDED" -or $countana -ge 3)
     }
-  
+    sleep 115
     $Ana =REST-Query-Fileanalytics -datagen $datagen -datavar $datavar
 
     [string] $Anaip = $ana.ip

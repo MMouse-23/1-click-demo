@@ -180,7 +180,10 @@ Function SSH-Manage-SoftwarePE {
   
           write-log -message "Checking if requested version is possible."
   
-          $MatchingVersion = $object.'Prism Central Deploy' | where {$_ -match "[0-9]" -and $_ -notmatch "bytes|in-progress"} | sort { [version]$_} | where {$_ -eq $PCversion} | select -last 1
+          $MatchingVersion = $object.'Prism Central Deploy' | % {$_.replace("pc`.",'')} | where {$_ -match "[0-9]" -and $_ -notmatch "bytes|in-progress"} | sort { [version]$_} | where {$_ -eq $PCversion} | select -last 1
+          if ($MatchingVersion -match "^20[0-90-9]"){
+            [string]$MatchingVersion = "pc." + $MatchingVersion
+          }
           if ($matchingversion){
   
             write-log -message "Requested version found $truePCversion"
@@ -194,8 +197,10 @@ Function SSH-Manage-SoftwarePE {
           };
         };
         if ($PCversion -eq "Latest"){
-          $truePCversion = $object.'Prism Central Deploy' | where {$_ -match "[0-9]" -and $_ -notmatch "bytes|in-progress"} | sort { [version]$_} | select -last 1
-  
+          $truePCversion = $object.'Prism Central Deploy' | % {$_.replace("pc`.",'')} | where {$_ -match "[0-9]" -and $_ -notmatch "bytes|in-progress"} | sort { [version]$_} | select -last 1
+          if ($truePCversion -match "^20[0-90-9]"){
+            [string]$truePCversion = "pc." + $truePCversion
+          }
           write-log -message "We are using $truePCversion"
   
         } 
