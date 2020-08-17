@@ -97,7 +97,7 @@ if ($Portable -eq 1){
  <%
             if ($Portable -ne 1){
 %>  
-            This is not recommended for HPOC systems, send <b>queue:manaual</b> in the body of the email if you want to edit options here.<br>
+            This is not recommended for HPOC systems, send <b>queue:manual</b> in the body of the email if you want to edit options here.<br>
  <%
             }
 %>         
