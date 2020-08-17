@@ -253,13 +253,6 @@ Function Wrap-Install-Era-Base {
     sleep 10
   }
 
-  write-log -message "Forking ERA Postgres HA" -slacklevel 1
-  if ($datavar.InstallEra -eq 1){
-    $LauchCommand = 'Wrap-Install-Era-PostGresHA -datagen $datagen -datavar $datavar'
-    Lib-Spawn-Wrapper -Type "ERA_PostgresHA" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -psm1file "$($ModuleDir)\Wrap-Install-Era-MySQL.psm1" -LauchCommand $LauchCommand
-    sleep 10
-  }
-
   write-log -message "Provsioning Maria and Postgres" -slacklevel 1
 
   $marianw = $profiles | where { $_.type -eq "Network" -and $_.EngineType -match "Maria"}
@@ -494,6 +487,13 @@ Function Wrap-Install-Era-Base {
     -NewDatabaseName "PostGresDB02" `
     -dbparamID $dbParameterProfileId `
     -NewVMName "PostG2-$($datavar.pocname)"
+
+  write-log -message "Forking ERA Postgres HA" -slacklevel 1
+  if ($datavar.InstallEra -eq 1){
+    $LauchCommand = 'Wrap-Install-Era-PostGresHA -datagen $datagen -datavar $datavar'
+    Lib-Spawn-Wrapper -Type "ERA_PostgresHA" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -psm1file "$($ModuleDir)\Wrap-Install-Era-MySQL.psm1" -LauchCommand $LauchCommand
+    sleep 10
+  }
 
   write-log -message "ERA Base Installation Finished" -slacklevel 1
 }

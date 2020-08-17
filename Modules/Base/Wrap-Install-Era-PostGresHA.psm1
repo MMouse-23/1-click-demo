@@ -3,13 +3,7 @@ Function Wrap-Install-Era-PostGresHA {
     [object] $datavar,
     [object] $datagen
   )
-  $count = 0
-  do {
-    write-log -message "Sleeping for PGHA issues."
-    sleep 119
-    $count ++ 
-  } until ($count -ge 3)
-  $count = 0
+
   write-log -message "Installing PostGres HA ERA"  -slacklevel 1 
 
   write-log -message "Get Cluster UUID" 
