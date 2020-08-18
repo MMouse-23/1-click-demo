@@ -3,7 +3,7 @@
 
 
 
-**Current Version 1.2.0.3*
+**Current Version 1.2.0.4*
 
 
 ## Introduction
@@ -22,10 +22,60 @@
 - Blueprints
 - Website(s) (API / FrontEnd)
 - 1CD Blueprint
-.
+
 > This application requires an SQL database and IIS to be installed. See installation / blueprint section for more details.
 > The website is an ugly rip and needs TCL. The API site is a lot cleaner.
 > The website uses a 3rd party module 
+
+## Release notes 1.2.0.4
+
+**Fixes:**
+- PC New versioning scheme support (no longer follows Semantic Versioning.....)
+- Era 1.3.1.1 support.
+- Domain Controllers used for Timezone.
+
+**Features:**
+- 2 Karbon Clusters, 1 older version for upgrades, 1 Calico based cluster
+- Changed buckets to 5 instead of 100
+- ERA Managed Network
+
+**Known Issues:**
+- VMware does not work with Queue Manual. Will be fixed in the next release.
+
+
+## Release notes 1.2.0.3
+
+**Fixes:**
+- ERA 0.9 API fixes.
+- Full era 1.3.0 support.
+- Enhanced Code, still a lot garbage to clean.
+- Citrix BluePrint Launch Fixed, python injection ;)
+- XPlay IIS / Calm 3.0 Fixes, Old BP did not fire correctly anymore.
+- Wait function enhancements.
+- SQL Stability.
+- Portable Edition, broken startup, Broken Posh-SSH
+- Postgres HA Stability.
+- Analytics is defaulted to 32GB. But has a RAM cap on lower ram systems.
+- Queue will not accept any requests over 7 simultaneous to prevent SQL errors. (please be patient)
+- Please check the website, manual requests can still be submitted in this state.
+
+**Features:**
+- SQL AAG in ERA (based of a single node, 1-click how cool is that)
+- Calm 3.0.0 Runbook Automation Windows Patching
+- Full Oracle Clone.
+- MySQL Clone
+- New Faster and Smaller SQL 2016 Image, Patched.
+- Calm ERA BP Removed, but replaced with API Clones.
+- Move 3.5.2 (qcow auto versioning now, thank you @Chandrasekar)
+- 5 Marketplace Apps Running (part of BP Pack if Nodes < 2
+- ERA Moved to Secondary HPOC network (ERA Managed)
+- Full Zero Touch auto versioning, thanks to testing enhancements of @muthu and team And the last mile on Move ^^
+(last update was 4 months ago, 100% success for those 4 months.., thats a huge improvement in ENG testing!!)
+
+**Known Issues:**
+VMware is left as is. Out of support, still usable for Move demos (perhaps if i really get bored)
+There is no notification once the queue is beyond full. This to prevent SQL hammering errors. (Improvement next release)
+Just be patient if you are sending more than 10 builds....
 
 ## Release notes 1.2.0.0
 
