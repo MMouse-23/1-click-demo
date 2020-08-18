@@ -101,7 +101,7 @@ do {
   if ($portable -eq 0){
     write-log -message "Checking Outlook, active DB count is $($active.count), Active Locks is $($locks.count)"
     $singleusermode = (get-item $SingleModelck -ea:0).lastwritetime | where {$_ -ge (get-date).addminutes(-300)}
-    #if ($env:computername -notmatch "dev" ){
+    if ($env:computername -notmatch "dev" ){
       if ($active.count -le 6 -and $locks.count -le 5){
         $object = Get-IncommingueueItem
 
@@ -114,7 +114,7 @@ do {
 
         sleep 1200
       }
-    #}
+    }
     if ($object.QueueStatus -eq "Manual"){
       write-log -message "Sending Manual Queue EMAIL"
       $global:EnableEmail = 0
