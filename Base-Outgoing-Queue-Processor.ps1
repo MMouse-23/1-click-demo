@@ -944,7 +944,7 @@ do {
 
         write-log -message "Spawning Karbon Cluster" -sev "CHAPTER" -slacklevel 1
         $LauchCommand = 'Wrap-Create-KarbonCluster-Fannel -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -BlueprintsPath ' + $BlueprintsPath
-        Lib-Spawn-Wrapper -Type "Karbon" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
+        Lib-Spawn-Wrapper -Type "Karbon-F" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode  -LauchCommand $LauchCommand
 
       }
 
