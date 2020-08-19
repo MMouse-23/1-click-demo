@@ -238,16 +238,6 @@ Function Wrap-Create-KarbonCluster-Fannel {
 
   }
 
-  if ($datavar.nw2vlan -and $ramcap -eq 0){
-
-    write-log -message "Creating 8GB Prod Calico Instance" -slacklevel 1
-
-    $subnet2 = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq "Network-03"}
-  
-    $VIP = (Get-CalculatedIP -IPAddress $datavar.Nw2DHCPStart -ChangeValue 2).IPAddressToString
-    $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
-    REST-Karbon-Create-Cluster-Calico -datagen $datagen -datavar $datavar -token $token -image $image -k8version $lastversion -subnet $subnet2 -PCcluster $cluster -VIP $VIP
-  }
 
   write-log -message "Finished Creating Karbon Cluster" -slacklevel 1
   
