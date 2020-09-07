@@ -215,7 +215,7 @@ function Wrap-Validate-Build {
   
     $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
     $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token
-    $clusters = $clusters | where {$_.task_progress_percent -eq 100 } | select -first 1
+    $clusters = $clusters | where {$_.task_progress_percent -eq 100 -and $_.cluster_metadata.name -match "-F$"}
 
     $Classes = REST-Karbon-List-StorageCloss -datagen $datagen -datavar $datavar -cluster $clusters -token $token
 
@@ -356,7 +356,7 @@ function Wrap-Validate-Build {
       $Xplayresult = "There are $($playbookx.entities.count) Playbooks, 5 are default."
     } else {
       $XplayValidated = 0
-      $Xplayresult = "There are $($playbookx.entities.count) Playbooks, 5 are default (pre 5.11)."
+      $Xplayresult = "There are $($playbookx.entities.count) Playbooks, 5 are default, our playbook is not installed."
     }
   } else {
     $XplayValidated = 1

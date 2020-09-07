@@ -88,8 +88,8 @@ Function LIB-Config-DetailedDataSet {
     write-log -message "Setting IP stack based on AHV Full stack."
 
     $DataIPoctet         = $startingIP + 1;
-    $ERA1IPoctet         = $startingIP + 2;
-    $PCCLIPoctet         = $startingIP + 3;
+    $ERA1IPoctet         = $startingIP + 3;
+    $PCCLIPoctet         = $startingIP + 2;
     $FS1IntIPoctetstart  = $startingIP + 4;
     #Range
     $FS1IntIPoctetend    = $startingIP + 7;
@@ -133,8 +133,8 @@ Function LIB-Config-DetailedDataSet {
     write-log -message "Setting IP stack based on Single Node AHV Full stack."
 
     $DataIPoctet         = $startingIP + 1;
-    $ERA1IPoctet         = $startingIP + 2;
-    $PCCLIPoctet         = $startingIP + 3;
+    $ERA1IPoctet         = $startingIP + 3;
+    $PCCLIPoctet         = $startingIP + 2;
     $FS1IntIPoctetstart  = $startingIP + 4;
     #Range
     $FS1IntIPoctetend    = $startingIP + 7;

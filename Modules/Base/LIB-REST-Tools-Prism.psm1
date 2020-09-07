@@ -4732,60 +4732,65 @@ Function REST-XPlay-Create-Playbook {
   write-log -message "Using Alert Type A$($AlertTypeObject.group_results.entity_results.entity_id)"
   write-log -message "Using Blueprint $($BluePrintObject.metadata.uuid)"
   write-log -message "Using BP App $($BPAppID)"
+  $uuid = (new-guid).guid
 
 $Json = @"
 {
-  "api_version": "3.1",
-  "metadata": {
-    "kind": "action_rule",
-    "spec_version": 0
-  },
   "spec": {
     "resources": {
-      "name": "IIS Xplay Demo",
-      "description": "IIS Xplay Demo",
-      "is_enabled": true,
+      "is_enabled": false,
       "should_validate": true,
-      "trigger_list": [
-        {
-          "action_trigger_type_reference": {
-            "kind": "action_trigger_type",
-            "uuid": "$($AlertTriggerObject.entity_id)",
-            "name": "alert_trigger"
-          },
-          "input_parameter_values": {
-            "alert_uid": "A$($AlertTypeObject.group_results.entity_results.entity_id)",
-            "severity": "[\"critical\"]",
-            "source_entity_info_list": "[]"
-          }
-        }
-      ],
+      "description": "IIS Xplay Demo",
       "execution_user_reference": {
         "kind": "user",
         "name": "admin",
         "uuid": "00000000-0000-0000-0000-000000000000"
       },
-      "action_list": [
-        {
-          "action_type_reference": {
-            "kind": "action_type",
-            "uuid": "$($alertActiontype.metadata.uuid)",
-            "name": "rest_api_action"
-          },
-          "display_name": "",
-          "input_parameter_values": {
-            "username":  "$($datagen.buildaccount)",
-            "request_body":  "{\n \"spec\": {\n   \"app_profile_reference\": {\n     \"kind\": \"app_profile\",\n     \"name\": \"IIS\",\n     \"uuid\": \"$($BPAppID)\"\n   },\n   \"runtime_editables\": {\n     \"action_list\": [\n       {\n       }\n     ],\n     \"service_list\": [\n       {\n       }\n     ],\n     \"credential_list\": [\n       {\n       }\n     ],\n     \"substrate_list\": [\n       {\n       }\n     ],\n     \"package_list\": [\n       {\n       }\n     ],\n     \"app_profile\": {\n     },\n     \"task_list\": [\n       {\n       }\n     ],\n     \"variable_list\": [\n       {\n       }\n     ],\n     \"deployment_list\": [\n       {\n       }\n     ]\n   },\n   \"app_name\": \"IIS-{{trigger[0].source_entity_info.uuid}}\"\n }\n}",
-            "url":  "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($BluePrintObject.metadata.uuid)/simple_launch",
-            "headers":  "Content-Type: application/json",
-            "password":  "$($datavar.PEPass)",
-            "method":  "POST"
-          },
-          "should_continue_on_failure": false,
-          "max_retries": 0
-        }
-      ]
+      "action_list": [{
+        "action_type_reference": {
+          "kind": "action_type",
+          "uuid": "$($alertActiontype.metadata.uuid)",
+          "name": "rest_api_action"
+        },
+        "display_name": "",
+        "input_parameter_values": {
+          "username": "$($datagen.buildaccount)",
+          "request_body": "{\n \"spec\": {\n   \"app_profile_reference\": {\n     \"kind\": \"app_profile\",\n     \"name\": \"IIS\",\n     \"uuid\": \"$($BPAppID)\"\n   },\n   \"runtime_editables\": {\n     \"action_list\": [\n       {\n       }\n           ],\n     \"service_list\": [\n       {\n       }\n     ],\n     \"credential_list\": [\n       {\n       }\n     ],\n     \"substrate_list\": [\n       {\n       }\n     ],\n     \"package_list\": [\n       {\n       }\n     ],\n           \"app_profile\": {\n     },\n     \"task_list\": [\n       {\n       }\n     ],\n     \"variable_list\": [\n       {\n       }\n     ],\n     \"deployment_list\": [\n       {\n       }\n     ]\n   },\n   \"app_name\": \"IIS-{{trigger[      0].source_entity_info.uuid}}\"\n }\n}",
+          "url": "https://$($datagen.PCClusterIP):9440/api/nutanix/v3/blueprints/$($BluePrintObject.metadata.uuid)/simple_launch",
+          "headers": "Content-Type: application/json",
+          "password": "$($datavar.PEPass)",
+          "method": "POST"
+        },
+        "should_continue_on_failure": false,
+        "max_retries": 0,
+        "instance_uuid": "$($UUID)"
+      }],
+      "trigger_list": [{
+        "action_trigger_type_reference": {
+          "kind": "action_trigger_type",
+          "uuid": "$($AlertTriggerObject.entity_id)",
+          "name": "alert_trigger"
+        },
+        "input_parameter_values": {
+          "alert_uid": "A$($AlertTypeObject.group_results.entity_results.entity_id)",
+          "severity": "[\"critical\"]",
+          "source_entity_info_list": "[]"
+        },
+        "display_name": "Alert"
+      }],
+      "name": "IIS Xplay Demo"
     }
+  },
+  "api_version": "3.1",
+  "metadata": {
+    "kind": "action_rule",
+    "categories_mapping": {},
+    "owner_reference": {
+      "kind": "user",
+      "uuid": "00000000-0000-0000-0000-000000000000",
+      "name": "admin"
+    },
+    "categories": {}
   }
 }
 "@ 

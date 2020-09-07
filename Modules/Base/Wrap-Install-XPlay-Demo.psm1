@@ -39,16 +39,6 @@ Function Wrap-Install-XPlay-Demo{
   
   }
 
-
-  if ([version]$datavar.PCVersion -lt "5.11"){
-
-    write-log -message "Unlocking XPlay" 
-    write-log -message "Unlocking XPlay required on $($datavar.PCVersion)" -slacklevel 1
-
-    $filepath = "$basedir\Binaries\XplayUnlock\unlockxplay_py.py"
-    SSH-Unlock-XPlay -PCClusterIP $datagen.PCClusterIP -clusername "nutanix" -clpassword $Datavar.pepass -filename $filepath
-
-  }
   
   write-log -message "Query Alert Trigger type"
 
