@@ -1063,7 +1063,7 @@ do {
         REST-WorkShopConfig-Px -ClusterPx_IP $datavar.PEClusterIP -clpassword $datavar.PEPass -clusername $datagen.buildaccount -POCName $datavar.POCname -VERSION $datavar.PCVersion -Mode "PE" -datavar $datavar
 
       }
-      if ($datavar.InstallKarbon -eq 1){
+      if ($datavar.InstallKarbon -eq 1 -and $ramcap -lt 2){
 
         write-log -message "Spawning Karbon Cluster" -sev "CHAPTER" -slacklevel 1
         $LauchCommand = 'Wrap-Create-KarbonCluster-Calico -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -BlueprintsPath ' + $BlueprintsPath
