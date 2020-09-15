@@ -231,6 +231,7 @@ Function  LIB-Config-ISOurlData {
       $oracle1_7     = "NA-AHV"
       $oracle1_8     = "NA-AHV"
       $oracle1_9     = "NA-AHV"
+      $WS_WinTools   = "http://$($ip)/workshop_staging/WinToolsVM.qcow2" 
     }
   }
   $Object = New-Object PSObject;
@@ -257,6 +258,7 @@ Function  LIB-Config-ISOurlData {
   $Object | add-member Noteproperty Oracle_1_7          $oracle1_7;
   $Object | add-member Noteproperty Oracle_1_8          $oracle1_8;
   $Object | add-member Noteproperty Oracle_1_9          $oracle1_9;
+  $Object | add-member Noteproperty WS_WinTools         $WS_WinTools;  
   $Object | add-member Noteproperty Frame_CCAISOAuto    $FrameConnectorAutoUrl;
   $Object | add-member Noteproperty Frame_AgentISOAuto  $FrameAgentAutoUrl;
 

@@ -30,7 +30,7 @@ Function Wrap-Install-Objects {
     $percentage = ($result.group_results.Entity_results.data | where {$_.name -eq "Percentage_complete"}).values.values
     write-log -message "Current percentage is $percentage"
     sleep 60
-  } until ( $percentage -eq 100 -or $count -ge 75)
+  } until ( $percentage -eq 100 -or $count -ge 240)
 
   if ($percentage -eq 100){
 

@@ -93,7 +93,6 @@ Function Wrap-Create-KarbonCluster-Fannel {
   $UpgradeVersion = "$(($array | SORT | select -first 1).tostring())"
   $UpgradeVersion = (($UpgradeVersion.split(".") | select -first 3 )-join ".") + "-$($UpgradeVersion.split(".")[3])"
 
-
   write-log -message "Using K8 Version $lastversion + Lame pause to impove Karon Create stability."
 
   write-log -message "Creating K8 Cluster!" -slacklevel 1

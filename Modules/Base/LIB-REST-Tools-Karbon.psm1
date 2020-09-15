@@ -734,7 +734,7 @@ Function REST-Karbon-Create-Cluster-Dev {
 
   $json = @"
 {
-  "name": "K8-$($datavar.pocname)",
+  "name": "K8-$($datavar.pocname)-F",
   "description": "",
   "vm_network": "$($subnet.uuid)",
   "k8s_config": {
