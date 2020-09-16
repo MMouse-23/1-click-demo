@@ -313,3 +313,34 @@ $Json = @"
   Return $task
 } 
 
+
+Function REST-DELETE-Objects-Store {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [string] $storeUUID
+
+  )
+
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  $URL = "https://$($datagen.PCClusterIP):9440/oss/api/nutanix/v3/objectstores/$($storeUUID)"
+
+  write-log -message "Query Object Services"
+  write-log -message "Using URL $URL"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "DELETE" -headers $headers;
+  } catch {
+    sleep 10
+
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "DELETE" -headers $headers;
+  }
+
+  Return $task
+} 
+

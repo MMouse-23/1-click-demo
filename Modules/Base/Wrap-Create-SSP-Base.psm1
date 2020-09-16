@@ -48,7 +48,7 @@ Function Wrap-Create-SSP-Base{
         $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
         $KarbonClusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token
         $KarbonCluster =  $KarbonClusters | where {$_.task_progress_percent -eq 100 } | select -first 1
-        write-log -message "Cycle $counter out of 20"
+        write-log -message "Cycle $counter out of 200"
   
         if ($KarbonCluster.task_progress_percent  -ne 100 -and $clusters){
   
@@ -65,7 +65,7 @@ Function Wrap-Create-SSP-Base{
           sleep 60
   
         }
-      } until ($KarbonCluster.task_progress_percent -eq 100 -and $KarbonCluster.task_status -eq 3 -or $counter -ge 20)
+      } until ($KarbonCluster.task_progress_percent -eq 100 -and $KarbonCluster.task_status -eq 3 -or $counter -ge 200)
 
       write-log -message "Creating Karbon Account"
 

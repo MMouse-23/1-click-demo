@@ -19,17 +19,39 @@ Function Wrap-Install-Objects {
 
   $cluster = $clusters.entities | where { $_.spec.Resources.network -match "192.168.5"}
   
-  write-log -message "Building Objects store"
-
-  $install = REST-Install-Objects-Store -datagen $datagen -datavar $datavar -subnet $subnet -cluster $cluster
-
+  
   $count = 0
   do {
     $count ++
     $result = REST-Query-Objects-Store -datagen $datagen -datavar $datavar
+
+    if (!$result.group_results[0].entity_results.entity_id){
+
+      write-log -message "Building Objects store"
+
+      $install = REST-Install-Objects-Store -datagen $datagen -datavar $datavar -subnet $subnet -cluster $cluster
+
+    }
+
     $percentage = ($result.group_results.Entity_results.data | where {$_.name -eq "Percentage_complete"}).values.values
+
+    $state = ($result.group_results[0].entity_results.data | where {$_.name -eq "state"}).values.values
+
+    if ($stage -eq "ERROR") {
+
+      write-log -message "Store is in state ERROR, redeploying."
+      write-log -message "Deleting Store"
+
+      REST-DELETE-Objects-Store -datagen $datagen -datavar $datavar -storeUUID $result.group_results[0].entity_results.entity_id
+
+      write-log -message "Sleep after delete."
+      sleep 90 
+    }
+
     write-log -message "Current percentage is $percentage"
+
     sleep 60
+
   } until ( $percentage -eq 100 -or $count -ge 240)
 
   if ($percentage -eq 100){
