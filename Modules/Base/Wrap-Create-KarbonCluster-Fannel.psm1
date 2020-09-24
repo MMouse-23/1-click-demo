@@ -63,7 +63,7 @@ Function Wrap-Create-KarbonCluster-Fannel {
       write-log -message "I should not be here, CALM Updates Failed???"
     
     }
-  }until ($imagesL.status -eq "Downloaded" -or $count -ge 75)
+  }until ($imagesL.status -eq "Downloaded" -or $count -ge 200)
 
   $subnet = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq $datagen.nw1name}
   $clusters = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
@@ -114,7 +114,7 @@ Function Wrap-Create-KarbonCluster-Fannel {
 
   $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
   $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token  
-
+  $cluster = $clusters | where { $_.cluster_metadata.name -notmatch "-C$" } 
   sleep 10
 
   $counter = 0
@@ -122,25 +122,27 @@ Function Wrap-Create-KarbonCluster-Fannel {
     $counter ++
     $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
     $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token
+    $cluster = $clusters | where { $_.cluster_metadata.name -notmatch "-C$" } 
 
     write-log -message "Cycle $counter out of 20"
 
-    if ($clusters.task_progress_percent  -ne 100 -and $clusters){
+    if ($cluster.task_progress_percent  -ne 100 -and $cluster){
 
-      write-log -message "Cluster is installing, status is $($clusters.task_progress_percent) %"
+      write-log -message "Cluster is installing, status is $($cluster.task_progress_percent) %"
 
-    } elseif ($clusters.task_progress_percent  -eq 100){
+    } elseif ($cluster.task_progress_percent  -eq 100){
 
       write-log -message "Install Ready Checking health"
 
       sleep 15
       $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
-      $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token  
-      if ($clusters.task_status -eq 3){
+      $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token
+      $cluster = $clusters | where { $_.cluster_metadata.name -notmatch "-C$" } 
+      if ($cluster.task_status -eq 3){
 
         write-log -message "Cluster is Healthy"
 
-      } elseif ($clusters.task_status -eq 2) {
+      } elseif ($cluster.task_status -eq 2) {
 
         write-log -message "Cluster is NOT Healthy, repairing"
         $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
@@ -166,7 +168,7 @@ Function Wrap-Create-KarbonCluster-Fannel {
 
       }
 
-    } elseif (!$clusters) {
+    } elseif (!$cluster) {
 
       $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
       if ($ramcap -ge 2 -or $datavar.hypervisor -match "VMWare|ESX"){ 
@@ -189,7 +191,7 @@ Function Wrap-Create-KarbonCluster-Fannel {
     }
     sleep 60
 
-  } until ($clusters.task_progress_percent -eq 100 -and $clusters.task_status -eq 3 -or $counter -ge 20)
+  } until ($cluster.task_progress_percent -eq 100 -and $cluster.task_status -eq 3 -or $counter -ge 20)
   
   if ($datavar.installfiles -eq 1 ){
     write-log -message "Adding Files Storage Class and Volume"
@@ -217,9 +219,10 @@ Function Wrap-Create-KarbonCluster-Fannel {
     $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
 
     write-log -message "Getting Karbon Cluster"
-    
-    $cluster = $clusters | where {$_.task_progress_percent -eq 100 } | select -first 1
 
+    $clusters = REST-Karbon-Get-Clusters -datagen $datagen -datavar $datavar -token $token 
+    $cluster = $clusters | where { $_.cluster_metadata.name -notmatch "-C$" } 
+  
     write-log -message "Create Files Storage Class"
     
     $Class = REST-Karbon-Create-Files-StorageCloss -datagen $datagen -datavar $datavar -cluster $cluster -token $token

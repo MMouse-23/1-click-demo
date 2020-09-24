@@ -37,7 +37,7 @@ Function Wrap-Install-Objects {
 
     $state = ($result.group_results[0].entity_results.data | where {$_.name -eq "state"}).values.values
 
-    if ($stage -eq "ERROR") {
+    if ($state -eq "ERROR") {
 
       write-log -message "Store is in state ERROR, redeploying."
       write-log -message "Deleting Store"
@@ -53,7 +53,7 @@ Function Wrap-Install-Objects {
     sleep 60
 
   } until ( $percentage -eq 100 -or $count -ge 240)
-
+  
   if ($percentage -eq 100){
 
     sleep 60 

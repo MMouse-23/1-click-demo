@@ -596,7 +596,7 @@ Function REST-Karbon-Create-Cluster-Calico {
   write-log -message "Using Subnet UUID $($subnet.uuid)"
   write-log -message "Using Image UUID $($image.image_uuid)"
   write-log -message "Using Production worker /master count but 4GB of RAM"
-  write-log -message "Using VIP IP $($datagen.KarbonIP)"
+  write-log -message "Using VIP IP $($VIP)"
   write-log -message "Using Cluster UUID $($PCcluster.metadata.uuid)"
   write-log -message "Using Container $($datagen.KarbonContainerName)"
   write-log -message "Using K8 Clustername K8-$($datavar.pocname)"

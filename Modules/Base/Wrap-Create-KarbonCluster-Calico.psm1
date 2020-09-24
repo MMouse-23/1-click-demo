@@ -16,7 +16,7 @@ Function Wrap-Create-KarbonCluster-Calico {
   $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
   $AllImagesLocal = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
   $imagesL = $AllImagesLocal | where {$_.image_description -match "Centos" } | sort version | select -last 1
-  
+  $image = $imagesL | where {$_.image_description -match "Centos" } | sort version | select -last 1
   write-log -message "Getting K8 Versions Portal" 
   
   $versions = REST-Karbon-Get-Versions-Portal -datagen $datagen -datavar $datavar -token $token

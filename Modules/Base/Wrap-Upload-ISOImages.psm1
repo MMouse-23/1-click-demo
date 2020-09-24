@@ -179,6 +179,7 @@ Function Wrap-Upload-ISOImages {
       } else {
 
         write-log -message "Starting ESXi Upload"
+        write-log -message "Upload Target ESX Host is '$ESXHost'"
 
         $filename = $($ISOurlData.$($image)) -split "/" | select -last 1
         $Securepass = ConvertTo-SecureString $datavar.pepass -AsPlainText -Force;

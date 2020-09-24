@@ -7,9 +7,29 @@ function Wrap-Install-Runbooks {
 
   write-log -message "Installing Runbooks in Calm" -sev "Chapter" -slacklevel 1
 
+
   $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount
-  
   $project = $projects.entities | where {$_.spec.name -match "Customer-D"}
+
+  if (!$project){
+
+    write-log -message "Project is not created yet, waiting for LCM to finish."
+    write-log -message "Waiting for the last steps in the core to finish."
+    write-log -message "Blueprints are required for the next step."
+
+    $count = 0
+    do {
+      $count++
+
+      write-log -message "Sleeping $count out of 25"
+
+      sleep 110
+      $projects = REST-Query-Projects -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
+      $project = $projects.entities | where {$_.spec.name -match "Customer-D"}
+
+    }until ($project -or $count -ge 45)
+  }
+  sleep 90
   
   write-log -message "Using $($project.metadata.uuid)"
 

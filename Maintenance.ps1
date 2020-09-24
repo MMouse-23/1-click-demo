@@ -487,8 +487,8 @@ $LiveERAversion = (($portalassets | where {$_.id -eq "era"}).options.version | s
 $erarelease = REST-Portal-Query-ReleaseAPI-ERA
 $LiveERA = $erarelease.releases | where { $_.version_id -eq $LiveERAversion }
 $buildid = $liveera.manifest_json.id
-$freshInstallURL1 = "http://download.nutanix.com/era/$($LiveERAversion)/v2/ERA-Server-build-$($LiveERAversion)-$($buildid).qcow2"
-$freshInstallURL2 = "http://download.nutanix.com/era/$($LiveERAversion)/v2/ERA-Server-build-$($LiveERAversion)-$($buildid).ova"
+$freshInstallURL1 = "http://download.nutanix.com/era/$($LiveERAversion)/ERA-Server-build-$($LiveERAversion)-$($buildid).qcow2"
+$freshInstallURL2 = "http://download.nutanix.com/era/$($LiveERAversion)/ERA-Server-build-$($LiveERAversion)-$($buildid).ova"
 if ($buildid.length -ge 5){
   write-log -message "Writing ERA $($LiveERAversion);$($freshInstallURL1);$($freshInstallURL2)"
   write "Version;UrlAHV;UrlVMWare`n$($LiveERAversion);$($freshInstallURL1);$($freshInstallURL2)" | out-file "$basedir\AutoDownloadURLs\ERA_VM.urlconf"
