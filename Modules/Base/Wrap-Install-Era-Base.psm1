@@ -41,7 +41,21 @@ Function Wrap-Install-Era-Base {
     if ($basecounter -ge 2){
 
       write-log -message "ERA is a super product yet still here i am." -slacklevel 1
+      write-log -message "Lets clean the image also."
 
+      if ($datavar.Hypervisor -notmatch "ESX"){
+        $images = REST-Query-Images -ClusterPC_IP $datavar.PEClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount -silent 1
+        $imageobj = $images.entities | where {$_.spec.name -eq $datagen.ERA_ImageName }
+        
+        write-log -message "Deleting image '$($imageobj.metadata.uuid)'"
+
+        REST-Delete-PC-Image -datavar $datavar -dagagen $datagen -UUID $imageobj.metadata.uuid
+
+        write-log -message "Spawning Upload Process."
+
+        Wrap-Upload-ISOImages -ISOurlData1 $ISOurlData1 -ISOurlData2 $ISOurlData2 -datavar $datavar -datagen $datagen -mode "BaseRepiar"
+        
+      }
     }
 
     write-log -message "Building ERA Server" -slacklevel 1

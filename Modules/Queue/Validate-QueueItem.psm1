@@ -91,20 +91,6 @@ Function Validate-QueueItem {
         write "$(get-date -format "hh:mm:ss") | Error | The Cluster Element IP is not a valid IPaddress $($object.PEClusterIP)"
       }
     }
-    if ($object.HyperVisor -match "AHV|Nutanix" -or $object.HyperVisor -eq "AutoDetect" -or $debug -ge 2){
-      if ($debug -ge 1){
-        if ($object.HyperVisor -eq "AutoDetect"){
-          write "$(get-date -format "hh:mm:ss") | WARN  | AHV is required"
-        } else {
-          write "$(get-date -format "hh:mm:ss") | INFO  | The HyperVisor is valid, AHV Only"
-        }
-      }
-    } else {;
-      $validation = "Error";
-      if ($debug -ge 1){
-        write "$(get-date -format "hh:mm:ss") | Error | The HyperVisor is invalid, $($object.HyperVisor) is not supported" 
-      }
-    };
     if ($object.InfraSubnetmask -match $IPpattern){
       if ($debug -ge 1){
         write "$(get-date -format "hh:mm:ss") | INFO  | The Cluster Subnetmask is valid."

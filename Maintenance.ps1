@@ -459,7 +459,7 @@ if ([version]$LiveXrayVersion){
   if ($last -eq 0){
     $filever = "$($xrayarr[0]).$($xrayarr[1])"
   } else {
-    $LiveXrayVersion
+    $filever = $LiveXrayVersion
   }
   $XRayConf = "$($LiveXrayVersion);http://download.nutanix.com/XRay/$($LiveXrayVersion)/xray-$($filever).qcow2;http://download.nutanix.com/xray/$($LiveXrayVersion)/xray-$($filever).ova"
   write-log -message "Writing XRay $XRayConf"

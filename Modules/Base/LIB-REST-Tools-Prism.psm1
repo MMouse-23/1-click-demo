@@ -1769,6 +1769,38 @@ Function REST-Delete-Image {
   Return $task
 } 
 
+Function REST-Delete-PC-Image {
+  Param (
+    [object] $datagen,
+    [object] $datavar,
+    [string] $UUID
+
+  )
+
+  $clusterip = $datagen.PCClusterIP
+ 
+  $credPair = "$($datagen.buildaccount):$($datavar.PEPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  write-log -message "Deleting Image $UUID"
+
+  $URL = "https://$($clusterip):9440/api/nutanix/v3/images/$($UUID)"
+
+  write-log -message "Using URL $URL"
+
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "DELETE" -headers $headers;
+  } catch {
+    sleep 10
+    $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+
+    $task = Invoke-RestMethod -Uri $URL -method "DELETE" -headers $headers;
+  }
+
+  Return $task
+} 
+
 Function REST-Upload-Image {
   Param (
     [object] $datagen,

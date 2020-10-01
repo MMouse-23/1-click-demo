@@ -306,9 +306,27 @@ do {
         $svcstatus = SSH-ServiceAccounts-Px -PxClusterIP $datavar.PEClusterIP -datavar $datavar -datagen $datagen
 
         write-log -message "Autodetecting versions" -sev "CHAPTER" -slacklevel 1
-      
+
+        sleep 30
+
         $autodetect = CMD-AutoDetectVersions -peadmin $datavar.PEAdmin -pepass $datavar.PEPass -PEClusterIP $datavar.PEClusterIP
-      } until ($countauto -ge 5 -or $autodetect.result -eq "Success")
+        if ($autodetect.result -ne "Success"){
+
+          write-log -message "Unable to login yet." -sev "WARN"
+          write-log -message "Sleeping 2 minutes"
+
+          sleep 119
+
+          write-log -message "Sleeping 2 minutes, again to avoid lockouts."
+
+          sleep 119
+
+          write-log -message "Last minute sleep"
+
+          sleep 60
+
+        }
+      } until ($countauto -ge 3 -or $autodetect.result -eq "Success")
 
       $autodetect = CMD-AutoDetectVersions -peadmin $datavar.PEAdmin -pepass $datavar.PEPass -PEClusterIP $datavar.PEClusterIP
       
@@ -1145,7 +1163,7 @@ do {
         write-log -message "We found $($tasks.count) to process";
 
         [array] $allready = $null
-        write-log "Cycle $looper out of 100"
+        write-log "Cycle $looper out of 200"
         if ($tasks){
           Foreach ($task in $tasks){
             if ($task.state -eq "ready"){
@@ -1170,7 +1188,7 @@ do {
           Write-log -message "There are no jobs to process."
 
         }
-      } until ($Looper -ge 100 -or $allReady -notcontains 0)
+      } until ($Looper -ge 200 -or $allReady -notcontains 0)
       $tasks | unregister-scheduledtask -confirm:0 -ea:0
       Wrap-Validate-Build -datavar $datavar -datagen $datagen -basedir $basedir
          

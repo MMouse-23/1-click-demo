@@ -88,32 +88,32 @@
 
   write-log -message "Rabbit MQ BluePrint Installation Finished"
 
-  write-log -message "Elastic Search BluePrint Installation Started" -sev "CHAPTER"
+  #write-log -message "Elastic Search BluePrint Installation Started" -sev "CHAPTER"
 
-  Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
+  #Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
   
-  write-log -message "Project UUID is $($project.metadata.uuid)"
+  #write-log -message "Project UUID is $($project.metadata.uuid)"
 
-  write-log -message "Creating BluePrint"
+  #write-log -message "Creating BluePrint"
 
-  $blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\Elastic Search.json" -Project $project
+  #$blueprint = REST-Import-Generic-Blueprint-Object -datagen $datagen -datavar $datavar -BPfilepath "$($BlueprintsPath)\Elastic Search.json" -Project $project
 
-  write-log -message "Created BluePrint with $($blueprint.metadata.uuid)"
-  write-log -message "Getting newly created blueprint"
+  #write-log -message "Created BluePrint with $($blueprint.metadata.uuid)"
+  #write-log -message "Getting newly created blueprint"
 
-  Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
+  #Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
 
-  $blueprintdetail = REST-Query-DetailBP -datagen $datagen -datavar $datavar -uuid $($blueprint.metadata.uuid)
+  #$blueprintdetail = REST-Query-DetailBP -datagen $datagen -datavar $datavar -uuid $($blueprint.metadata.uuid)
 
-  write-log -message "Updating the BP"
+  #write-log -message "Updating the BP"
+#
+  #REST-Update-Generic-MarketPlace-Blueprint -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet -image $image -VMname "Elastic-$($datavar.pocname)"
 
-  REST-Update-Generic-MarketPlace-Blueprint -datagen $datagen -datavar $datavar -blueprintdetail $blueprintdetail -subnet $subnet -image $image -VMname "Elastic-$($datavar.pocname)"
-
-  Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
+  #Wait-Project-Save-State -datavar $datavar -datagen $datagen -project $project
  
-  $Launch = REST-Generic-BluePrint-Launch -datagen $datagen -datavar $datavar -BPUUID $($blueprint.metadata.uuid) -TaskObject ($blueprintdetail.spec.resources.app_profile_list | where {$_.name -eq "Nutanix"}) -appname "Elastic Search"
+  #$Launch = REST-Generic-BluePrint-Launch -datagen $datagen -datavar $datavar -BPUUID $($blueprint.metadata.uuid) -TaskObject ($blueprintdetail.spec.resources.app_profile_list | where {$_.name -eq "Nutanix"}) -appname "Elastic Search"
 
-  write-log -message "Elastic Search BluePrint Installation Finished" 
+  #write-log -message "Elastic Search BluePrint Installation Finished" 
 
   write-log -message "Puppet Open Source BluePrint Installation Started" -sev "CHAPTER"
 

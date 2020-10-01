@@ -50,7 +50,8 @@ Function Wrap-Install-Era-PostGresHA {
           $hide = get-ntnxvm | where {$_.vmname -match "^PostGresHA"} | Remove-NTNXVirtualMachine -ea:0
         }
         sleep 90
-        $operation = REST-ERA-Provision-HA-Database -postgresclustername "PostGHACL01" -postgresserverprefix "PostG-CN-$($datavar.pocname)" -Databasename "postghadb01" -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
+        [int]$int = $retry + 1
+        $operation = REST-ERA-Provision-HA-Database -postgresclustername "PostGHACL0$($int)" -postgresserverprefix "PostG-CN-$($datavar.pocname)" -Databasename "postghadb0$($int)" -networkProfileId $postgressnw.id -SoftwareProfile $SoftwareProfile -computeProfileId $computeProfileId -dbParameterProfileId $dbParameterProfileId -type "postgres_database" -port "5432" -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin -ERACluster $cluster -SLA $gold -publicSSHKey $datagen.PublicKey -pocname $datavar.pocname
       } 
       $result = REST-ERA-Operations -EraIP $datagen.ERA1IP -clpassword $datavar.PEPass -clusername $datavar.peadmin
       $count++

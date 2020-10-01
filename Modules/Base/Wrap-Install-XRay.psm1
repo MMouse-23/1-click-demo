@@ -48,10 +48,13 @@ Function Wrap-Install-XRay {
    
   REST-XRay-Login -datagen $datagen -datavar $datavar
    
-  write-log -message "Accepting EULA" -slacklevel 1
+  write-log -message "Getting EULA" -slacklevel 1
    
-  REST-XRay-EULA -datagen $datagen -datavar $datavar
+  $eula = REST-XRay-Get-EULA -datagen $datagen -datavar $datavar
 
+  write-log -message "Accepting EULA" -slacklevel 1
+
+  $Accept = REST-XRay-Accept-EULA -datagen $datagen -datavar $datavar
 }
 Export-ModuleMember *
 

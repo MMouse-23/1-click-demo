@@ -9,7 +9,6 @@ Function Wrap-Upload-ISOImages {
   write-log -message "Getting Image Container"
   $maxFails = 3 
 
-  $Failcount = 0
   $Failednames = $null
   $containers = REST-Get-Containers -clusername $datagen.buildaccount -clpassword $datavar.pepass -PEClusterIP $datavar.PEClusterIP
 
@@ -34,6 +33,7 @@ Function Wrap-Upload-ISOImages {
   $ISOurlData = $ISOurlData1
   $mainloop = 0
   do {
+    $Failcount = 0
     if ($Failcount -ge $maxFails -or $Backup -eq 1){
         
       write-log -message "We should be done but have more than $maxFails Failures, $Failcount out of $($namelist.count)" -sev "WARN"
@@ -79,7 +79,6 @@ Function Wrap-Upload-ISOImages {
         [array]$Priowaitlist += $namelist | where {$_ -eq $datagen.ERA_ImageName}
       }
       [array]$Priowaitlist += $namelist | where {$_ -eq $datagen.Move_ImageName}
-      [array]$Priowaitlist += $namelist | where {$_ -eq $datagen.Frame_WinImage}
       [array]$Priowaitlist += $namelist | where {$_ -eq $datagen.XRAY_Imagename}
       [array]$Priowaitlist += "CentOS_1CD"
       [array]$Priowaitlist += "Windows 2012"
@@ -132,7 +131,7 @@ Function Wrap-Upload-ISOImages {
             $tasks = REST-Get-AOS-LegacyTask -datagen $datagen -datavar $datavar
             $uploadstatus = $tasks.entities | where {$_.id -eq $task.taskUuid}
             
-            if ($uploadstatus.percentagecompleted -ne 100){
+            if ($uploadstatus.percentagecompleted -ne 100 -and $uploadstatus.percentagecompleted -match "[0-9]"){
               sleep 10 
               if ($count % 4 -eq 0){
     
@@ -327,7 +326,7 @@ Function Wrap-Upload-ISOImages {
     ## Only if we havnt failed alot, we proceed with the non wait list.
 
 
-    if ($mode -eq "Base" -and ($Failcount -le $maxFails -or $backupmode -eq 1 -and $ISOurlData.$($image) -ne "NA-AHV") -and $datavar.Hypervisor -match "Nutanix|AHV"){
+    if ($mode -eq "Base" -and ($Failcount -le 0 -or $backupmode -eq 1 -and $ISOurlData.$($image) -ne "NA-AHV") -and $datavar.Hypervisor -match "Nutanix|AHV"){
       $exclude = $null
       [array]$Exclude += $Priowaitlist
       [array]$Exclude += $namelist | where {$_ -match "MSSQL|Oracle"}
@@ -337,8 +336,17 @@ Function Wrap-Upload-ISOImages {
           [array]$nonWaitlist += $image
         }
       }
-    
+      
       write-log -message "We have $($nonWaitlist.count) images remaining. AHV Only"
+      write-log -message "Sleeping 60 minutes."
+
+      $sleepcounter = 0
+      do {
+        $sleepcounter ++
+        sleep 119
+        write-log -message "Sleeping 2 minutes $sleepcounter / 10"
+
+      } until ($sleepcounter -ge 10)
     
       foreach ($image in $nonWaitlist){
     
