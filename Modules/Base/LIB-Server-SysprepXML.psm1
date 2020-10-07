@@ -136,7 +136,7 @@ $Sysprepfile = @"
                     <Order>5</Order>
                     <RequiresUserInput>true</RequiresUserInput>
                     <Description>RDP adv firewall enable</Description>
-                    <CommandLine>cmd.exe /c netsh advfirewall firewall set rule group=&quot;Remote Desktop&quot; new enable=yes </CommandLine>
+                    <CommandLine>cmd.exe /c netsh advfirewall firewall set rule group='Remote Desktop' new enable=yes </CommandLine>
                 </SynchronousCommand>
                 <SynchronousCommand wcm:action="add">
                     <Order>31</Order>

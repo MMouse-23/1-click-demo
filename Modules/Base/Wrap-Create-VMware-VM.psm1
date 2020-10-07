@@ -267,7 +267,7 @@ function Wrap-Create-VMware-VM {
   
       if ($filename.length -ge 5){
   
-        $filename = $filename.substring(0, $filename.length -5) + "-flat.vmdk"
+        $filename = $filename.substring(0, $filename.length -7) + "-flat.vmdk"
   
         write-log -message "Changing to flat file: $filename"
   
@@ -418,7 +418,7 @@ function Wrap-Create-VMware-VM {
       } until ($loop -ge 3 -or $exit -eq 1)
     
       if ($guestOS -match "win"){
-        sleep 30
+        sleep 119
     
         write-log -message "This takes a little longer on 2016";
          

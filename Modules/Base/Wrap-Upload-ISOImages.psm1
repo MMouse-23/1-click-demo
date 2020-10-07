@@ -20,7 +20,7 @@ Function Wrap-Upload-ISOImages {
     write-log -message "Picking the ESX Host Target"
 
     $hosts = REST-PE-Get-Hosts -datagen $datagen -datavar $datavar
-    $ESXHost = ($hosts.entities.hypervisorKey)[0]
+    $ESXHost = [array]($hosts.entities.hypervisorKey) | select -first 1
     $maxFails = 1
   }
 
@@ -51,7 +51,7 @@ Function Wrap-Upload-ISOImages {
     $Priowaitlist= $null
     if ($mode -eq "oracle"){
       if ($datavar.Hypervisor -match "ESX"){
-        $ESXHost = ($hosts.entities.hypervisorKey)[2]
+        $ESXHost = [array]($hosts.entities.hypervisorKey) | select -first 1
         sleep 90
       }
       [array]$Priowaitlist += $namelist | where {$_ -eq $datagen.Oracle1_0Image}
@@ -67,7 +67,7 @@ Function Wrap-Upload-ISOImages {
 
     } elseif ($mode -eq "MSSQL"){
       if ($datavar.Hypervisor -match "ESX"){
-        $ESXHost = ($hosts.entities.hypervisorKey)[1]
+        $ESXHost = [array]($hosts.entities.hypervisorKey) | select -first 1
         sleep 90
       }
       [array]$Priowaitlist += $namelist | where {$_ -eq $datagen.ERA_MSSQLImage}
@@ -309,9 +309,17 @@ Function Wrap-Upload-ISOImages {
                   $Clean = Invoke-SSHCommand -SSHSession $session -command "echo 'done' > /vmfs/volumes/$($datagen.ImagesContainerName)/$filename-$($datavar.queueuuid).chk"
                   
                   write-log -message "Bitesize Check Confirmed"
-
-
+                  
+                  
+                  
                 }
+                if ($filename -match "tar"){
+
+                  write-log -message "Extracting"
+                  #$stream = $session.Session.CreateShellStream("dumb", 0, 0, 0, 0, 1000)
+
+                  Invoke-SSHCommand -SSHSession $session -command "cd /vmfs/volumes/$($datagen.ImagesContainerName)/;tar -zxvf /vmfs/volumes/$($datagen.ImagesContainerName)/$filename" -timeout 3200 -EnsureConnection
+                }   
               } until ($datastoreitem -eq $controlsize -or $Intcount -ge 5 -or $exclude -eq 1)
 
             }

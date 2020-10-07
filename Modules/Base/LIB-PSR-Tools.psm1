@@ -2391,7 +2391,9 @@ Function PSR-Install-Choco {
   $password = $datagen.SysprepPassword | ConvertTo-SecureString -asplaintext -force;
   $Creds = New-Object System.Management.Automation.PsCredential($username,$password);
   invoke-command -computername $ip -credential $creds {
-    Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    Set-ExecutionPolicy Bypass -Scope Process -Force; 
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; 
+    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     get-pssession | remove-pssession
   } 
 }
