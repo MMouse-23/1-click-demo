@@ -80,7 +80,7 @@ Function  LIB-Config-ISOurlData {
       $Windows10_1CD = "https://dl.dropboxusercontent.com/s/rfnc1zskmppcwab/Windows10V4.vmdk"
       $windows2016   = "https://dl.dropboxusercontent.com/s/48rqxg48txff7ad/Windows2016V5.tar.gz"
       $VirtIO1_1_4ISO= "https://dl.dropboxusercontent.com/s/36qgacn06pzjd5r/Nutanix-VirtIO-1.1.4.iso"
-      $sqlSERVER     = "https://dl.dropboxusercontent.com/s/pkl10yanijotjc6/MSSQL-2016V4.vmdk"
+      $sqlSERVER     = "https://dl.dropboxusercontent.com/s/pkl10yanijotjc6/MSSQL-2016V5.tar.gz"
       $oracle1_0     = "https://dl.dropboxusercontent.com/s/vwmf5hbp3wi8tfd/TEMPLATE_ORACLE_12.1_SIHA_VDISK_SOURCE-1.vmdk"
       $oracle1_1     = "https://dl.dropboxusercontent.com/s/k0vqmxalxikccxz/TEMPLATE_ORACLE_12.1_SIHA_VDISK_SOURCE-2.vmdk"
       $oracle1_2     = "https://dl.dropboxusercontent.com/s/6lmrskwkq001qya/TEMPLATE_ORACLE_12.1_SIHA_VDISK_SOURCE-3.vmdk"

@@ -122,7 +122,7 @@ function Wrap-Create-VMware-VM {
       CMD-Connect-VMware -datavar $datavar
   
       write-log -message "Updating the VM with powerCLI"
-      Get-VM -Name $vmname | Set-VM -GuestId centos64Guest -Confirm:$false
+      Get-VM -Name $vmname | Set-VM -GuestId centos64Guest -Confirm:$false -MemoryMB $RAM -NumCPU $CPU
       write-log -message "Removing ghosted NIC"
       get-vm -name $vmname | Get-NetworkAdapter | Remove-NetworkAdapter -confirm:0
       sleep 10
