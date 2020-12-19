@@ -127,7 +127,7 @@ Function Wrap-Update-LCMV2-PC {
     ## Control below makes sure that the loop exits only when cycle has been completed.
     ## No remediating actions below, just validation Temp karbon fix
 
-    $StatobjectsKarbon      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataStatsTableName)"
+    $StatobjectsKarbon      = Invoke-Sqlcmd -ServerInstance $SQLInstance -Query "SELECT * FROM [$($SQLDatabase)].[dbo].$($SQLDataVersionTableName)"
     $Statobjects      = $StatobjectsKarbon | where {$_.PCVersion -eq $datavar.PCVersion}
 
     $output = PSR-LCM-ListUpdates-PC -datagen $datagen -datavar $datavar -minimalupdates 0

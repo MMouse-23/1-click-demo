@@ -288,14 +288,16 @@ function Wrap-Install-PC {
 
       } elseif ($PCDownloadStatus -notmatch "completed"){
       
-        write-log -message "Still downloading Prism Central. $PCDownloadStatus" 
+        write-log -message "Still downloading Prism Central. $PCDownloadStatus"
+
+        sleep 119
     
       } else {
 
         write-log -message "PCDownload Completed" 
 
       }
-    } until ($pcstatuscheck -ge 20 -or $PCDownloadStatus -match "completed")
+    } until ($pcstatuscheck -ge 60 -or $PCDownloadStatus -match "completed")
 
     write-log -message "Download Completed, Starting PC Installer" 
 

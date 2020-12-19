@@ -301,7 +301,7 @@ function Wrap-Validate-Build {
     $UPNPEValidated = 0
     $UPNPEresult = "Prism Element UPN Login failed"
   }
-  if ($datavar.installSplunk -eq 1){
+  if ($true -eq $false){
     $privatekeyresult =  ($applications.entities | where {$_.status.name -eq "Splunk Instance"}).status.state
     if ($privatekeyresult -eq "error"){
       $privatekeyvalidated = 0

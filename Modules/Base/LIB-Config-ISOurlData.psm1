@@ -75,7 +75,7 @@ Function  LIB-Config-ISOurlData {
       $XENDESKTOP    = "https://dl.dropboxusercontent.com/s/0b90x6p2igvg4hj/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "https://dl.dropboxusercontent.com/s/vkr8kcsnhx4ubgd/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.ISO";
       $Windows2016ISO= "https://dl.dropboxusercontent.com/s/0fafvu4c7rev1x5/Windows2016.iso";
-      $Centos_1CD    = "https://dl.dropboxusercontent.com/s/4bi8xtwqmcq7e1m/Centos8x64V6.vmdk"
+      $Centos_1CD    = "https://dl.dropboxusercontent.com/s/4bi8xtwqmcq7e1m/CentOS_1CD.tar.gz"
       $Windows2012   = "https://dl.dropboxusercontent.com/s/xzc1nog6t49pqpz/Windows2012V4.vmdk"
       $Windows10_1CD = "https://dl.dropboxusercontent.com/s/rfnc1zskmppcwab/Windows10V4.vmdk"
       $windows2016   = "https://dl.dropboxusercontent.com/s/48rqxg48txff7ad/Windows2016V5.tar.gz"
@@ -98,7 +98,7 @@ Function  LIB-Config-ISOurlData {
       $XENDESKTOP    = "http://$($ip)/data/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "http://$($ip)/data/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.iso";
       $Windows2016ISO= "http://$($ip)/data/Windows2016.iso";
-      $Centos_1CD    = "http://$($ip)/data/Centos8x64V6.vmdk"
+      $Centos_1CD    = "http://$($ip)/data/CentOS_1CD.tar.gz"
       $Windows2012   = "http://$($ip)/data/Windows2012V4.vmdk"
       $Windows10_1CD = "http://$($ip)/data/Windows10V4.vmdk"
       $windows2016   = "http://$($ip)/data/Windows2016V5.tar.gz"
@@ -130,10 +130,10 @@ Function  LIB-Config-ISOurlData {
       $XENDESKTOP    = "http://$($ip)/images/1-Click-Demo/Citrix_Virtual_Apps_and_Desktops_7_1912.iso";
       $office2016    = "http://$($ip)/images/1-Click-Demo/SW_DVD5_Office_Professional_Plus_2016_64Bit_English_MLF_X20-42432.ISO";
       $Windows2016ISO= "http://$($ip)/images/1-Click-Demo/Windows2016.iso";
-      $Centos_1CD    = "http://$($ip)/images/1-Click-Demo/Centos8x64V6.vmdk"
-      $Windows2012   = "http://$($ip)/images/1-Click-Demo/Windows2012V4.vmdk"
+      $Centos_1CD    = "http://$($ip)/images/1-Click-Demo/CentOS_1CD.tar.gz"
+      $Windows2012   = "http://$($ip)/images/1-Click-Demo/Windows2012V5.tar.gz"
       $Windows10_1CD = "http://$($ip)/images/1-Click-Demo/Windows10V4.vmdk"
-      $windows2016   = "http://$($ip)/images/1-Click-Demo/Windows2016V4.vmdk"
+      $windows2016   = "http://$($ip)/images/1-Click-Demo/Windows2016V5.tar.gz"
       $VirtIO1_1_4ISO= "http://$($ip)/images/1-Click-Demo/Nutanix-VirtIO-1.1.4.iso"
       $sqlSERVER     = "http://$($ip)/images/1-Click-Demo/MSSQL-2016V4.vmdk"
       $oracle1_0     = "http://$($ip)/images/1-Click-Demo/TEMPLATE_ORACLE_12.1_SIHA_VDISK_SOURCE-1.vmdk"

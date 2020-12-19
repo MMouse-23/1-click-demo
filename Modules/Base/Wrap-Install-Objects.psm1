@@ -37,22 +37,22 @@ Function Wrap-Install-Objects {
 
     $state = ($result.group_results[0].entity_results.data | where {$_.name -eq "state"}).values.values
 
-    if ($state -eq "ERROR") {
-
-      write-log -message "Store is in state ERROR, redeploying."
-      write-log -message "Deleting Store"
-
-      REST-DELETE-Objects-Store -datagen $datagen -datavar $datavar -storeUUID $result.group_results[0].entity_results.entity_id
-
-      write-log -message "Sleep after delete."
-      sleep 90 
-    }
+    #if ($state -eq "ERROR") {
+#
+    #  write-log -message "Store is in state ERROR, redeploying."
+    #  write-log -message "Deleting Store"
+#
+    #  REST-DELETE-Objects-Store -datagen $datagen -datavar $datavar -storeUUID $result.group_results[0].entity_results.entity_id
+#
+    #  write-log -message "Sleep after delete."
+    #  sleep 90 
+    #}
 
     write-log -message "Current percentage is $percentage"
 
     sleep 60
 
-  } until ( $percentage -eq 100 -or $count -ge 240)
+  } until ( $percentage -eq 100 -or $count -ge 240 -or $state -eq "ERROR")
   
   if ($percentage -eq 100){
 
@@ -67,52 +67,52 @@ Function Wrap-Install-Objects {
       $count2 ++
       REST-Create-Objects-Bucket -datagen $datagen -datavar $datavar -storeID $result.group_results.Entity_results.entity_id -bucketname "demo$($count2)"
     } until ($count2 -ge 5)
-  }
-  $count3 = 0
-  do {
-    $count3 ++
-    sleep 60
-    $result = REST-Query-Objects-Store -datagen $datagen -datavar $datavar
-    [int]$bucketcount = ($result.group_results.Entity_results.data | where {$_.name -eq "num_buckets"}).values.values
-  } until ($bucketcount -ge 5 -or $count3 -ge 2)
   
-  write-log -message "We created $bucketcount buckets."
-
-  sleep 180
-  #SSH-Restart-KeepAlived -datavar $datavar -datagen $datagen
-  $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
-  [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
-  If ($adcount -lt 1){
-    $count4 = 0
+    $count3 = 0
     do {
-      $count4++
-      REST-Add-Objects-AD -datagen $datagen -datavar $datavar
+      $count3 ++
       sleep 60
-      write-log -message "AD Connection created."
-      $count5 = 0
-      do {
-        write-log -message "Checking"
-        $count5++
-        sleep 5
-        $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
-        [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
-      } until ($count5 -ge 2 -or $adcount -ge 1)
+      $result = REST-Query-Objects-Store -datagen $datagen -datavar $datavar
+      [int]$bucketcount = ($result.group_results.Entity_results.data | where {$_.name -eq "num_buckets"}).values.values
+    } until ($bucketcount -ge 5 -or $count3 -ge 2)
   
-      #If ($adcount -le 1){
-      #  write-log -message "Check failed, restarting Keepalives" -sev "WARN"
-      #  SSH-Restart-KeepAlived -datavar $datavar -datagen $datagen
-      #  sleep 10
-      #  $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
-      #  [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
-      #  write-log -message "We created $adcount Directories."
-      #  if ($count4 -eq 2){
-      #    write-log -message "Sleeping for Objects weirdness" 
-      #    sleep 600
-      #  }
-      #}
-    } until ($adcount -ge 1 -or $count4 -ge 3)
-  }
+    write-log -message "We created $bucketcount buckets."
+    sleep 180
 
+    #SSH-Restart-KeepAlived -datavar $datavar -datagen $datagen
+    $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
+    [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
+    If ($adcount -lt 1){
+      $count4 = 0
+      do {
+        $count4++
+        REST-Add-Objects-AD -datagen $datagen -datavar $datavar
+        sleep 60
+        write-log -message "AD Connection created."
+        $count5 = 0
+        do {
+          write-log -message "Checking"
+          $count5++
+          sleep 5
+          $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
+          [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
+        } until ($count5 -ge 2 -or $adcount -ge 1)
+    
+        #If ($adcount -le 1){
+        #  write-log -message "Check failed, restarting Keepalives" -sev "WARN"
+        #  SSH-Restart-KeepAlived -datavar $datavar -datagen $datagen
+        #  sleep 10
+        #  $ADmatch = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).metadata.kind -eq "directory_service"
+        #  [int]$adcount = ((REST-Get-Objects-AD -datagen $datagen -datavar $datavar).entities).count
+        #  write-log -message "We created $adcount Directories."
+        #  if ($count4 -eq 2){
+        #    write-log -message "Sleeping for Objects weirdness" 
+        #    sleep 600
+        #  }
+        #}
+      } until ($adcount -ge 1 -or $count4 -ge 3)
+    }
+  } 
   write-log -message "Objects Base Installation Finished" -slacklevel 1
 }
 Export-ModuleMember *

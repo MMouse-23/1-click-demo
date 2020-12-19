@@ -9,13 +9,14 @@ if ($env:computername -match "dev"){
   $global:SQLInstance           = "1-click-demo\SQLEXPRESS"
   $global:SQLInstLog            = "1-click-demo\SQLEXPRESS" 
 }
-$global:SQLDatabase           = "1ClickDemo"
-$global:SQLQueueTableName     = "Queue"
-$global:SQLDataVarTableName   = "DataVar"
-$global:SQLDataGenTableName   = "DataGen"
-$global:SQLLoggingTableName   = "Logging"
-$global:SQLDataStatsTableName = "DataStats"
-$global:SQLDataUserTableName  = "DataUser"  
+$global:SQLDatabase             = "1ClickDemo"
+$global:SQLQueueTableName       = "Queue"
+$global:SQLDataVarTableName     = "DataVar"
+$global:SQLDataGenTableName     = "DataGen"
+$global:SQLLoggingTableName     = "Logging"
+$global:SQLDataStatsTableName   = "DataStats"
+$global:SQLDataVersionTableName = "DataVersion"
+$global:SQLDataUserTableName    = "DataUser"  
 $global:SQLDataValidationTableName  = "DataValidation"
 if ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain -eq $true){
   $global:portable = 0
@@ -781,11 +782,7 @@ do {
 
       if ($datavar.Hypervisor -match "ESX") {
 
-        $LauchCommand = 'SSH-Wait-ImageUpload -datavar $datavar -datagen $datagen -ISOurlData $ISOurlData1 -image $datagen.DC_ImageName'
-        Lib-Spawn-Wrapper -Type "WaitImage" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -psm1file "$($ModuleDir)\Wrap-Create-ADForest-PC.psm1" -LauchCommand $LauchCommand 
-
-        sleep 60
-        Wait-Image-Task -datavar $datavar
+        Wait-ImageUpload-Task -datavar $datavar
 
         write-log -message "Spawning ESX MGT Box" -sev "CHAPTER" -slacklevel 1
 
@@ -1040,13 +1037,13 @@ do {
       Lib-Spawn-Wrapper -Type "XenDesktop" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
 
       
-      if ($datavar.InstallSplunk -eq 1){
-
-        write-log -message "Spawning Splunk Install" -sev "CHAPTER" -slacklevel 1
-
-        $LauchCommand = 'Wrap-Install-Splunk -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -basedir $basedir -BlueprintsPath ' + $BlueprintsPath
-        Lib-Spawn-Wrapper -Type "Splunk" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
-      } 
+      #if ($datavar.InstallSplunk -eq 1){
+#
+      #  write-log -message "Spawning Splunk Install" -sev "CHAPTER" -slacklevel 1
+#
+      #  $LauchCommand = 'Wrap-Install-Splunk -datagen $datagen -datavar $datavar -ServerSysprepfile $ServerSysprepfile -basedir $basedir -BlueprintsPath ' + $BlueprintsPath
+      #  Lib-Spawn-Wrapper -Type "Splunk" -datavar $datavar -datagen $datagen -parentuuid "$($datavar.QueueUUID)" -sysprepfile $sysprepfile -ModuleDir $ModuleDir -basedir $basedir -ProdMode $ProdMode -LauchCommand $LauchCommand 
+      #} 
 
     
       if ($datavar.InstallHashiVault -eq 1 ){
@@ -1100,6 +1097,7 @@ do {
 
       write-log -message "Done" -sev "CHAPTER" -slacklevel 1
       $basestatus = Lib-Update-Stats -datavar $datavar -datagen $datagen -ParentLogfile $logfile -basedir $basedir
+      Lib-Update-Version -datavar $datavar -datagen $datagen -ParentLogfile $logfile -basedir $basedir
       
       LIB-Send-Confirmation -reciever $datavar.SenderEMail -datagen $datagen -datavar $datavar -mode "end"  -logfile $logfile
       #if ($datavar.EnableBlueprintBackup -eq 1 -and $portable -ne 1){
