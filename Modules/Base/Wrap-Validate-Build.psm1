@@ -21,7 +21,7 @@ function Wrap-Validate-Build {
   } elseif ($datavar.DemoIISXPlay -eq 0 -and $datavar.InstallSplunk -eq 0 -and $datavar.InstallBPPack -eq 0 -and $datavar.InstallHashiVault -eq 0 -and $datavar.Install1CD -eq 0 -and $datavar.hypervisor -notmatch "ESX|VMware"){
     $minbp = 0
   } else {
-    $minbp = 3
+    $minbp = 2
   }
   If ($datavar.DemoXenDeskT -eq 1){
     $count = 0

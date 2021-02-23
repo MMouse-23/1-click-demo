@@ -28,43 +28,44 @@ Function Wrap-Create-KarbonCluster-Fannel {
   $imagesP = REST-Karbon-Get-Images-Portal -datagen $datagen -datavar $datavar -token $token
   $imagesL = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
 
-  $image = $imagesL | where {$_.image_description -match "Centos" } | sort version | select -last 1
+  if (!$imageL){
 
-  write-log -message "Downloading Image"
+    write-log -message "Downloading Image"
 
-  try {
-    $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
-    REST-Karbon-Download-Images -datagen $datagen -datavar $datavar -token $token -image $image
-  } catch {
-
-    write-log -message "Error caught on Karbon image download" -sev "WARN"
-
-  }
-  $imagesL = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
-  $imagesL = $imagesL | where {$_.image_description -match "Centos" } | sort version | select -last 1
-
-  $count = 0
-  do {
-    $count++
-  
-    write-log -message "Download status is $($imagesL.Status)"
-    if ($imagesL.Status -eq "Available"){
-      $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
-      REST-Karbon-Download-Images -datagen $datagen -datavar $datavar -token $token -image $image
-    }
-  
-    sleep 60
+    $image = $imagesp | where {$_.image_description -match "Karbon host" } | sort version | select -last 1
     try {
       $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
-      $AllImagesLocal = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
-      $imagesL = $AllImagesLocal | where {$_.image_description -match "Centos" } | sort version | select -last 1
+      REST-Karbon-Download-Images -datagen $datagen -datavar $datavar -token $token -image $image
     } catch {
-
-      write-log -message "I should not be here, CALM Updates Failed???"
-    
+  
+      write-log -message "Error caught on Karbon image download" -sev "WARN"
+  
     }
-  }until ($imagesL.status -eq "Downloaded" -or $count -ge 200)
-
+    $imagesL = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
+    $imagesL = $imagesL | where {$_.image_description -match "Karbon host" } | sort version | select -last 1
+  
+    $count = 0
+    do {
+      $count++
+    
+      write-log -message "Download status is $($imagesL.Status)"
+      if ($imagesL.Status -eq "Available"){
+        $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
+        REST-Karbon-Download-Images -datagen $datagen -datavar $datavar -token $token -image $image
+      }
+    
+      sleep 60
+      try {
+        $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
+        $AllImagesLocal = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
+        $imagesL = $AllImagesLocal | where {$_.image_description -match "Karbon host" } | sort version | select -last 1
+      } catch {
+  
+        write-log -message "I should not be here, CALM Updates Failed???"
+      
+      }
+    }until ($imagesL.status -eq "Downloaded" -or $count -ge 200)
+  }
   $subnet = (REST-Get-PE-Networks -datavar $datavar -datagen $datagen).entities | where {$_.name -eq $datagen.nw1name}
   $clusters = REST-Query-Cluster -ClusterPC_IP $datagen.PCClusterIP -clpassword $datavar.pepass -clusername $datagen.buildaccount 
 
@@ -72,7 +73,7 @@ Function Wrap-Create-KarbonCluster-Fannel {
   
   $token = REST-Karbon-Login -datagen $datagen -datavar $datavar
   $AllImagesLocal = REST-Karbon-Get-Images-local -datagen $datagen -datavar $datavar -token $token
-  $image = $imagesL | where {$_.image_description -match "Centos" } | sort version | select -last 1
+  $image = $imagesL | where {$_.image_description -match "Karbon host" } | sort version | select -last 1
   
   write-log -message "Getting K8 Versions Portal" 
 

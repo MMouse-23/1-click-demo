@@ -801,9 +801,9 @@ Function REST-Runbook-Import-Blob {
 
 Function REST-Add-Endpoint-Windows {
   Param (
-    [object] $PCClusterIP,
-    [object] $PCClusterUser,
-    [object] $PCClusterPass,
+    [string] $PCClusterIP,
+    [string] $PCClusterUser,
+    [string] $PCClusterPass,
     [object] $project,
     [string] $IP,
     [string] $username,
